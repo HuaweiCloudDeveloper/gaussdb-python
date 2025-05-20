@@ -659,7 +659,8 @@ class TestTimeTz:
         rec = cur.fetchone()
         assert rec[0] is True, type
         assert rec[1] == val
-
+        
+    @pytest.mark.skipif(True, reason="GaussDB does not support COPY TO STDOUT")
     @pytest.mark.crdb_skip("copy")
     def test_load_copy(self, conn):
         cur = conn.cursor(binary=False)
