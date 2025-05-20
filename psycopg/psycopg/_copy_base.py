@@ -112,7 +112,7 @@ class BaseCopy(Generic[ConnectionType]):
         info = connection_summary(self._pgconn)
         return f"<{cls} {info} at 0x{id(self):x}>"
 
-    def _enter(self) -> None:
+    def _enter(self) -> None: 
         if self._finished:
             raise TypeError("copy blocks can be used only once")
 

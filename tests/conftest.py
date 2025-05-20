@@ -33,8 +33,7 @@ def pytest_configure(config):
         "dns: the test requires dnspython to run",
         "postgis: the test requires the PostGIS extension to run",
         "numpy: the test requires numpy module to be installed",
-        "gaussdb_skip(reason): Skip test for GaussDB-specific behavior",
-        "gaussdb: mark tests specific to GaussDB",
+        "gaussdb_skip(reason): Skip test for GaussDB-specific behavior", 
     ]
 
     for marker in markers:
@@ -106,3 +105,4 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
         terminalreporter.section("failed tests ignored")
         for msg in allow_fail_messages:
             terminalreporter.line(msg)
+ 

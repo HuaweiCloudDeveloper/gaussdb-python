@@ -66,7 +66,7 @@ class Copy(BaseCopy["Connection[Any]"]):
         self._write = writer.write
 
     def __enter__(self) -> Self:
-        self._enter()
+        self._enter() 
         return self
 
     def __exit__(

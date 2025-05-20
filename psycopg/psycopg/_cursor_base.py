@@ -382,6 +382,7 @@ class BaseCursor(Generic[ConnectionType, Row]):
 
         # The connection gets in an unrecoverable state if we attempt COPY in
         # pipeline mode. Forbid it explicitly.
+        
         if self._conn._pipeline:
             raise e.NotSupportedError("COPY cannot be used in pipeline mode")
 
@@ -394,9 +395,9 @@ class BaseCursor(Generic[ConnectionType, Row]):
             statement = pgq.query
 
         query = self._convert_query(statement)
-
         self._execute_send(query, binary=False)
-        results = yield from execute(self._pgconn)
+        results = yield from execute(self._pgconn)        
+        
         if len(results) != 1:
             raise e.ProgrammingError("COPY cannot be mixed with other operations")
 

@@ -266,9 +266,9 @@ class Cursor(BaseCursor["Connection[Any]", Row]):
         """
         Initiate a :sql:`COPY` operation and return an object to manage it.
         """
-        try:
+        try:            
             with self._conn.lock:
-                self._conn.wait(self._start_copy_gen(statement, params))
+                self._conn.wait(self._start_copy_gen(statement, params),0)
 
             with Copy(self, writer=writer) as copy:
                 yield copy

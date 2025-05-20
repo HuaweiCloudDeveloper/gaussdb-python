@@ -676,8 +676,11 @@ class PGconn:
 
     def get_copy_data(self, async_: int) -> tuple[int, memoryview]:
         buffer_ptr = c_char_p()
+         
         nbytes = impl.PQgetCopyData(self._pgconn_ptr, byref(buffer_ptr), async_)
-        if nbytes == -2:
+         
+        if nbytes == -2: 
+            
             raise e.OperationalError(
                 f"receiving copy data failed: {self.get_error_message()}"
             )
