@@ -48,8 +48,11 @@ def test_quote_1char(conn, scs):
 @pytest.mark.crdb("skip", reason="can deal with 0 strings")
 @pytest.mark.parametrize("fmt_in", PyFormat)
 def test_dump_zero(conn, fmt_in):
+    if "postgresql" in conn.info.vendor.lower():
+        pytest.skip("GaussDB can deal with 0 strings")
+        
     cur = conn.cursor()
-    s = "foo\x00bar"
+    s = "foo\x00bar"    
     with pytest.raises(psycopg.DataError):
         cur.execute(f"select %{fmt_in.value}::text", (s,))
 
