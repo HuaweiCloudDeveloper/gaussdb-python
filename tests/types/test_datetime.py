@@ -267,7 +267,7 @@ class TestDatetime:
     overflow_samples = [
         ("-infinity", "timestamp too small"),
         ("1000-01-01 12:00 BC", "timestamp too small"),
-        ("10000-01-01 12:00", "invalid data for \"year =  10000\", value must be between -4712 and 9999, and not be 0"),
+        ("10000-01-01 12:00", "timestamp too large"),
         ("infinity", "timestamp too large"),
     ]
 
