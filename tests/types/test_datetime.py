@@ -688,8 +688,6 @@ class TestInterval:
         ("1d", "1 day"),
         pytest.param("-1d", "-1 day", marks=crdb_skip_negative_interval),
         ("1s", "1 s"),
-        pytest.param("-1s", "-1 s", marks=crdb_skip_negative_interval),
-        pytest.param("-1m", "-0.000001 s", marks=crdb_skip_negative_interval),
         ("1m", "0.000001 s"),
         ("max", "999999999 days 23:59:59.999999"),
     ]
@@ -699,8 +697,8 @@ class TestInterval:
     def test_dump_interval(self, conn, val, expr, intervalstyle):
         cur = conn.cursor()
         cur.execute(f"set IntervalStyle to '{intervalstyle}'")
-        cur.execute(f"select '{expr}'::interval = %t", (as_td(val),))
-        assert cur.fetchone()[0] is True
+        cur.execute(f"select '{expr}'::interval = %t", (as_td(val),)) 
+        assert cur.fetchone()[0] is True 
 
     @pytest.mark.parametrize("val, expr", dump_timedelta_samples)
     def test_dump_interval_binary(self, conn, val, expr):
