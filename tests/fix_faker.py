@@ -419,8 +419,11 @@ class Faker:
                 assert got == want
 
     def _server_rounds(self):
-        """Return True if the connected server perform float rounding"""
+        """Return True if the connected server perform float rounding""" 
+        
         if self.conn.info.vendor == "CockroachDB":
+            return True
+        elif self.conn.info.vendor == "PostgreSQL":
             return True
         else:
             # Versions older than 12 make some rounding. e.g. in Postgres 10.4
