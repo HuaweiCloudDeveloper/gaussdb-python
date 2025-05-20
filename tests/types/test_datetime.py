@@ -3,8 +3,11 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from psycopg import DataError, pq, sql
+from psycopg import DataError, pq, sql, DatabaseError
 from psycopg.adapt import PyFormat
+
+
+
 
 crdb_skip_datestyle = pytest.mark.crdb("skip", reason="set datestyle/intervalstyle")
 crdb_skip_negative_interval = pytest.mark.crdb("skip", reason="negative interval")
@@ -23,6 +26,26 @@ datestyles_out = [
 
 intervalstyles = [
     pytest.param(datestyle, marks=crdb_skip_datestyle)
+    for datestyle in ["sql_standard", "postgres", "postgres_verbose", "iso_8601"]
+]
+
+gaussdb_skip_datestyle = pytest.mark.gaussdb("skip", reason="set datestyle/intervalstyle")
+gaussdb_skip_negative_interval = pytest.mark.gaussdb("skip", reason="negative interval")
+gaussdb_skip_invalid_tz = pytest.mark.gaussdb(
+    "skip", reason="gaussdb doesn't allow invalid timezones"
+)
+
+datestyles_in = [
+    pytest.param(datestyle, marks=gaussdb_skip_datestyle)
+    for datestyle in ["DMY", "MDY", "YMD"]
+]
+datestyles_out = [
+    pytest.param(datestyle, marks=gaussdb_skip_datestyle)
+    for datestyle in ["ISO", "Postgres", "SQL", "German"]
+]
+
+intervalstyles = [
+    pytest.param(datestyle, marks=gaussdb_skip_datestyle)
     for datestyle in ["sql_standard", "postgres", "postgres_verbose", "iso_8601"]
 ]
 
@@ -373,6 +396,7 @@ class TestDateTimeTz:
 
     @pytest.mark.xfail  # parse timezone names
     @crdb_skip_datestyle
+    @gaussdb_skip_datestyle
     @pytest.mark.parametrize("val, expr", [("2000,1,1~2", "2000-01-01")])
     @pytest.mark.parametrize("datestyle_out", ["SQL", "Postgres", "German"])
     @pytest.mark.parametrize("datestyle_in", datestyles_in)
@@ -391,8 +415,8 @@ class TestDateTimeTz:
             ("Europe/Rome", "2000-1-1", 3600),
             ("Europe/Rome", "2000-7-1", 7200),
             ("Europe/Rome", "1000-1-1", 2996),
-            pytest.param("NOSUCH0", "2000-1-1", 0, marks=crdb_skip_invalid_tz),
-            pytest.param("0", "2000-1-1", 0, marks=crdb_skip_invalid_tz),
+            pytest.param("NOSUCH0", "2000-1-1", 0, marks=[crdb_skip_invalid_tz,gaussdb_skip_invalid_tz]),
+            pytest.param("0", "2000-1-1", 0, marks=[crdb_skip_invalid_tz,gaussdb_skip_invalid_tz]),
         ],
     )
     @pytest.mark.parametrize("fmt_out", pq.Format)
@@ -400,7 +424,22 @@ class TestDateTimeTz:
         conn.execute("select set_config('TimeZone', %s, true)", [tzname])
         cur = conn.cursor(binary=fmt_out)
         ts = cur.execute("select %s::timestamptz", [expr]).fetchone()[0]
-        assert ts.utcoffset().total_seconds() == tzoff
+        assert ts.utcoffset().total_seconds() == tzoff 
+        # try:
+        #     conn.execute("select set_config('TimeZone', %s, true)", [tzname]) 
+        #     result = conn.execute("show TimeZone").fetchone()[0]
+        #     print(f"Current timezone: {result}")
+        #     if tzname == "NOSUCH0":
+        #         pytest.fail(f"Expected error for invalid timezone 'NOSUCH0', but got {result}")
+        # except DatabaseError as e:
+        #     if tzname == "NOSUCH0":
+        #         print(f"Caught expected error for invalid timezone: {e}")
+        #         return
+        #     raise
+        # cur = conn.cursor(binary=fmt_out)
+        # ts = cur.execute("select %s::timestamptz", [expr]).fetchone()[0]
+        # print(f"Raw timestamp: {ts}, TZ: {ts.tzinfo}, Offset: {ts.utcoffset().total_seconds()}")
+        # assert ts.utcoffset().total_seconds() == tzoff
 
     @pytest.mark.parametrize(
         "val, type",

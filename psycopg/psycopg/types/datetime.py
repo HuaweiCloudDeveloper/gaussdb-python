@@ -497,7 +497,7 @@ class TimestamptzLoader(Loader):
 
     def __init__(self, oid: int, context: AdaptContext | None = None):
         super().__init__(oid, context)
-        self._timezone = get_tzinfo(self.connection.pgconn if self.connection else None)
+        self._timezone = get_tzinfo(self.connection.pgconn if self.connection else None,refresh=True)
 
         ds = _get_datestyle(self.connection)
         if ds.startswith(b"I"):  # ISO
@@ -569,7 +569,7 @@ class TimestamptzBinaryLoader(Loader):
 
     def __init__(self, oid: int, context: AdaptContext | None = None):
         super().__init__(oid, context)
-        self._timezone = get_tzinfo(self.connection.pgconn if self.connection else None)
+        self._timezone = get_tzinfo(self.connection.pgconn if self.connection else None,refresh=True)
 
     def load(self, data: Buffer) -> datetime:
         micros = unpack_int8(data)[0]

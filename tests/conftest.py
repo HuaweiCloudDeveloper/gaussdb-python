@@ -34,6 +34,7 @@ def pytest_configure(config):
         "postgis: the test requires the PostGIS extension to run",
         "numpy: the test requires numpy module to be installed",
         "gaussdb_skip(reason): Skip test for GaussDB-specific behavior",
+        "gaussdb: mark tests specific to GaussDB",
     ]
 
     for marker in markers:
