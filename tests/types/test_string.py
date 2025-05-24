@@ -48,6 +48,8 @@ def test_quote_1char(conn, scs):
 @pytest.mark.crdb("skip", reason="can deal with 0 strings")
 @pytest.mark.parametrize("fmt_in", PyFormat)
 def test_dump_zero(conn, fmt_in):
+    if fmt_in == PyFormat.BINARY:
+        pytest.skip("GaussDB allows null characters in strings for binary format.")
     cur = conn.cursor()
     s = "foo\x00bar"
     with pytest.raises(psycopg.DataError):

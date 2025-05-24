@@ -149,7 +149,7 @@ def test_load_record_binary(conn, want, rec):
         assert type(o1) is type(o2)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def testcomp(svcconn):
     if is_crdb(svcconn):
         pytest.skip(crdb_skip_message("composite"))

@@ -253,7 +253,7 @@ def test_copy_in_empty_set_type(conn, bounds, pgtype, format):
     assert rec[0] == r
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def testrange(svcconn):
     create_test_range(svcconn)
 
