@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 Connection classes
 ==================
@@ -38,24 +38,24 @@ The `!Connection` class
         :param autocommit: If `!True` don't start transactions automatically.
             See :ref:`transactions` for details.
         :param row_factory: The row factory specifying what type of records
-            to create fetching data (default: `~psycopg.rows.tuple_row()`). See
+            to create fetching data (default: `~gaussdb.rows.tuple_row()`). See
             :ref:`row-factories` for details.
         :param cursor_factory: Initial value for the `cursor_factory` attribute
-            of the connection (new in Psycopg 3.1).
+            of the connection (new in gaussdb.1).
         :param prepare_threshold: Initial value for the `prepare_threshold`
-            attribute of the connection (new in Psycopg 3.1).
+            attribute of the connection (new in gaussdb.1).
 
         More specialized use:
 
         :param context: A context to copy the initial adapters configuration
-            from. It might be an `~psycopg.adapt.AdaptersMap` with customized
+            from. It might be an `~gaussdb.adapt.AdaptersMap` with customized
             loaders and dumpers, used as a template to create several connections.
             See :ref:`adaptation` for further details.
 
         .. __: https://www.postgresql.org/docs/current/libpq-connect.html
             #LIBPQ-CONNSTRING
 
-        This method is also aliased as `psycopg.connect()`.
+        This method is also aliased as `gaussdb.connect()`.
 
         .. seealso::
 
@@ -74,7 +74,7 @@ The `!Connection` class
 
             You can use::
 
-                with psycopg.connect() as conn:
+                with gaussdb.connect() as conn:
                     ...
 
             to close the connection automatically when the block is exited.
@@ -120,21 +120,21 @@ The `!Connection` class
 
         The type, or factory function, returned by `cursor()` and `execute()`.
 
-        Default is `psycopg.Cursor`.
+        Default is `gaussdb.Cursor`.
 
     .. autoattribute:: server_cursor_factory
 
         The type, or factory function, returned by `cursor()` when a name is
         specified.
 
-        Default is `psycopg.ServerCursor`.
+        Default is `gaussdb.ServerCursor`.
 
     .. autoattribute:: row_factory
 
         The row factory defining the type of rows returned by
         `~Cursor.fetchone()` and the other cursor fetch methods.
 
-        The default is `~psycopg.rows.tuple_row`, which means that the fetch
+        The default is `~gaussdb.rows.tuple_row`, which means that the fetch
         methods will return simple tuples.
 
         .. seealso:: See :ref:`row-factories` for details about defining the
@@ -255,12 +255,12 @@ The `!Connection` class
     .. rubric:: Checking and configuring the connection state
 
     .. attribute:: pgconn
-        :type: psycopg.pq.PGconn
+        :type: gaussdb.pq.PGconn
 
         The `~pq.PGconn` libpq connection wrapper underlying the `!Connection`.
 
         It can be used to send low level commands to PostgreSQL and access
-        features not currently wrapped by Psycopg.
+        features not currently wrapped by GaussDB.
 
     .. autoattribute:: info
 
@@ -450,10 +450,10 @@ The `!Connection` class
         Returns a list of `Xid` representing pending transactions, suitable
         for use with `tpc_commit()` or `tpc_rollback()`.
 
-        If a transaction was not initiated by Psycopg, the returned Xids will
+        If a transaction was not initiated by GaussDB, the returned Xids will
         have attributes `~Xid.format_id` and `~Xid.bqual` set to `!None` and
         the `~Xid.gtrid` set to the PostgreSQL transaction ID: such Xids are
-        still usable for recovery.  Psycopg uses the same algorithm of the
+        still usable for recovery.  GaussDB uses the same algorithm of the
         `PostgreSQL JDBC driver`__ to encode a XA triple in a string, so
         transactions initiated by a program using such driver should be
         unpacked correctly.
@@ -488,7 +488,7 @@ The `!AsyncConnection` class
 
             Automatically resolve domain names asynchronously. In previous
             versions, name resolution blocks, unless the `!hostaddr`
-            parameter is specified, or the `~psycopg._dns.resolve_hostaddr_async()`
+            parameter is specified, or the `~gaussdb._dns.resolve_hostaddr_async()`
             function is used.
 
     .. automethod:: close
@@ -515,11 +515,11 @@ The `!AsyncConnection` class
 
     .. autoattribute:: cursor_factory
 
-        Default is `psycopg.AsyncCursor`.
+        Default is `gaussdb.AsyncCursor`.
 
     .. autoattribute:: server_cursor_factory
 
-        Default is `psycopg.AsyncServerCursor`.
+        Default is `gaussdb.AsyncServerCursor`.
 
     .. autoattribute:: row_factory
 

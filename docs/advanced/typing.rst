@@ -1,15 +1,15 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. _static-typing:
 
 Static Typing
 =============
 
-Psycopg source code is annotated according to :pep:`0484` type hints and is
+GaussDB source code is annotated according to :pep:`0484` type hints and is
 checked using the current version of Mypy_ in ``--strict`` mode.
 
-If your application is checked using Mypy too you can make use of Psycopg
-types to validate the correct use of Psycopg objects and of the data returned
+If your application is checked using Mypy too you can make use of GaussDB
+types to validate the correct use of GaussDB objects and of the data returned
 by the database.
 
 .. _Mypy: http://mypy-lang.org/
@@ -18,23 +18,23 @@ by the database.
 Generic types
 -------------
 
-Psycopg `Connection` and `Cursor` objects are `~typing.Generic` objects and
+GaussDB `Connection` and `Cursor` objects are `~typing.Generic` objects and
 support a `!Row` parameter which is the type of the records returned. The
 parameter can be configured by passing a `!row_factory` parameter to the
 constructor or to the `~Connection.cursor()` method.
 
 By default, methods producing records such as `Cursor.fetchall()` return
 normal tuples of unknown size and content. As such, the `connect()` function
-returns an object of type `!psycopg.Connection[tuple[Any, ...]]` and
-`Connection.cursor()` returns an object of type `!psycopg.Cursor[tuple[Any,
+returns an object of type `!gaussdb.Connection[tuple[Any, ...]]` and
+`Connection.cursor()` returns an object of type `!gaussdb.Cursor[tuple[Any,
 ...]]`. If you are writing generic plumbing code it might be practical to use
 annotations such as `!Connection[Any]` and `!Cursor[Any]`.
 
 .. code:: python
 
-   conn = psycopg.connect() # type is psycopg.Connection[tuple[Any, ...]]
+   conn = gaussdb.connect() # type is gaussdb.Connection[tuple[Any, ...]]
 
-   cur = conn.cursor()      # type is psycopg.Cursor[tuple[Any, ...]]
+   cur = conn.cursor()      # type is gaussdb.Cursor[tuple[Any, ...]]
 
    rec = cur.fetchone()     # type is tuple[Any, ...] | None
 
@@ -55,12 +55,12 @@ cursors and annotate the returned objects accordingly. See
 
 .. code:: python
 
-   dconn = psycopg.connect(row_factory=dict_row)
-   # dconn type is psycopg.Connection[dict[str, Any]]
+   dconn = gaussdb.connect(row_factory=dict_row)
+   # dconn type is gaussdb.Connection[dict[str, Any]]
 
    dcur = conn.cursor(row_factory=dict_row)
    dcur = dconn.cursor()
-   # dcur type is psycopg.Cursor[dict[str, Any]] in both cases
+   # dcur type is gaussdb.Cursor[dict[str, Any]] in both cases
 
    drec = dcur.fetchone()
    # drec type is dict[str, Any] | None
@@ -73,8 +73,8 @@ Generic pool types
 
 .. versionadded:: 3.2
 
-The `~psycopg_pool.ConnectionPool` class and similar are generic on their
-`!connection_class` argument. The `~psycopg_pool.ConnectionPool.connection()`
+The `~gaussdb_pool.ConnectionPool` class and similar are generic on their
+`!connection_class` argument. The `~gaussdb_pool.ConnectionPool.connection()`
 method is annotated as returning a connection of that type, and the record
 returned will follow the rule as in :ref:`row-factory-static`.
 
@@ -84,8 +84,8 @@ otherwise the typing system and the runtime will not agree.
 
 .. code:: python
 
-    from psycopg import Connection
-    from psycopg.rows import DictRow, dict_row
+    from gaussdb import Connection
+    from gaussdb.rows import DictRow, dict_row
 
     with ConnectionPool(
         connection_class=Connection[DictRow],   # provides type hinting
@@ -144,8 +144,8 @@ any issue. Pydantic will also raise a runtime error in case the
     from datetime import date
     from typing import Optional
 
-    import psycopg
-    from psycopg.rows import class_row
+    import gaussdb
+    from gaussdb.rows import class_row
     from pydantic import BaseModel
 
     class Person(BaseModel):
@@ -155,7 +155,7 @@ any issue. Pydantic will also raise a runtime error in case the
         dob: Optional[date]
 
     def fetch_person(id: int) -> Person:
-        with psycopg.connect() as conn:
+        with gaussdb.connect() as conn:
             with conn.cursor(row_factory=class_row(Person)) as cur:
                 cur.execute(
                     """
@@ -202,13 +202,13 @@ argument to `!execute()`, not by string composition:
 
 .. code:: python
 
-    def get_record(conn: psycopg.Connection[Any], id: int) -> Any:
+    def get_record(conn: gaussdb.Connection[Any], id: int) -> Any:
         cur = conn.execute("SELECT * FROM my_table WHERE id = %s" % id)  # BAD!
         return cur.fetchone()
 
     # the function should be implemented as:
 
-    def get_record(conn: psycopg.Connection[Any], id: int) -> Any:
+    def get_record(conn: gaussdb.Connection[Any], id: int) -> Any:
         cur = conn.execute("select * FROM my_table WHERE id = %s", (id,))
         return cur.fetchone()
 
@@ -218,18 +218,18 @@ and similar to escape safely table and field names. The parameter of the
 
 .. code:: python
 
-    def count_records(conn: psycopg.Connection[Any], table: str) -> int:
+    def count_records(conn: gaussdb.Connection[Any], table: str) -> int:
         query = "SELECT count(*) FROM %s" % table  # BAD!
         return conn.execute(query).fetchone()[0]
 
     # the function should be implemented as:
 
-    def count_records(conn: psycopg.Connection[Any], table: str) -> int:
+    def count_records(conn: gaussdb.Connection[Any], table: str) -> int:
         query = sql.SQL("SELECT count(*) FROM {}").format(sql.Identifier(table))
         return conn.execute(query).fetchone()[0]
 
 At the time of writing, no Python static analyzer implements this check (`mypy
-doesn't implement it`__, Pyre_ does, but `doesn't work with psycopg yet`__).
+doesn't implement it`__, Pyre_ does, but `doesn't work with gaussdb yet`__).
 Once the type checkers support will be complete, the above bad statements
 should be reported as errors.
 

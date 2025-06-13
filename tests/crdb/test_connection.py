@@ -5,9 +5,9 @@ import time
 
 import pytest
 
-import psycopg.crdb
-from psycopg import errors as e
-from psycopg.crdb import CrdbConnection
+import gaussdb.crdb
+from gaussdb import errors as e
+from gaussdb.crdb import CrdbConnection
 
 from ..acompat import gather, sleep, spawn
 
@@ -23,7 +23,7 @@ def test_connect(dsn):
     with CrdbConnection.connect(dsn) as conn:
         assert isinstance(conn, CrdbConnection)
 
-    with psycopg.crdb.connect(dsn) as conn:
+    with gaussdb.crdb.connect(dsn) as conn:
         assert isinstance(conn, CrdbConnection)
 
 
@@ -50,7 +50,7 @@ def test_broken_connection(conn):
     cur = conn.cursor()
     cur.execute("select session_id from [show session_id]")
     (session_id,) = cur.fetchone()
-    with pytest.raises(psycopg.DatabaseError):
+    with pytest.raises(gaussdb.DatabaseError):
         cur.execute("cancel session %s", [session_id])
     assert conn.closed
 
@@ -59,7 +59,7 @@ def test_broken_connection(conn):
 def test_broken(conn):
     cur = conn.execute("show session_id")
     (session_id,) = cur.fetchone()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         conn.execute("cancel session %s", [session_id])
 
     assert conn.closed
@@ -84,7 +84,7 @@ def test_identify_closure(conn_cls, dsn):
             t = spawn(closer)
             t0 = time.time()
             try:
-                with pytest.raises(psycopg.OperationalError):
+                with pytest.raises(gaussdb.OperationalError):
                     conn.execute("select pg_sleep(3.0)")
                 dt = time.time() - t0
                 # CRDB seems to take not less than 1s

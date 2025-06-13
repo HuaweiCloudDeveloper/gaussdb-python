@@ -6,7 +6,7 @@
 __pycache__/
 /docs/_build/
 *.html
-/psycopg_binary/
+/gaussdb_binary/
 .vscode
 .venv
 .coverage

@@ -3,7 +3,7 @@ name: Build documentation
 on:
   # push:
   #   branches:
-  #     # This should match the DOC3_BRANCH value in the psycopg-website Makefile
+  #     # This should match the DOC3_BRANCH value in the gaussdb-website Makefile
   #     - master
   pull_request:
 
@@ -18,6 +18,6 @@ jobs:
       - name: Trigger docs build
         uses: peter-evans/repository-dispatch@v3
         with:
-          repository: psycopg/psycopg-website
-          event-type: psycopg3-commit
+          repository: gaussdb/gaussdb-website
+          event-type: gaussdb-commit
           token: ${{ secrets.ACCESS_TOKEN }}

@@ -8,8 +8,8 @@ from contextlib import contextmanager
 
 import pytest
 
-import psycopg
-from psycopg import conninfo
+import gaussdb
+from gaussdb import conninfo
 
 
 def pytest_collection_modifyitems(items):
@@ -86,7 +86,7 @@ class Proxy:
 
         # verify that the proxy works
         try:
-            with psycopg.connect(self.client_dsn):
+            with gaussdb.connect(self.client_dsn):
                 pass
         except Exception as e:
             pytest.fail(f"failed to create a working proxy: {e}")

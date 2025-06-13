@@ -3,7 +3,7 @@ name: Build binary packages
 # Note: Libpq is currently built from source on most platforms and the build
 # artifacts are cached across pipeline runs.
 #
-# You can see the caches at https://github.com/psycopg/psycopg/actions/caches
+# You can see the caches at https://github.com/gaussdb/gaussdb/actions/caches
 #
 # You can delete a cache using:
 #
@@ -11,7 +11,7 @@ name: Build binary packages
 #     -H "Accept: application/vnd.github+json"
 #     -H "Authorization: Bearer $GITHUB_TOKEN"
 #     -H "X-GitHub-Api-Version: 2022-11-28"
-#     "https://api.github.com/repos/psycopg/psycopg/actions/caches?key=libpq-manylinux-ppc64le-17.2-3.4.0"
+#     "https://api.github.com/repos/gaussdb/gaussdb/actions/caches?key=libpq-manylinux-ppc64le-17.2-3.4.0"
 #
 # ref: https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28#delete-github-actions-caches-for-a-repository-using-a-cache-key
 
@@ -70,7 +70,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.23.2
         with:
-          package-dir: psycopg_binary
+          package-dir: gaussdb_binary
         env:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           CIBW_MANYLINUX_I686_IMAGE: manylinux2014
@@ -82,19 +82,19 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND: >-
             ./tools/ci/strip_wheel.sh {wheel}
             && auditwheel repair -w {dest_dir} {wheel}
-          CIBW_TEST_REQUIRES: ./psycopg[test] ./psycopg_pool
+          CIBW_TEST_REQUIRES: ./gaussdb[test] ./gaussdb_pool
           CIBW_TEST_COMMAND: >-
             pytest {project}/tests -m 'not slow and not flakey' --color yes
           CIBW_ENVIRONMENT_PASS_LINUX: LIBPQ_VERSION OPENSSL_VERSION
           CIBW_ENVIRONMENT: >-
-            PSYCOPG_IMPL=binary
-            PSYCOPG_TEST_DSN='host=172.17.0.1 user=postgres'
+            GAUSSDB_IMPL=binary
+            GAUSSDB_TEST_DSN='host=172.17.0.1 user=postgres'
             PGPASSWORD=password
             LIBPQ_BUILD_PREFIX=/host/tmp/libpq.build
             PATH="$LIBPQ_BUILD_PREFIX/bin:$PATH"
             LD_LIBRARY_PATH="$LIBPQ_BUILD_PREFIX/lib:$LIBPQ_BUILD_PREFIX/lib64"
-            PSYCOPG_TEST_WANT_LIBPQ_BUILD=${{ env.LIBPQ_VERSION }}
-            PSYCOPG_TEST_WANT_LIBPQ_IMPORT=${{ env.LIBPQ_VERSION }}
+            GAUSSDB_TEST_WANT_LIBPQ_BUILD=${{ env.LIBPQ_VERSION }}
+            GAUSSDB_TEST_WANT_LIBPQ_IMPORT=${{ env.LIBPQ_VERSION }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -144,23 +144,23 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.23.2
         with:
-          package-dir: psycopg_binary
+          package-dir: gaussdb_binary
         env:
           CIBW_BUILD: ${{matrix.pyver}}-macosx_${{matrix.arch}}
           CIBW_ARCHS_MACOS: ${{matrix.arch}}
           MACOSX_ARCHITECTURE: ${{matrix.arch}}
           CIBW_BEFORE_ALL_MACOS: ./tools/ci/wheel_macos_before_all.sh
-          CIBW_TEST_REQUIRES: ./psycopg[test] ./psycopg_pool
+          CIBW_TEST_REQUIRES: ./gaussdb[test] ./gaussdb_pool
           CIBW_TEST_COMMAND: >-
             pytest {project}/tests -m 'not slow and not flakey' --color yes
           CIBW_ENVIRONMENT: >-
             PG_VERSION=17
-            PSYCOPG_IMPL=binary
-            PSYCOPG_TEST_DSN='dbname=postgres'
+            GAUSSDB_IMPL=binary
+            GAUSSDB_TEST_DSN='dbname=postgres'
             LIBPQ_BUILD_PREFIX=/tmp/libpq.build
             PATH="$LIBPQ_BUILD_PREFIX/bin:$PATH"
-            PSYCOPG_TEST_WANT_LIBPQ_BUILD=">= ${{env.LIBPQ_VERSION}}"
-            PSYCOPG_TEST_WANT_LIBPQ_IMPORT=">= ${{env.LIBPQ_VERSION}}"
+            GAUSSDB_TEST_WANT_LIBPQ_BUILD=">= ${{env.LIBPQ_VERSION}}"
+            GAUSSDB_TEST_WANT_LIBPQ_IMPORT=">= ${{env.LIBPQ_VERSION}}"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -212,7 +212,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.23.2
         with:
-          package-dir: psycopg_binary
+          package-dir: gaussdb_binary
         env:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite" # cache vcpkg
           CIBW_BUILD: ${{matrix.pyver}}-${{matrix.arch}}
@@ -222,14 +222,14 @@ jobs:
             delvewheel repair -w {dest_dir}
             --add-path="${{ steps.libdir.outputs.EXTRA_LIB_DIR }}"
             --no-mangle "libiconv-2.dll;libwinpthread-1.dll" {wheel}
-          CIBW_TEST_REQUIRES: ./psycopg[test] ./psycopg_pool
+          CIBW_TEST_REQUIRES: ./gaussdb[test] ./gaussdb_pool
           CIBW_TEST_COMMAND: >-
             pytest {project}/tests -m "not slow and not flakey" --color yes
           CIBW_ENVIRONMENT_WINDOWS: >-
-            PSYCOPG_IMPL=binary
-            PSYCOPG_TEST_DSN="host=127.0.0.1 user=postgres"
-            PSYCOPG_TEST_WANT_LIBPQ_BUILD=${{env.LIBPQ_VERSION}}
-            PSYCOPG_TEST_WANT_LIBPQ_IMPORT=${{env.LIBPQ_VERSION}}
+            GAUSSDB_IMPL=binary
+            GAUSSDB_TEST_DSN="host=127.0.0.1 user=postgres"
+            GAUSSDB_TEST_WANT_LIBPQ_BUILD=${{env.LIBPQ_VERSION}}
+            GAUSSDB_TEST_WANT_LIBPQ_IMPORT=${{env.LIBPQ_VERSION}}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -249,7 +249,7 @@ jobs:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
         with:
-          name: psycopg-binary-artifact
+          name: gaussdb-binary-artifact
           delete-merged: true
 
   # }}}

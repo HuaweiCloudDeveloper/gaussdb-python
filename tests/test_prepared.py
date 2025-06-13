@@ -12,9 +12,9 @@ from decimal import Decimal
 
 import pytest
 
-import psycopg
-from psycopg.rows import namedtuple_row
-from psycopg.pq._debug import PGconnDebug
+import gaussdb
+from gaussdb.rows import namedtuple_row
+from gaussdb.pq._debug import PGconnDebug
 
 
 @pytest.mark.parametrize("value", [None, 0, 3])
@@ -181,10 +181,10 @@ def test_evict_lru_deallocate(conn):
     assert got == [f"select {i}" for i in ["'a'", 6, 7, 8, 9]]
 
 
-@pytest.mark.skipif("psycopg._cmodule._psycopg", reason="Python-only debug conn")
+@pytest.mark.skipif("gaussdb._cmodule._gaussdb", reason="Python-only debug conn")
 def test_deallocate_or_close(conn, caplog):
     conn.pgconn = PGconnDebug(conn.pgconn)
-    caplog.set_level(logging.INFO, logger="psycopg.debug")
+    caplog.set_level(logging.INFO, logger="gaussdb.debug")
 
     conn.set_autocommit(True)
     conn.prepare_threshold = 0
@@ -194,7 +194,7 @@ def test_deallocate_or_close(conn, caplog):
     conn.execute("select 1::text")
 
     msgs = "\n".join((rec.message for rec in caplog.records))
-    if psycopg.pq.__build_version__ >= 170000:
+    if gaussdb.pq.__build_version__ >= 170000:
         assert "PGconn.send_close_prepared" in msgs
         assert "DEALLOCATE" not in msgs
     else:

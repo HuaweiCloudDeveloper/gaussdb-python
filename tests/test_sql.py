@@ -1,17 +1,17 @@
-# test_sql.py - tests for the psycopg2.sql module
+# test_sql.py - tests for the _GaussDB.sql module
 
-# Copyright (C) 2020 The Psycopg Team
+# Copyright (C) 2020 The GaussDB Team
 
 import re
 import datetime as dt
 
 import pytest
 
-from psycopg import ProgrammingError, pq, sql
-from psycopg.adapt import PyFormat
-from psycopg.types import TypeInfo
-from psycopg._encodings import py2pgenc
-from psycopg.types.string import StrDumper
+from gaussdb import ProgrammingError, pq, sql
+from gaussdb.adapt import PyFormat
+from gaussdb.types import TypeInfo
+from gaussdb._encodings import py2pgenc
+from gaussdb.types.string import StrDumper
 
 from .utils import eur
 from .fix_crdb import crdb_encoding, crdb_scs_off

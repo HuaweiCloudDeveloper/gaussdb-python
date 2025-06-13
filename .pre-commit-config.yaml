@@ -1,7 +1,7 @@
 # See https://pre-commit.com for more information
 #
 # Note: we use `language: system` to make sure that pre-commit uses the same
-# dependencies installed by `pip install psycopg[dev]` and not some random
+# dependencies installed by `pip install gaussdb[dev]` and not some random
 # version installed in a hidden virtualenv. This way running the tools via
 # pre-commit should give the same result of running them manually.
 #

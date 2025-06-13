@@ -73,7 +73,7 @@ def parse_cmdline() -> Namespace:
             break
 
     default_pgroot = default_pgroot.resolve()
-    default_dest = (HERE / "../psycopg/psycopg/pq/misc.py").resolve()
+    default_dest = (HERE / "../gaussdb/gaussdb/pq/misc.py").resolve()
 
     parser = ArgumentParser(description=__doc__)
     parser.add_argument(

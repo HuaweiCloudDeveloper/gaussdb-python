@@ -3,8 +3,8 @@
 # DO NOT CHANGE! Change the original file instead.
 import pytest
 
-import psycopg
-from psycopg.pq import TransactionStatus
+import gaussdb
+from gaussdb.pq import TransactionStatus
 
 pytestmark = pytest.mark.crdb_skip("2-phase commit")
 
@@ -17,7 +17,7 @@ def test_tpc_disabled(conn, pipeline):
 
     conn.rollback()
     conn.tpc_begin("x")
-    with pytest.raises(psycopg.NotSupportedError):
+    with pytest.raises(gaussdb.NotSupportedError):
         conn.tpc_prepare()
 
 
@@ -275,13 +275,13 @@ class TestTPC:
     def test_cancel_fails_prepared(self, conn, tpc):
         conn.tpc_begin("cancel")
         conn.tpc_prepare()
-        with pytest.raises(psycopg.ProgrammingError):
+        with pytest.raises(gaussdb.ProgrammingError):
             conn.cancel()
-        with pytest.raises(psycopg.ProgrammingError):
+        with pytest.raises(gaussdb.ProgrammingError):
             conn.cancel_safe()
 
     def test_tpc_recover_non_dbapi_connection(self, conn_cls, conn, dsn, tpc):
-        conn.row_factory = psycopg.rows.dict_row
+        conn.row_factory = gaussdb.rows.dict_row
         conn.tpc_begin("dict-connection")
         conn.tpc_prepare()
         conn.close()

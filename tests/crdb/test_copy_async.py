@@ -4,10 +4,10 @@ from typing import Any  # noqa: ignore
 
 import pytest
 
-from psycopg import errors as e
-from psycopg import pq, sql
-from psycopg.adapt import PyFormat
-from psycopg.types.numeric import Int4
+from gaussdb import errors as e
+from gaussdb import pq, sql
+from gaussdb.adapt import PyFormat
+from gaussdb.types.numeric import Int4
 
 from ..utils import eur
 from .._test_copy import sample_binary  # noqa

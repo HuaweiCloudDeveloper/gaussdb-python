@@ -1,19 +1,19 @@
 import pytest
 from packaging.version import parse as ver
 
-import psycopg
-from psycopg import errors as e
-from psycopg import pq, rows
+import gaussdb
+from gaussdb import errors as e
+from gaussdb import pq, rows
 
 from .acompat import alist
 from ._test_cursor import ph
 
 pytestmark = pytest.mark.crdb_skip("server-side cursor")
 
-cursor_classes = [psycopg.AsyncServerCursor]
-# Allow to import (not necessarily to run) the module with psycopg 3.1.
-if ver(psycopg.__version__) >= ver("3.2.0.dev0"):
-    cursor_classes.append(psycopg.AsyncRawServerCursor)
+cursor_classes = [gaussdb.AsyncServerCursor]
+# Allow to import (not necessarily to run) the module with gaussdb 3.1.
+if ver(gaussdb.__version__) >= ver("3.2.0.dev0"):
+    cursor_classes.append(gaussdb.AsyncRawServerCursor)
 
 
 @pytest.fixture(params=cursor_classes)
@@ -23,18 +23,18 @@ async def aconn(aconn, request, anyio_backend):
 
 
 async def test_init_row_factory(aconn):
-    async with psycopg.AsyncServerCursor(aconn, "foo") as cur:
+    async with gaussdb.AsyncServerCursor(aconn, "foo") as cur:
         assert cur.name == "foo"
         assert cur.connection is aconn
         assert cur.row_factory is aconn.row_factory
 
     aconn.row_factory = rows.dict_row
 
-    async with psycopg.AsyncServerCursor(aconn, "bar") as cur:
+    async with gaussdb.AsyncServerCursor(aconn, "bar") as cur:
         assert cur.name == "bar"
         assert cur.row_factory is rows.dict_row
 
-    async with psycopg.AsyncServerCursor(
+    async with gaussdb.AsyncServerCursor(
         aconn, "baz", row_factory=rows.namedtuple_row
     ) as cur:
         assert cur.name == "baz"
@@ -42,11 +42,11 @@ async def test_init_row_factory(aconn):
 
 
 async def test_init_params(aconn):
-    async with psycopg.AsyncServerCursor(aconn, "foo") as cur:
+    async with gaussdb.AsyncServerCursor(aconn, "foo") as cur:
         assert cur.scrollable is None
         assert cur.withhold is False
 
-    async with psycopg.AsyncServerCursor(
+    async with gaussdb.AsyncServerCursor(
         aconn, "bar", withhold=True, scrollable=False
     ) as cur:
         assert cur.scrollable is False
@@ -64,7 +64,7 @@ async def test_funny_name(aconn):
 
 async def test_repr(aconn):
     cur = aconn.cursor("my-name")
-    assert "psycopg.%s" % aconn.server_cursor_factory.__name__ in str(cur)
+    assert "gaussdb.%s" % aconn.server_cursor_factory.__name__ in str(cur)
     assert "my-name" in repr(cur)
     await cur.close()
 

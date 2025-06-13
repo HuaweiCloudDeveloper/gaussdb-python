@@ -5,17 +5,17 @@ A quick and rough performance comparison of text vs. binary Decimal adaptation
 from random import randrange
 from decimal import Decimal
 
-import psycopg
-from psycopg import sql
+import gaussdb
+from gaussdb import sql
 
 ncols = 10
 nrows = 500000
-format = psycopg.pq.Format.BINARY
+format = gaussdb.pq.Format.BINARY
 test = "copy"
 
 
 def main() -> None:
-    cnn = psycopg.connect()
+    cnn = gaussdb.connect()
 
     cnn.execute(
         sql.SQL("create table testdec ({})").format(

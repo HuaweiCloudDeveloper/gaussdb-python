@@ -8,11 +8,11 @@ from typing import Any
 
 import pytest
 
-import psycopg
-from psycopg import errors as e
-from psycopg import pq
-from psycopg.rows import tuple_row
-from psycopg.conninfo import conninfo_to_dict, timeout_from_conninfo
+import gaussdb
+from gaussdb import errors as e
+from gaussdb import pq
+from gaussdb.rows import tuple_row
+from gaussdb.conninfo import conninfo_to_dict, timeout_from_conninfo
 
 from .acompat import asleep, is_async, skip_async, skip_sync
 from .test_adapt import make_bin_dumper, make_dumper
@@ -30,7 +30,7 @@ async def test_connect(aconn_cls, dsn):
 
 
 async def test_connect_bad(aconn_cls):
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         await aconn_cls.connect("dbname=nosuchdb")
 
 
@@ -49,7 +49,7 @@ async def test_connect_str_subclass(aconn_cls, dsn):
 async def test_connect_timeout(aconn_cls, proxy):
     with proxy.deaf_listen():
         t0 = time.time()
-        with pytest.raises(psycopg.OperationalError, match="timeout expired"):
+        with pytest.raises(gaussdb.OperationalError, match="timeout expired"):
             await aconn_cls.connect(proxy.client_dsn, connect_timeout=2)
         elapsed = time.time() - t0
     assert elapsed == pytest.approx(2.0, 0.1)
@@ -62,7 +62,7 @@ async def test_multi_hosts(aconn_cls, proxy, dsn, monkeypatch):
     args["host"] = f"{proxy.client_host},{proxy.server_host}"
     args["port"] = f"{proxy.client_port},{proxy.server_port}"
     args.pop("hostaddr", None)
-    monkeypatch.setattr(psycopg.conninfo, "_DEFAULT_CONNECT_TIMEOUT", 2)
+    monkeypatch.setattr(gaussdb.conninfo, "_DEFAULT_CONNECT_TIMEOUT", 2)
     with proxy.deaf_listen():
         t0 = time.time()
         async with await aconn_cls.connect(**args) as conn:
@@ -104,13 +104,13 @@ async def test_close(aconn):
     assert aconn.closed
     assert aconn.pgconn.status == pq.ConnStatus.BAD
 
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         await cur.execute("select 1")
 
 
 @pytest.mark.crdb_skip("pg_terminate_backend")
 async def test_broken(aconn):
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         await aconn.execute(
             "select pg_terminate_backend(%s)", [aconn.pgconn.backend_pid]
         )
@@ -123,12 +123,12 @@ async def test_broken(aconn):
 
 async def test_cursor_closed(aconn):
     await aconn.close()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         async with aconn.cursor("foo"):
             pass
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         aconn.cursor("foo")
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         aconn.cursor()
 
 
@@ -161,7 +161,7 @@ async def test_connection_warn_close(aconn_cls, dsn, recwarn, gc_collect):
     conn = await aconn_cls.connect(dsn)
     try:
         await conn.execute("select wat")
-    except psycopg.ProgrammingError:
+    except gaussdb.ProgrammingError:
         pass
     del conn
     gc_collect()
@@ -213,7 +213,7 @@ async def test_context_close(aconn):
 
 @pytest.mark.crdb_skip("pg_terminate_backend")
 async def test_context_inerror_rollback_no_clobber(aconn_cls, conn, dsn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
 
     with pytest.raises(ZeroDivisionError):
         async with await aconn_cls.connect(dsn) as conn2:
@@ -232,7 +232,7 @@ async def test_context_inerror_rollback_no_clobber(aconn_cls, conn, dsn, caplog)
 
 @pytest.mark.crdb_skip("copy")
 async def test_context_active_rollback_no_clobber(aconn_cls, dsn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
 
     with pytest.raises(ZeroDivisionError):
         async with await aconn_cls.connect(dsn) as conn:
@@ -270,7 +270,7 @@ async def test_commit(aconn):
     assert res.get_value(0, 0) == b"1"
 
     await aconn.close()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         await aconn.commit()
 
 
@@ -306,7 +306,7 @@ async def test_rollback(aconn):
     assert res.ntuples == 0
 
     await aconn.close()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         await aconn.rollback()
 
 
@@ -337,11 +337,11 @@ async def test_auto_transaction_fail(aconn):
     await cur.execute("insert into foo values (1)")
     assert aconn.pgconn.transaction_status == pq.TransactionStatus.INTRANS
 
-    with pytest.raises(psycopg.DatabaseError):
+    with pytest.raises(gaussdb.DatabaseError):
         await cur.execute("meh")
     assert aconn.pgconn.transaction_status == pq.TransactionStatus.INERROR
 
-    with pytest.raises(psycopg.errors.InFailedSqlTransaction):
+    with pytest.raises(gaussdb.errors.InFailedSqlTransaction):
         await cur.execute("select 1")
 
     await aconn.commit()
@@ -407,17 +407,17 @@ async def test_autocommit_intrans(aconn):
     await cur.execute("select 1")
     assert await cur.fetchone() == (1,)
     assert aconn.pgconn.transaction_status == pq.TransactionStatus.INTRANS
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         await aconn.set_autocommit(True)
     assert not aconn.autocommit
 
 
 async def test_autocommit_inerror(aconn):
     cur = aconn.cursor()
-    with pytest.raises(psycopg.DatabaseError):
+    with pytest.raises(gaussdb.DatabaseError):
         await cur.execute("meh")
     assert aconn.pgconn.transaction_status == pq.TransactionStatus.INERROR
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         await aconn.set_autocommit(True)
     assert not aconn.autocommit
 
@@ -425,7 +425,7 @@ async def test_autocommit_inerror(aconn):
 async def test_autocommit_unknown(aconn):
     await aconn.close()
     assert aconn.pgconn.transaction_status == pq.TransactionStatus.UNKNOWN
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         await aconn.set_autocommit(True)
     assert not aconn.autocommit
 
@@ -457,7 +457,7 @@ async def test_connect_args(
         yield
 
     setpgenv({})
-    monkeypatch.setattr(psycopg.generators, "connect", fake_connect)
+    monkeypatch.setattr(gaussdb.generators, "connect", fake_connect)
     conn = await aconn_cls.connect(*args, **kwargs)
     assert conninfo_to_dict(got_conninfo) == conninfo_to_dict(want)
     await conn.close()
@@ -468,7 +468,7 @@ async def test_connect_args(
     [
         (("host=foo", "host=bar"), {}, TypeError),
         (("", ""), {}, TypeError),
-        ((), {"nosuchparam": 42}, psycopg.ProgrammingError),
+        ((), {"nosuchparam": 42}, gaussdb.ProgrammingError),
     ],
 )
 async def test_connect_badargs(aconn_cls, monkeypatch, pgconn, args, kwargs, exctype):
@@ -479,14 +479,14 @@ async def test_connect_badargs(aconn_cls, monkeypatch, pgconn, args, kwargs, exc
 @pytest.mark.crdb_skip("pg_terminate_backend")
 async def test_broken_connection(aconn):
     cur = aconn.cursor()
-    with pytest.raises(psycopg.DatabaseError):
+    with pytest.raises(gaussdb.DatabaseError):
         await cur.execute("select pg_terminate_backend(pg_backend_pid())")
     assert aconn.closed
 
 
 @pytest.mark.crdb_skip("do")
 async def test_notice_handlers(aconn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
     messages = []
     severities = []
 
@@ -584,14 +584,14 @@ async def test_str(aconn):
 async def test_fileno(aconn):
     assert aconn.fileno() == aconn.pgconn.socket
     await aconn.close()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         aconn.fileno()
 
 
 async def test_cursor_factory(aconn):
-    assert aconn.cursor_factory is psycopg.AsyncCursor
+    assert aconn.cursor_factory is gaussdb.AsyncCursor
 
-    class MyCursor(psycopg.AsyncCursor[psycopg.rows.Row]):
+    class MyCursor(gaussdb.AsyncCursor[gaussdb.rows.Row]):
         pass
 
     aconn.cursor_factory = MyCursor
@@ -603,7 +603,7 @@ async def test_cursor_factory(aconn):
 
 
 async def test_cursor_factory_connect(aconn_cls, dsn):
-    class MyCursor(psycopg.AsyncCursor[psycopg.rows.Row]):
+    class MyCursor(gaussdb.AsyncCursor[gaussdb.rows.Row]):
         pass
 
     async with await aconn_cls.connect(dsn, cursor_factory=MyCursor) as conn:
@@ -613,9 +613,9 @@ async def test_cursor_factory_connect(aconn_cls, dsn):
 
 
 async def test_server_cursor_factory(aconn):
-    assert aconn.server_cursor_factory is psycopg.AsyncServerCursor
+    assert aconn.server_cursor_factory is gaussdb.AsyncServerCursor
 
-    class MyServerCursor(psycopg.AsyncServerCursor[psycopg.rows.Row]):
+    class MyServerCursor(gaussdb.AsyncServerCursor[gaussdb.rows.Row]):
         pass
 
     aconn.server_cursor_factory = MyServerCursor
@@ -646,7 +646,7 @@ async def test_transaction_param_readonly_property(aconn, param):
 async def test_set_transaction_param_implicit(aconn, param, autocommit):
     await aconn.set_autocommit(autocommit)
     for value in param.values:
-        if value == psycopg.IsolationLevel.SERIALIZABLE:
+        if value == gaussdb.IsolationLevel.SERIALIZABLE:
             pytest.skip(
                 "GaussDB currently does not support SERIALIZABLE, \
                 which is equivalent to REPEATABLE READ"
@@ -673,7 +673,7 @@ async def test_set_transaction_param_reset(aconn, param):
     await aconn.commit()
 
     for value in param.values:
-        if value == psycopg.IsolationLevel.SERIALIZABLE:
+        if value == gaussdb.IsolationLevel.SERIALIZABLE:
             pytest.skip(
                 "GaussDB currently does not support SERIALIZABLE, \
                 which is equivalent to REPEATABLE READ"
@@ -700,7 +700,7 @@ async def test_set_transaction_param_reset(aconn, param):
 async def test_set_transaction_param_block(aconn, param, autocommit):
     await aconn.set_autocommit(autocommit)
     for value in param.values:
-        if value == psycopg.IsolationLevel.SERIALIZABLE:
+        if value == gaussdb.IsolationLevel.SERIALIZABLE:
             pytest.skip(
                 "GaussDB currently does not support SERIALIZABLE, \
                 which is equivalent to REPEATABLE READ"
@@ -718,7 +718,7 @@ async def test_set_transaction_param_block(aconn, param, autocommit):
 async def test_set_transaction_param_not_intrans_implicit(aconn, param):
     await aconn.execute("select 1")
     value = param.values[0]
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         await getattr(aconn, f"set_{param.name}")(value)
 
 
@@ -726,7 +726,7 @@ async def test_set_transaction_param_not_intrans_implicit(aconn, param):
 async def test_set_transaction_param_not_intrans_block(aconn, param):
     value = param.values[0]
     async with aconn.transaction():
-        with pytest.raises(psycopg.ProgrammingError):
+        with pytest.raises(gaussdb.ProgrammingError):
             await getattr(aconn, f"set_{param.name}")(value)
 
 
@@ -735,7 +735,7 @@ async def test_set_transaction_param_not_intrans_external(aconn, param):
     value = param.values[0]
     await aconn.set_autocommit(True)
     await aconn.execute("begin")
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         await getattr(aconn, f"set_{param.name}")(value)
 
 
@@ -777,8 +777,8 @@ async def test_set_transaction_param_strange(aconn):
         with pytest.raises(ValueError):
             await aconn.set_isolation_level(val)
 
-    await aconn.set_isolation_level(psycopg.IsolationLevel.SERIALIZABLE.value)
-    assert aconn.isolation_level is psycopg.IsolationLevel.SERIALIZABLE
+    await aconn.set_isolation_level(gaussdb.IsolationLevel.SERIALIZABLE.value)
+    assert aconn.isolation_level is gaussdb.IsolationLevel.SERIALIZABLE
 
     await aconn.set_read_only(1)
     assert aconn.read_only is True
@@ -793,8 +793,8 @@ def test_set_transaction_param_strange_property(conn):
         with pytest.raises(ValueError):
             conn.isolation_level = val
 
-    conn.isolation_level = psycopg.IsolationLevel.SERIALIZABLE.value
-    assert conn.isolation_level is psycopg.IsolationLevel.SERIALIZABLE
+    conn.isolation_level = gaussdb.IsolationLevel.SERIALIZABLE.value
+    assert conn.isolation_level is gaussdb.IsolationLevel.SERIALIZABLE
 
     conn.read_only = 1
     assert conn.read_only is True
@@ -812,7 +812,7 @@ async def test_get_connection_params(aconn_cls, dsn, kwargs, exp, setpgenv):
 
 
 async def test_connect_context_adapters(aconn_cls, dsn):
-    ctx = psycopg.adapt.AdaptersMap(psycopg.adapters)
+    ctx = gaussdb.adapt.AdaptersMap(gaussdb.adapters)
     ctx.register_dumper(str, make_bin_dumper("b"))
     ctx.register_dumper(str, make_dumper("t"))
 
@@ -851,7 +851,7 @@ async def test_cancel_safe_closed(aconn):
 @pytest.mark.slow
 @pytest.mark.timing
 async def test_cancel_safe_error(aconn_cls, proxy, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
     proxy.start()
     async with await aconn_cls.connect(proxy.client_dsn) as aconn:
         proxy.stop()
@@ -911,12 +911,12 @@ async def test_right_exception_on_server_disconnect(aconn):
 @pytest.mark.gaussdb_skip("error result not returned")
 @pytest.mark.opengauss_skip("error result not returned")
 async def test_right_exception_on_session_timeout(aconn):
-    want_ex: type[psycopg.Error] = e.IdleInTransactionSessionTimeout
+    want_ex: type[gaussdb.Error] = e.IdleInTransactionSessionTimeout
     if sys.platform == "win32":
         # No idea why this is needed and `test_right_exception_on_server_disconnect`
         # works instead. Maybe the difference lies in the server we are testing
         # with, not in the client.
-        want_ex = psycopg.OperationalError
+        want_ex = gaussdb.OperationalError
 
     await aconn.execute("SET SESSION idle_in_transaction_timeout = 100")
     await asleep(0.2)
@@ -942,5 +942,5 @@ async def test_connect_tsa(aconn_cls, dsn, mode):
 async def test_connect_tsa_bad(aconn_cls, dsn, mode):
     # NOTE: assume that the test database is a "primary"
     params = conninfo_to_dict(dsn, target_session_attrs=mode)
-    with pytest.raises(psycopg.OperationalError, match=mode):
+    with pytest.raises(gaussdb.OperationalError, match=mode):
         await aconn_cls.connect(**params)

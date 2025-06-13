@@ -2,7 +2,7 @@ import pickle
 
 import pytest
 
-from psycopg.postgres import types as builtins
+from gaussdb.postgres import types as builtins
 
 from .fix_crdb import crdb_encoding, is_crdb
 

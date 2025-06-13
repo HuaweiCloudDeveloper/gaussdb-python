@@ -9,10 +9,10 @@ from contextlib import contextmanager
 
 import pytest
 
-import psycopg
-from psycopg import pq, sql
-from psycopg.conninfo import conninfo_to_dict, make_conninfo
-from psycopg.pq._debug import PGconnDebug
+import gaussdb
+from gaussdb import pq, sql
+from gaussdb.conninfo import conninfo_to_dict, make_conninfo
+from gaussdb.pq._debug import PGconnDebug
 
 from .utils import check_postgres_version
 
@@ -25,10 +25,10 @@ def pytest_addoption(parser):
     parser.addoption(
         "--test-dsn",
         metavar="DSN",
-        default=os.environ.get("PSYCOPG_TEST_DSN"),
+        default=os.environ.get("GAUSSDB_TEST_DSN"),
         help=(
             "Connection string to run database tests requiring a connection"
-            " [you can also use the PSYCOPG_TEST_DSN env var]."
+            " [you can also use the GAUSSDB_TEST_DSN env var]."
         ),
     )
     parser.addoption(
@@ -41,7 +41,7 @@ def pytest_addoption(parser):
         "--pq-debug",
         action="store_true",
         default=False,
-        help="Log PGconn access. (Requires PSYCOPG_IMPL=python.)",
+        help="Log PGconn access. (Requires GAUSSDB_IMPL=python.)",
     )
 
 
@@ -51,7 +51,7 @@ def pytest_report_header(config):
         return []
 
     try:
-        with psycopg.connect(dsn, connect_timeout=10) as conn:
+        with gaussdb.connect(dsn, connect_timeout=10) as conn:
             server_version = conn.execute("select version()").fetchall()[0][0]
     except Exception as ex:
         server_version = f"unknown ({ex})"
@@ -71,8 +71,8 @@ def pytest_collection_modifyitems(items):
 
 def pytest_runtest_setup(item):
     # Note: not using Capabilities.has_pipeline() to allow running the tests
-    # with Psycopg 3.1.
-    if not psycopg.Pipeline.is_supported():
+    # with gaussdb.1.
+    if not gaussdb.Pipeline.is_supported():
         for m in item.iter_markers(name="pipeline"):
             pytest.skip("pipeline mode not supported")
 
@@ -167,7 +167,7 @@ def maybe_trace(pgconn, tracefile, function):
     pgconn.trace(tracefile.fileno())
     try:
         pgconn.set_trace_flags(pq.Trace.SUPPRESS_TIMESTAMPS | pq.Trace.REGRESS_MODE)
-    except psycopg.NotSupportedError:
+    except gaussdb.NotSupportedError:
         pass
     try:
         yield None
@@ -180,9 +180,9 @@ def pgconn_debug(request):
     if not request.config.getoption("--pq-debug"):
         return
     if pq.__impl__ != "python":
-        raise pytest.UsageError("set PSYCOPG_IMPL=python to use --pq-debug")
+        raise pytest.UsageError("set GAUSSDB_IMPL=python to use --pq-debug")
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    logger = logging.getLogger("psycopg.debug")
+    logger = logging.getLogger("gaussdb.debug")
     logger.setLevel(logging.INFO)
     pq.PGconn = PGconnDebug
 
@@ -216,7 +216,7 @@ def conn(conn_cls, dsn, request, tracefile):
 @pytest.fixture(params=[True, False], ids=["pipeline=on", "pipeline=off"])
 def pipeline(request, conn):
     if request.param:
-        if not psycopg.Pipeline.is_supported():
+        if not gaussdb.Pipeline.is_supported():
             pytest.skip("pipeline mode not supported")
         with conn.pipeline() as p:
             yield p
@@ -239,7 +239,7 @@ async def aconn(dsn, aconn_cls, request, tracefile):
 @pytest.fixture(params=[True, False], ids=["pipeline=on", "pipeline=off"])
 async def apipeline(request, aconn):
     if request.param:
-        if not psycopg.Pipeline.is_supported():
+        if not gaussdb.Pipeline.is_supported():
             pytest.skip("pipeline mode not supported")
         async with aconn.pipeline() as p:
             yield p
@@ -250,9 +250,9 @@ async def apipeline(request, aconn):
 
 @pytest.fixture(scope="session")
 def conn_cls(session_dsn):
-    cls = psycopg.Connection
+    cls = gaussdb.Connection
     if crdb_version:
-        from psycopg.crdb import CrdbConnection
+        from gaussdb.crdb import CrdbConnection
 
         cls = CrdbConnection
 
@@ -261,9 +261,9 @@ def conn_cls(session_dsn):
 
 @pytest.fixture(scope="session")
 def aconn_cls(session_dsn, anyio_backend):
-    cls = psycopg.AsyncConnection
+    cls = gaussdb.AsyncConnection
     if crdb_version:
-        from psycopg.crdb import AsyncCrdbConnection
+        from gaussdb.crdb import AsyncCrdbConnection
 
         cls = AsyncCrdbConnection
 
@@ -347,7 +347,7 @@ def hstore(svcconn):
     try:
         with svcconn.transaction():
             svcconn.execute("create extension if not exists hstore")
-    except psycopg.Error as e:
+    except gaussdb.Error as e:
         pytest.skip(str(e))
 
 
@@ -364,7 +364,7 @@ def warm_up_database(dsn: str) -> None:
     global pg_version, crdb_version
 
     try:
-        with psycopg.connect(dsn, connect_timeout=10) as conn:
+        with gaussdb.connect(dsn, connect_timeout=10) as conn:
             conn.execute("select 1")
 
             pg_version = conn.info.server_version
@@ -372,7 +372,7 @@ def warm_up_database(dsn: str) -> None:
             crdb_version = None
             param = conn.info.parameter_status("crdb_version")
             if param:
-                from psycopg.crdb import CrdbConnectionInfo
+                from gaussdb.crdb import CrdbConnectionInfo
 
                 crdb_version = CrdbConnectionInfo.parse_crdb_version(param)
     except Exception as exc:

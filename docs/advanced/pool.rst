@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg_pool
+.. currentmodule:: gaussdb_pool
 
 .. _connection-pools:
 
@@ -11,13 +11,13 @@ connection can be relatively long, keeping connections open can reduce latency.
 
 .. __: https://en.wikipedia.org/wiki/Connection_pool
 
-This page explains a few basic concepts of Psycopg connection pool's
+This page explains a few basic concepts of GaussDB connection pool's
 behaviour. Please refer to the `ConnectionPool` object API for details about
 the pool operations.
 
 .. note:: The connection pool objects are distributed in a package separate
-   from the main `psycopg` package: use ``pip install "psycopg[pool]"`` or ``pip
-   install psycopg_pool`` to make the `psycopg_pool` package available. See
+   from the main `gaussdb` package: use ``pip install "gaussdb[pool]"`` or ``pip
+   install gaussdb_pool`` to make the `gaussdb_pool` package available. See
    :ref:`pool-installation`.
 
 
@@ -41,7 +41,7 @@ Within the `!with` block, you can request the pool a connection using the
 
     # At the end of the pool context, all the resources used by the pool are released
 
-The `!connection()` context behaves like the `~psycopg.Connection` object
+The `!connection()` context behaves like the `~gaussdb.Connection` object
 context: at the end of the block, if there is a transaction open, it will be
 committed if the context is exited normally, or rolled back if the context is
 exited with an exception. See :ref:`transaction-context` for details.
@@ -143,7 +143,7 @@ process starts immediately. In a simple program you might create a pool as a
 global object and use it from the rest of your code::
 
     # module db.py in your program
-    from psycopg_pool import ConnectionPool
+    from gaussdb_pool import ConnectionPool
 
     pool = ConnectionPool(..., open=True, ...)
     # the pool starts connecting immediately.
@@ -209,12 +209,12 @@ use it if you deploy the application in several instances, behind a load
 balancer, and/or using an external connection pool process such as PgBouncer.
 
 Switching between using or not using a pool requires some code change, because
-the `ConnectionPool` API is different from the normal `~psycopg.connect()`
+the `ConnectionPool` API is different from the normal `~gaussdb.connect()`
 function and because the pool can perform additional connection configuration
 (in the `!configure` parameter) that, if the pool is removed, should be
 performed in some different code path of your application.
 
-The `!psycopg_pool` 3.1 package introduces the `NullConnectionPool` class.
+The `!gaussdb_pool` 3.1 package introduces the `NullConnectionPool` class.
 This class has the same interface, and largely the same behaviour, of the
 `!ConnectionPool`, but doesn't create any connection beforehand. When a
 connection is returned, unless there are other clients already waiting, it
@@ -322,7 +322,7 @@ Pool operations logging
 -----------------------
 
 The pool uses the `logging` module to log some key operations to the
-``psycopg.pool`` logger. If you are trying to debug the pool behaviour you may
+``gaussdb.pool`` logger. If you are trying to debug the pool behaviour you may
 try to log at least the ``INFO`` operations on that logger.
 
 For example, the script:
@@ -332,12 +332,12 @@ For example, the script:
     import time
     import logging
     from concurrent.futures import ThreadPoolExecutor, as_completed
-    from psycopg_pool import ConnectionPool
+    from gaussdb_pool import ConnectionPool
 
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
     )
-    logging.getLogger("psycopg.pool").setLevel(logging.INFO)
+    logging.getLogger("gaussdb.pool").setLevel(logging.INFO)
 
     pool = ConnectionPool(min_size=2)
     pool.wait()
@@ -358,27 +358,27 @@ might print something like:
 
 .. code:: text
 
-    2023-09-20 11:02:39,718 INFO psycopg.pool: waiting for pool 'pool-1' initialization
-    2023-09-20 11:02:39,720 INFO psycopg.pool: adding new connection to the pool
-    2023-09-20 11:02:39,720 INFO psycopg.pool: adding new connection to the pool
-    2023-09-20 11:02:39,720 INFO psycopg.pool: pool 'pool-1' is ready to use
+    2023-09-20 11:02:39,718 INFO gaussdb.pool: waiting for pool 'pool-1' initialization
+    2023-09-20 11:02:39,720 INFO gaussdb.pool: adding new connection to the pool
+    2023-09-20 11:02:39,720 INFO gaussdb.pool: adding new connection to the pool
+    2023-09-20 11:02:39,720 INFO gaussdb.pool: pool 'pool-1' is ready to use
     2023-09-20 11:02:39,720 INFO root: pool ready
-    2023-09-20 11:02:39,721 INFO psycopg.pool: connection requested from 'pool-1'
-    2023-09-20 11:02:39,721 INFO psycopg.pool: connection given by 'pool-1'
-    2023-09-20 11:02:39,721 INFO psycopg.pool: connection requested from 'pool-1'
-    2023-09-20 11:02:39,721 INFO psycopg.pool: connection given by 'pool-1'
-    2023-09-20 11:02:39,721 INFO psycopg.pool: connection requested from 'pool-1'
-    2023-09-20 11:02:39,722 INFO psycopg.pool: connection requested from 'pool-1'
+    2023-09-20 11:02:39,721 INFO gaussdb.pool: connection requested from 'pool-1'
+    2023-09-20 11:02:39,721 INFO gaussdb.pool: connection given by 'pool-1'
+    2023-09-20 11:02:39,721 INFO gaussdb.pool: connection requested from 'pool-1'
+    2023-09-20 11:02:39,721 INFO gaussdb.pool: connection given by 'pool-1'
+    2023-09-20 11:02:39,721 INFO gaussdb.pool: connection requested from 'pool-1'
+    2023-09-20 11:02:39,722 INFO gaussdb.pool: connection requested from 'pool-1'
     2023-09-20 11:02:40,724 INFO root: The square of 0 is 0.
     2023-09-20 11:02:40,724 INFO root: The square of 1 is 1.
-    2023-09-20 11:02:40,725 INFO psycopg.pool: returning connection to 'pool-1'
-    2023-09-20 11:02:40,725 INFO psycopg.pool: connection given by 'pool-1'
-    2023-09-20 11:02:40,725 INFO psycopg.pool: returning connection to 'pool-1'
-    2023-09-20 11:02:40,726 INFO psycopg.pool: connection given by 'pool-1'
+    2023-09-20 11:02:40,725 INFO gaussdb.pool: returning connection to 'pool-1'
+    2023-09-20 11:02:40,725 INFO gaussdb.pool: connection given by 'pool-1'
+    2023-09-20 11:02:40,725 INFO gaussdb.pool: returning connection to 'pool-1'
+    2023-09-20 11:02:40,726 INFO gaussdb.pool: connection given by 'pool-1'
     2023-09-20 11:02:41,728 INFO root: The square of 3 is 9.
     2023-09-20 11:02:41,729 INFO root: The square of 2 is 4.
-    2023-09-20 11:02:41,729 INFO psycopg.pool: returning connection to 'pool-1'
-    2023-09-20 11:02:41,730 INFO psycopg.pool: returning connection to 'pool-1'
+    2023-09-20 11:02:41,729 INFO gaussdb.pool: returning connection to 'pool-1'
+    2023-09-20 11:02:41,730 INFO gaussdb.pool: returning connection to 'pool-1'
 
 Please do not rely on the messages generated to remain unchanged across
 versions: they don't constitute a stable interface.

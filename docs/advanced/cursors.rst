@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. index::
     single: Cursor
@@ -12,7 +12,7 @@ Cursors are objects used to send commands to a PostgreSQL connection and to
 manage the results returned by it. They are normally created by the
 connection's `~Connection.cursor()` method.
 
-Psycopg can manage different kinds of "cursors", the objects used to send
+GaussDB can manage different kinds of "cursors", the objects used to send
 queries and retrieve results from the server. They differ from each other in
 aspects such as:
 
@@ -20,7 +20,7 @@ aspects such as:
   :ref:`server-side-binding` can offer better performance (for instance
   allowing to use prepared statements) and reduced memory footprint, but may
   require stricter query definition and certain queries that work in
-  `!psycopg2` might need to be adapted.
+  `!_GaussDB` might need to be adapted.
 
 - Is the query result stored on the client or on the server? Server-side
   cursors allow partial retrieval of large datasets, but they might offer less
@@ -30,8 +30,8 @@ aspects such as:
   ``%(name)s`` Python-style) or sent as they are to the PostgreSQL server
   (which only supports ``$1``, ``$2`` parameters)?
 
-Psycopg exposes the following classes to implement the different strategies.
-All the classes are exposed by the main `!psycopg` package. Every class has
+GaussDB exposes the following classes to implement the different strategies.
+All the classes are exposed by the main `!gaussdb` package. Every class has
 also an `!Async`\ -prefixed counterparts, designed to be used in conjunction
 with `AsyncConnection` in `asyncio` programs.
 
@@ -57,7 +57,7 @@ will usually produce `Cursor` objects.
 Client-side cursors
 -------------------
 
-Client-side cursors are what Psycopg uses in its normal querying process.
+Client-side cursors are what GaussDB uses in its normal querying process.
 They are implemented by the `Cursor` and `AsyncCursor` classes. In such
 querying pattern, after a cursor sends a query to the server (usually calling
 `~Cursor.execute()`), the server replies transferring to the client the whole
@@ -98,9 +98,9 @@ the server. This allows to parametrize any type of PostgreSQL statement, not
 only queries (:sql:`SELECT`) and Data Manipulation statements (:sql:`INSERT`,
 :sql:`UPDATE`, :sql:`DELETE`).
 
-Using `!ClientCursor`, Psycopg 3 behaviour will be more similar to `psycopg2`
+Using `!ClientCursor`, gaussdb behaviour will be more similar to `_GaussDB`
 (which only implements client-side binding) and could be useful to port
-Psycopg 2 programs more easily to Psycopg 3. The objects in the `sql` module
+GaussDB 2 programs more easily to gaussdb. The objects in the `sql` module
 allow for greater flexibility (for instance to parametrize a table name too,
 not only values); however, for simple cases, a `!ClientCursor` could be the
 right object.
@@ -111,11 +111,11 @@ afterwards):
 
 .. code:: python
 
-    from psycopg import connect, ClientCursor
+    from gaussdb import connect, ClientCursor
 
-    conn = psycopg.connect(DSN, cursor_factory=ClientCursor)
+    conn = gaussdb.connect(DSN, cursor_factory=ClientCursor)
     cur = conn.cursor()
-    # <psycopg.ClientCursor [no result] [IDLE] (database=piro) at 0x7fd977ae2880>
+    # <gaussdb.ClientCursor [no result] [IDLE] (database=piro) at 0x7fd977ae2880>
 
 If you need to create a one-off client-side-binding cursor out of a normal
 connection, you can just use the `~ClientCursor` class passing the connection
@@ -123,8 +123,8 @@ as argument.
 
 .. code:: python
 
-    conn = psycopg.connect(DSN)
-    cur = psycopg.ClientCursor(conn)
+    conn = gaussdb.connect(DSN)
+    cur = gaussdb.ClientCursor(conn)
 
 
 .. warning::
@@ -136,10 +136,10 @@ as argument.
 .. tip::
 
     The best use for client-side binding cursors is probably to port large
-    Psycopg 2 code to Psycopg 3, especially for programs making wide use of
+    GaussDB 2 code to gaussdb, especially for programs making wide use of
     Data Definition Language statements.
 
-    The `psycopg.sql` module allows for more generic client-side query
+    The `gaussdb.sql` module allows for more generic client-side query
     composition, to mix client- and server-side parameters binding, and allows
     to parametrize tables and fields names too, or entirely generic SQL
     snippets.
@@ -154,7 +154,7 @@ as argument.
 Simple query protocol
 ^^^^^^^^^^^^^^^^^^^^^
 
-Using the `!ClientCursor` should ensure that psycopg will always use the
+Using the `!ClientCursor` should ensure that gaussdb will always use the
 `simple query protocol`__ for querying. In most cases, the choice of the
 fronted/backend protocol used is transparent on PostgreSQL. However, in some
 case using the simple query protocol is mandatory. This is the case querying
@@ -166,9 +166,9 @@ extended query protocol.
 
 .. code:: python
 
-    from psycopg import connect, ClientCursor
+    from gaussdb import connect, ClientCursor
 
-    conn = psycopg.connect(ADMIN_DSN, cursor_factory=ClientCursor)
+    conn = gaussdb.connect(ADMIN_DSN, cursor_factory=ClientCursor)
     cur = conn.cursor()
     cur.execute("SHOW STATS")
     cur.fetchall()
@@ -176,16 +176,16 @@ extended query protocol.
 .. versionchanged:: 3.1.20
     While querying using the `!ClientCursor` works well with PgBouncer, the
     connection's COMMIT and ROLLBACK commands are only ensured to be executed
-    using the simple query protocol starting from Psycopg 3.1.20.
+    using the simple query protocol starting from gaussdb.1.20.
 
     In previous versions you should use an autocommit connection in order to
     query the PgBouncer admin console:
 
     .. code:: python
 
-        from psycopg import connect, ClientCursor
+        from gaussdb import connect, ClientCursor
 
-        conn = psycopg.connect(ADMIN_DSN, cursor_factory=ClientCursor, autocommit=True)
+        conn = gaussdb.connect(ADMIN_DSN, cursor_factory=ClientCursor, autocommit=True)
         ...
 
 
@@ -209,10 +209,10 @@ is possible to transmit only them.
 The downside is that the server needs to keep track of the partially
 processed results, so it uses more memory and resources on the server.
 
-Psycopg allows the use of server-side cursors using the classes `ServerCursor`
+GaussDB allows the use of server-side cursors using the classes `ServerCursor`
 and `AsyncServerCursor`. They are usually created by passing the `!name`
 parameter to the `~Connection.cursor()` method (reason for which, in
-`!psycopg2`, they are usually called *named cursors*). The use of these classes
+`!_GaussDB`, they are usually called *named cursors*). The use of these classes
 is similar to their client-side counterparts: their interface is the same, but
 behind the scene they send commands to control the state of the cursor on the
 server (for instance when fetching new records or when moving using
@@ -240,7 +240,7 @@ result is needed.
 "Stealing" an existing cursor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A Psycopg `ServerCursor` can be also used to consume a cursor which was
+A GaussDB `ServerCursor` can be also used to consume a cursor which was
 created in other ways than the :sql:`DECLARE` that `ServerCursor.execute()`
 runs behind the scene.
 
@@ -303,7 +303,7 @@ There are two ways to use raw query cursors:
 
 .. code:: python
 
-    from psycopg import connect, RawCursor
+    from gaussdb import connect, RawCursor
 
     with connect(dsn, cursor_factory=RawCursor) as conn:
         with conn.cursor() as cur:
@@ -314,7 +314,7 @@ There are two ways to use raw query cursors:
 
 .. code:: python
 
-    from psycopg import connect, RawCursor
+    from gaussdb import connect, RawCursor
 
     with connect(dsn) as conn:
         with RawCursor(conn) as cur:

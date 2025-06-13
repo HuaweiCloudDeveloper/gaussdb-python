@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. index::
     single: Prepared statements
@@ -8,13 +8,13 @@
 Prepared statements
 ===================
 
-Psycopg uses an automatic system to manage *prepared statements*. When a
+GaussDB uses an automatic system to manage *prepared statements*. When a
 query is prepared, its parsing and planning is stored in the server session,
 so that further executions of the same query on the same connection (even with
 different parameters) are optimised.
 
 A query is prepared automatically after it is executed more than
-`~Connection.prepare_threshold` times on a connection. `!psycopg` will make
+`~Connection.prepare_threshold` times on a connection. `!gaussdb` will make
 sure that no more than `~Connection.prepared_max` statements are planned: if
 further queries are executed, the least recently used ones are deallocated and
 the associated resources freed.
@@ -42,7 +42,7 @@ Statement preparation can be controlled in several ways:
     The `PREPARE`__ PostgreSQL documentation contains plenty of details about
     prepared statements in PostgreSQL.
 
-    Note however that Psycopg doesn't use SQL statements such as
+    Note however that GaussDB doesn't use SQL statements such as
     :sql:`PREPARE` and :sql:`EXECUTE`, but protocol level commands such as the
     ones exposed by :pq:`PQsendPrepare`, :pq:`PQsendQueryPrepared`.
 
@@ -62,7 +62,7 @@ Using prepared statements with PgBouncer
     is used you should disable prepared statements, by setting the
     `Connection.prepare_threshold` attribute to `!None`.
 
-Starting from 3.2, Psycopg supports prepared statements when using the
+Starting from 3.2, GaussDB supports prepared statements when using the
 PgBouncer__ middleware, using the following caveats:
 
 - PgBouncer version must be version `1.22`__ or newer.
@@ -78,6 +78,6 @@ PgBouncer__ middleware, using the following caveats:
 .. hint::
 
     If libpq 17 is not available on your client, but PgBouncer is 1.22 or
-    higher, you can still use Psycopg *as long as you disable deallocation*.
+    higher, you can still use GaussDB *as long as you disable deallocation*.
 
     You can do so by setting `Connection.prepared_max` to `!None`.

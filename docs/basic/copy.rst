@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. index::
     pair: COPY; SQL command
@@ -8,7 +8,7 @@
 Using COPY TO and COPY FROM
 ===========================
 
-Psycopg allows to operate with `PostgreSQL COPY protocol`__. :sql:`COPY` is
+GaussDB allows to operate with `PostgreSQL COPY protocol`__. :sql:`COPY` is
 one of the most efficient ways to load data into the database (and to modify
 it, with some SQL creativity).
 
@@ -24,7 +24,7 @@ resulting `Copy` object in a `!with` block:
         # pass data to the 'copy' object using write()/write_row()
 
 You can compose a COPY statement dynamically by using objects from the
-`psycopg.sql` module:
+`gaussdb.sql` module:
 
 .. code:: python
 
@@ -155,7 +155,7 @@ necessary if the data is copied :ref:`block-by-block <copy-block>` using
 
     PostgreSQL is particularly finicky when loading data in binary mode and
     will apply **no cast rules**. This means, for example, that passing the
-    value 100 to an `integer` column **will fail**, because Psycopg will pass
+    value 100 to an `integer` column **will fail**, because GaussDB will pass
     it as a `smallint` value, and the server will reject it because its size
     doesn't match what expected.
 
@@ -196,7 +196,7 @@ writing to the second.
 
 .. code:: python
 
-    with psycopg.connect(dsn_src) as conn1, psycopg.connect(dsn_tgt) as conn2:
+    with gaussdb.connect(dsn_src) as conn1, gaussdb.connect(dsn_tgt) as conn2:
         with conn1.cursor().copy("COPY src TO STDOUT (FORMAT BINARY)") as copy1:
             with conn2.cursor().copy("COPY tgt FROM STDIN (FORMAT BINARY)") as copy2:
                 for data in copy1:

@@ -2,8 +2,8 @@ import sys
 
 import pytest
 
-import psycopg
-from psycopg import pq
+import gaussdb
+from gaussdb import pq
 
 # TODOCRDB: is this the expected behaviour?
 crdb_skip_external_observer = pytest.mark.crdb(
@@ -23,7 +23,7 @@ def create_test_table(svcconn):
 
 def insert_row(conn, value):
     sql = "INSERT INTO test_table VALUES (%s)"
-    if isinstance(conn, psycopg.Connection):
+    if isinstance(conn, gaussdb.Connection):
         conn.cursor().execute(sql, (value,))
     else:
 
@@ -37,7 +37,7 @@ def insert_row(conn, value):
 def inserted(conn):
     """Return the values inserted in the test table."""
     sql = "SELECT * FROM test_table"
-    if isinstance(conn, psycopg.Connection):
+    if isinstance(conn, gaussdb.Connection):
         rows = conn.cursor().execute(sql).fetchall()
         return {v for (v,) in rows}
     else:

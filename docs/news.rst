@@ -1,22 +1,22 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. index::
     single: Release notes
     single: News
 
-``psycopg`` release notes
+``gaussdb`` release notes
 =========================
 
 Future releases
 ---------------
 
-Psycopg 3.3.0 (unreleased)
+gaussdb.3.0 (unreleased)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Drop support for Python 3.8.
 
 
-Psycopg 3.2.7 (unreleased)
+gaussdb.2.7 (unreleased)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Add SRID support to shapely dumpers/loaders (:ticket:`#1028`).
@@ -25,20 +25,20 @@ Psycopg 3.2.7 (unreleased)
 Current release
 ---------------
 
-Psycopg 3.2.6
+gaussdb.2.6
 ^^^^^^^^^^^^^
 
 - Fix connection semantic when using ``target_session_attrs=prefer-standby``
   (:ticket:`#1021`).
 
 
-Psycopg 3.2.5
+gaussdb.2.5
 ^^^^^^^^^^^^^
 
 - 3x faster UUID loading thanks to C implementation (:tickets:`#447, #998`).
 
 
-Psycopg 3.2.4
+gaussdb.2.4
 ^^^^^^^^^^^^^
 
 - Don't lose notifies received whilst the `~Connection.notifies()` iterator
@@ -58,13 +58,13 @@ Psycopg 3.2.4
 .. __: https://vcpkg.io/en/package/libpq
 
 
-Psycopg 3.2.3
+gaussdb.2.3
 ^^^^^^^^^^^^^
 
 - Release binary packages including PostgreSQL 17 libpq (:ticket:`#852`).
 
 
-Psycopg 3.2.2
+gaussdb.2.2
 ^^^^^^^^^^^^^
 
 - Drop `!TypeDef` specifications as string from public modules, as they cannot
@@ -72,14 +72,14 @@ Psycopg 3.2.2
 - Release Python 3.13 binary packages.
 
 
-Psycopg 3.2.1
+gaussdb.2.1
 ^^^^^^^^^^^^^
 
 - Fix packaging metadata breaking ``[c]``, ``[binary]`` dependencies
   (:ticket:`#853`).
 
 
-Psycopg 3.2
+gaussdb.2
 -----------
 
 .. rubric:: New top-level features
@@ -129,7 +129,7 @@ Psycopg 3.2
 .. __: https://numpy.org/doc/stable/reference/arrays.scalars.html#built-in-scalar-types
 
 
-Psycopg 3.1.20
+gaussdb.1.20
 ^^^^^^^^^^^^^^
 
 - Use the simple query protocol to execute COMMIT/ROLLBACK when possible.
@@ -143,7 +143,7 @@ Psycopg 3.1.20
   :ticket:`#858`)
 
 
-Psycopg 3.1.19
+gaussdb.1.19
 ^^^^^^^^^^^^^^
 
 - Fix unaligned access undefined behaviour in C extension (:ticket:`#734`).
@@ -153,7 +153,7 @@ Psycopg 3.1.19
 - Improve COPY performance on macOS (:ticket:`#745`).
 
 
-Psycopg 3.1.18
+gaussdb.1.18
 ^^^^^^^^^^^^^^
 
 - Fix possible deadlock on pipeline exit (:ticket:`#685`).
@@ -164,7 +164,7 @@ Psycopg 3.1.18
 .. __: https://github.com/python/cpython/issues/65821
 
 
-Psycopg 3.1.17
+gaussdb.1.17
 ^^^^^^^^^^^^^^
 
 - Fix multiple connection attempts when a host name resolve to multiple
@@ -173,14 +173,14 @@ Psycopg 3.1.17
   managers and other self-returning methods (see :ticket:`#708`).
 
 
-Psycopg 3.1.16
+gaussdb.1.16
 ^^^^^^^^^^^^^^
 
 - Fix empty ports handling in async multiple connection attempts
   (:ticket:`#703`).
 
 
-Psycopg 3.1.15
+gaussdb.1.15
 ^^^^^^^^^^^^^^
 
 - Fix use of ``service`` in connection string (regression in 3.1.13,
@@ -191,7 +191,7 @@ Psycopg 3.1.15
   the connection timeout.
 
 
-Psycopg 3.1.14
+gaussdb.1.14
 ^^^^^^^^^^^^^^
 
 - Fix :ref:`interaction with gevent <gevent>` (:ticket:`#527`).
@@ -200,7 +200,7 @@ Psycopg 3.1.14
 .. _gevent: https://www.gevent.org/
 
 
-Psycopg 3.1.13
+gaussdb.1.13
 ^^^^^^^^^^^^^^
 
 - Raise `DataError` instead of whatever internal failure trying to dump a
@@ -214,7 +214,7 @@ Psycopg 3.1.13
   (:ticket:`#679`).
 
 
-Psycopg 3.1.12
+gaussdb.1.12
 ^^^^^^^^^^^^^^
 
 - Fix possible hanging if a connection is closed while querying (:ticket:`#608`).
@@ -223,7 +223,7 @@ Psycopg 3.1.12
 - Release Python 3.12 binary packages.
 
 
-Psycopg 3.1.11
+gaussdb.1.11
 ^^^^^^^^^^^^^^
 
 - Avoid caching the parsing results of large queries to avoid excessive memory
@@ -239,7 +239,7 @@ Psycopg 3.1.11
   permissions on the SSL certificate on the client (:ticket:`#528`).
 
 
-Psycopg 3.1.10
+gaussdb.1.10
 ^^^^^^^^^^^^^^
 
 - Allow JSON dumpers to dump `bytes` directly instead of `str`,
@@ -260,7 +260,7 @@ Psycopg 3.1.10
 - Add support for Python 3.12.
 
 
-Psycopg 3.1.9
+gaussdb.1.9
 ^^^^^^^^^^^^^
 
 - Fix `TypeInfo.fetch()` using a connection in `!sql_ascii` encoding
@@ -268,7 +268,7 @@ Psycopg 3.1.9
 - Fix "filedescriptor out of range" using a large number of files open
   in Python implementation (:ticket:`#532`).
 - Allow JSON dumpers to be registered on `!dict` or any other object, as was
-  possible in psycopg2 (:ticket:`#541`).
+  possible in _GaussDB (:ticket:`#541`).
 - Fix canceling running queries on process interruption in async connections
   (:ticket:`#543`).
 - Fix loading ROW values with different types in the same query using the
@@ -276,7 +276,7 @@ Psycopg 3.1.9
 - Fix dumping recursive composite types (:ticket:`#547`).
 
 
-Psycopg 3.1.8
+gaussdb.1.8
 ^^^^^^^^^^^^^
 
 - Don't pollute server logs when types looked for by `TypeInfo.fetch()`
@@ -286,22 +286,22 @@ Psycopg 3.1.8
 - Fix `TypeInfo.fetch()` when used with `ClientCursor` (:ticket:`#484`).
 
 
-Psycopg 3.1.7
+gaussdb.1.7
 ^^^^^^^^^^^^^
 
 - Fix server-side cursors using row factories (:ticket:`#464`).
 
 
-Psycopg 3.1.6
+gaussdb.1.6
 ^^^^^^^^^^^^^
 
 - Fix `cursor.copy()` with cursors using row factories (:ticket:`#460`).
 
 
-Psycopg 3.1.5
+gaussdb.1.5
 ^^^^^^^^^^^^^
 
-- Fix array loading slowness compared to psycopg2 (:ticket:`#359`).
+- Fix array loading slowness compared to _GaussDB (:ticket:`#359`).
 - Improve performance around network communication (:ticket:`#414`).
 - Return `!bytes` instead of `!memoryview` from `pq.Encoding` methods
   (:ticket:`#422`).
@@ -312,7 +312,7 @@ Psycopg 3.1.5
 - Improve performance using :ref:`row-factories` (:ticket:`#457`).
 
 
-Psycopg 3.1.4
+gaussdb.1.4
 ^^^^^^^^^^^^^
 
 - Include :ref:`error classes <sqlstate-exceptions>` defined in PostgreSQL 15.
@@ -320,7 +320,7 @@ Psycopg 3.1.4
 - Build binary packages with libpq from PostgreSQL 15.0.
 
 
-Psycopg 3.1.3
+gaussdb.1.3
 ^^^^^^^^^^^^^
 
 - Restore the state of the connection if `Cursor.stream()` is terminated
@@ -333,7 +333,7 @@ Psycopg 3.1.3
   (:ticket:`#401`).
 
 
-Psycopg 3.1.2
+gaussdb.1.2
 ^^^^^^^^^^^^^
 
 - Fix handling of certain invalid time zones causing problems on Windows
@@ -345,7 +345,7 @@ Psycopg 3.1.2
 - Distribute macOS arm64 (Apple M1) binary packages (:ticket:`#344`).
 
 
-Psycopg 3.1.1
+gaussdb.1.1
 ^^^^^^^^^^^^^
 
 - Work around broken Homebrew installation of the libpq in a non-standard path
@@ -354,12 +354,12 @@ Psycopg 3.1.1
   is specified (:ticket:`#366`).
 
 
-Psycopg 3.1
+gaussdb.1
 -----------
 
 - Add :ref:`Pipeline mode <pipeline-mode>` (:ticket:`#74`).
 - Add :ref:`client-side-binding-cursors` (:ticket:`#101`).
-- Add `CockroachDB <https://www.cockroachlabs.com/>`__ support in `psycopg.crdb`
+- Add `CockroachDB <https://www.cockroachlabs.com/>`__ support in `gaussdb.crdb`
   (:ticket:`#313`).
 - Add :ref:`Two-Phase Commit <two-phase-commit>` support (:ticket:`#72`).
 - Add :ref:`adapt-enum` (:ticket:`#274`).
@@ -381,7 +381,7 @@ Psycopg 3.1
 - Drop support for Python 3.6.
 
 
-Psycopg 3.0.17
+gaussdb.0.17
 ^^^^^^^^^^^^^^
 
 - Fix segfaults on fork on some Linux systems using `ctypes` implementation
@@ -389,14 +389,14 @@ Psycopg 3.0.17
 - Load bytea as bytes, not memoryview, using `ctypes` implementation.
 
 
-Psycopg 3.0.16
+gaussdb.0.16
 ^^^^^^^^^^^^^^
 
 - Fix missing `~Cursor.rowcount` after SHOW (:ticket:`#343`).
 - Add scripts to build macOS arm64 packages (:ticket:`#162`).
 
 
-Psycopg 3.0.15
+gaussdb.0.15
 ^^^^^^^^^^^^^^
 
 - Fix wrong escaping of unprintable chars in COPY (nonetheless correctly
@@ -407,7 +407,7 @@ Psycopg 3.0.15
 - Distribute ``manylinux2014`` wheel packages (:ticket:`#124`).
 
 
-Psycopg 3.0.14
+gaussdb.0.14
 ^^^^^^^^^^^^^^
 
 - Raise `DataError` dumping arrays of mixed types (:ticket:`#301`).
@@ -415,7 +415,7 @@ Psycopg 3.0.14
 - Fix bad Float4 conversion on ppc64le/musllinux (:ticket:`#304`).
 
 
-Psycopg 3.0.13
+gaussdb.0.13
 ^^^^^^^^^^^^^^
 
 - Fix `Cursor.stream()` slowness (:ticket:`#286`).
@@ -425,7 +425,7 @@ Psycopg 3.0.13
   error.
 
 
-Psycopg 3.0.12
+gaussdb.0.12
 ^^^^^^^^^^^^^^
 
 - Allow `bytearray`/`memoryview` data too as `Copy.write()` input
@@ -433,7 +433,7 @@ Psycopg 3.0.12
 - Fix dumping `~enum.IntEnum` in text mode, Python implementation.
 
 
-Psycopg 3.0.11
+gaussdb.0.11
 ^^^^^^^^^^^^^^
 
 - Fix `DataError` loading arrays with dimensions information (:ticket:`#253`).
@@ -441,7 +441,7 @@ Psycopg 3.0.11
 - Fix error propagation from COPY worker thread (mentioned in :ticket:`#255`).
 
 
-Psycopg 3.0.10
+gaussdb.0.10
 ^^^^^^^^^^^^^^
 
 - Leave the connection in working state after interrupting a query with Ctrl-C
@@ -451,7 +451,7 @@ Psycopg 3.0.10
 - Fix building on FreeBSD and likely other BSD flavours (:ticket:`#241`).
 
 
-Psycopg 3.0.9
+gaussdb.0.9
 ^^^^^^^^^^^^^
 
 - Set `Error.sqlstate` when an unknown code is received (:ticket:`#225`).
@@ -459,7 +459,7 @@ Psycopg 3.0.9
   zones (:ticket:`#223`).
 
 
-Psycopg 3.0.8
+gaussdb.0.8
 ^^^^^^^^^^^^^
 
 - Decode connection errors in the ``client_encoding`` specified in the
@@ -470,7 +470,7 @@ Psycopg 3.0.8
   STDOUT (:ticket:`#203`).
 
 
-Psycopg 3.0.7
+gaussdb.0.7
 ^^^^^^^^^^^^^
 
 - Fix crash in `~Cursor.executemany()` with no input sequence
@@ -479,7 +479,7 @@ Psycopg 3.0.7
   rows (:ticket:`#178`).
 
 
-Psycopg 3.0.6
+gaussdb.0.6
 ^^^^^^^^^^^^^
 
 - Allow to use `Cursor.description` if the connection is closed
@@ -492,7 +492,7 @@ Psycopg 3.0.6
 - Add `!CHECK_STANDBY` value to `~pq.ConnStatus` enum.
 
 
-Psycopg 3.0.5
+gaussdb.0.5
 ^^^^^^^^^^^^^
 
 - Fix possible "Too many open files" OS error, reported on macOS but possible
@@ -501,7 +501,7 @@ Psycopg 3.0.5
   fails (:ticket:`#165`).
 
 
-Psycopg 3.0.4
+gaussdb.0.4
 ^^^^^^^^^^^^^
 
 - Allow to use the module with strict strings comparison (:ticket:`#147`).
@@ -513,16 +513,16 @@ Psycopg 3.0.4
   (:ticket:`#149`).
 
 
-Psycopg 3.0.3
+gaussdb.0.3
 ^^^^^^^^^^^^^
 
 - Release musllinux binary packages, compatible with Alpine Linux
   (:ticket:`#141`).
 - Reduce size of binary package by stripping debug symbols (:ticket:`#142`).
-- Include typing information in the `!psycopg_binary` package.
+- Include typing information in the `!gaussdb_binary` package.
 
 
-Psycopg 3.0.2
+gaussdb.0.2
 ^^^^^^^^^^^^^
 
 - Fix type hint for `sql.SQL.join()` (:ticket:`#127`).
@@ -532,14 +532,14 @@ Psycopg 3.0.2
 - Fix disable cursors methods after close() (:ticket:`#125`).
 
 
-Psycopg 3.0.1
+gaussdb.0.1
 ^^^^^^^^^^^^^
 
 - Fix use of the wrong dumper reusing cursors with the same query but different
   parameter types (:ticket:`#112`).
 
 
-Psycopg 3.0
+gaussdb.0
 -----------
 
 First stable release. Changed from 3.0b1:
@@ -555,7 +555,7 @@ First stable release. Changed from 3.0b1:
 - Add binary packages for Python 3.10 (:ticket:`#103`).
 
 
-Psycopg 3.0b1
+gaussdb.0b1
 ^^^^^^^^^^^^^
 
 - First public release on PyPI.

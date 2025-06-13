@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 COPY-related objects
 ====================
@@ -7,7 +7,7 @@ The main objects (`Copy`, `AsyncCopy`) present the main interface to exchange
 data during a COPY operations. These objects are normally obtained by the
 methods `Cursor.copy()` and `AsyncCursor.copy()`; however, they can be also
 created directly, for instance to write to a destination which is not a
-database (e.g. using a `~psycopg.copy.FileWriter`).
+database (e.g. using a `~gaussdb.copy.FileWriter`).
 
 See :ref:`copy` for details.
 
@@ -63,7 +63,7 @@ Main Copy objects
 Writer objects
 --------------
 
-.. currentmodule:: psycopg.copy
+.. currentmodule:: gaussdb.copy
 
 .. versionadded:: 3.1
 
@@ -74,7 +74,7 @@ customize further writing by implementing your own `Writer` or `AsyncWriter`
 subclass.
 
 Writers instances can be used passing them to the cursor
-`~psycopg.Cursor.copy()` method or to the `~psycopg.Copy` constructor, as the
+`~gaussdb.Cursor.copy()` method or to the `~gaussdb.Copy` constructor, as the
 `!writer` argument.
 
 .. autoclass:: Writer

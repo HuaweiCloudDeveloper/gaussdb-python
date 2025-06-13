@@ -5,32 +5,32 @@ import datetime as dt
 
 import pytest
 
-import psycopg
-from psycopg import rows
+import gaussdb
+from gaussdb import rows
 
 from .fix_crdb import crdb_encoding
 
 
 @pytest.fixture
 def conn(conn, anyio_backend):
-    conn.cursor_factory = psycopg.ClientCursor
+    conn.cursor_factory = gaussdb.ClientCursor
     return conn
 
 
 def test_default_cursor(conn):
     cur = conn.cursor()
-    assert type(cur) is psycopg.ClientCursor
+    assert type(cur) is gaussdb.ClientCursor
 
 
 def test_str(conn):
     cur = conn.cursor()
-    assert "psycopg.%s" % psycopg.ClientCursor.__name__ in str(cur)
+    assert "gaussdb.%s" % gaussdb.ClientCursor.__name__ in str(cur)
 
 
 def test_from_cursor_factory(conn_cls, dsn):
-    with conn_cls.connect(dsn, cursor_factory=psycopg.ClientCursor) as conn:
+    with conn_cls.connect(dsn, cursor_factory=gaussdb.ClientCursor) as conn:
         cur = conn.cursor()
-        assert type(cur) is psycopg.ClientCursor
+        assert type(cur) is gaussdb.ClientCursor
 
 
 def test_execute_many_results_param(conn):
@@ -62,7 +62,7 @@ def test_query_params_execute(conn):
     assert cur._query.query == b"select 1"
     assert not cur._query.params
 
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         cur.execute("select %t::int", ["wat"])
 
     assert cur._query.query == b"select 'wat'::int"
@@ -87,7 +87,7 @@ def test_leak(conn_cls, dsn, faker, fetch, row_factory, gc):
 
     def work():
         with conn_cls.connect(dsn) as conn, conn.transaction(force_rollback=True):
-            with psycopg.ClientCursor(conn, row_factory=row_factory) as cur:
+            with gaussdb.ClientCursor(conn, row_factory=row_factory) as cur:
                 cur.execute(faker.drop_stmt)
                 cur.execute(faker.create_stmt)
                 with faker.find_insert_problem(conn):

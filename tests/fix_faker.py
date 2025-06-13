@@ -13,13 +13,13 @@ from collections import deque
 
 import pytest
 
-import psycopg
-from psycopg import sql
-from psycopg.adapt import PyFormat
-from psycopg.types.json import Json, Jsonb
-from psycopg.types.range import Range
-from psycopg.types.numeric import Int4, Int8
-from psycopg.types.multirange import Multirange
+import gaussdb
+from gaussdb import sql
+from gaussdb.adapt import PyFormat
+from gaussdb.types.json import Json, Jsonb
+from gaussdb.types.range import Range
+from gaussdb.types.numeric import Int4, Int8
+from gaussdb.types.multirange import Multirange
 
 
 @pytest.fixture
@@ -85,7 +85,7 @@ class Faker:
             return self._types_names
 
         record = self.make_record(nulls=0)
-        tx = psycopg.adapt.Transformer(self.conn)
+        tx = gaussdb.adapt.Transformer(self.conn)
         types = [
             self._get_type_name(tx, schema, value)
             for schema, value in zip(self.schema, record)
@@ -147,8 +147,8 @@ class Faker:
         try:
             with conn.transaction():
                 yield
-        except psycopg.DatabaseError:
-            cur = psycopg.Cursor(conn)
+        except gaussdb.DatabaseError:
+            cur = gaussdb.Cursor(conn)
             # Repeat insert one field at time, until finding the wrong one
             cur.execute(self.drop_stmt)
             cur.execute(self.create_stmt)
@@ -156,7 +156,7 @@ class Faker:
                 for j, val in enumerate(rec):
                     try:
                         cur.execute(self._insert_field_stmt(j), (val,))
-                    except psycopg.DatabaseError as e:
+                    except gaussdb.DatabaseError as e:
                         r = repr(val)
                         if len(r) > 200:
                             r = f"{r[:200]}... ({len(r)} chars)"
@@ -172,8 +172,8 @@ class Faker:
         try:
             async with aconn.transaction():
                 yield
-        except psycopg.DatabaseError:
-            acur = psycopg.AsyncCursor(aconn)
+        except gaussdb.DatabaseError:
+            acur = gaussdb.AsyncCursor(aconn)
             # Repeat insert one field at time, until finding the wrong one
             await acur.execute(self.drop_stmt)
             await acur.execute(self.create_stmt)
@@ -181,7 +181,7 @@ class Faker:
                 for j, val in enumerate(rec):
                     try:
                         await acur.execute(self._insert_field_stmt(j), (val,))
-                    except psycopg.DatabaseError as e:
+                    except gaussdb.DatabaseError as e:
                         r = repr(val)
                         if len(r) > 200:
                             r = f"{r[:200]}... ({len(r)} chars)"

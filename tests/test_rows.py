@@ -1,7 +1,7 @@
 import pytest
 
-import psycopg
-from psycopg import rows
+import gaussdb
+from gaussdb import rows
 
 from .utils import eur
 
@@ -108,7 +108,7 @@ def test_scalar_row(conn):
     assert cur.fetchone() == 1
     cur.execute("select 1, 2")
     assert cur.fetchone() == 1
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         cur.execute("select")
 
 
@@ -119,7 +119,7 @@ def test_scalar_row(conn):
 def test_no_result(factory, conn):
     cur = conn.cursor(row_factory=factory_from_name(factory))
     cur.execute("reset search_path")
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         cur.fetchone()
 
 

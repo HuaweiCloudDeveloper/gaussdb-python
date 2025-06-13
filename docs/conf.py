@@ -17,7 +17,7 @@
 import sys
 from pathlib import Path
 
-import psycopg
+import gaussdb
 
 docs_dir = Path(__file__).parent
 sys.path.append(str(docs_dir / "lib"))
@@ -25,10 +25,10 @@ sys.path.append(str(docs_dir / "lib"))
 
 # -- Project information -----------------------------------------------------
 
-project = "psycopg"
-copyright = "2020, Daniele Varrazzo and The Psycopg Team"
+project = "gaussdb"
+copyright = "2020, Daniele Varrazzo and The GaussDB Team"
 author = "Daniele Varrazzo"
-release = psycopg.__version__
+release = gaussdb.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -66,7 +66,7 @@ if ann_file.exists():
 else:
     announcement = ""
 
-html_css_files = ["psycopg.css"]
+html_css_files = ["gaussdb.css"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 # Some that I've check don't suck:
@@ -82,8 +82,8 @@ html_show_sourcelink = False
 html_theme_options = {
     "announcement": announcement,
     "sidebar_hide_name": False,
-    "light_logo": "psycopg.svg",
-    "dark_logo": "psycopg.svg",
+    "light_logo": "gaussdb.svg",
+    "dark_logo": "gaussdb.svg",
     "light_css_variables": {
         "admonition-font-size": "1rem",
     },
@@ -109,4 +109,4 @@ autodoc_member_order = "bysource"
 libpq_docs_version = "17"
 
 # Where to point on :ticket: role
-ticket_url = "https://github.com/psycopg/psycopg/issues/%s"
+ticket_url = "https://github.com/gaussdb/gaussdb/issues/%s"

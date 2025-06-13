@@ -1,8 +1,8 @@
 import pytest
 
-import psycopg
-from psycopg.types import TypeInfo
-from psycopg.types.hstore import HstoreLoader, register_hstore
+import gaussdb
+from gaussdb.types import TypeInfo
+from gaussdb.types.hstore import HstoreLoader, register_hstore
 
 pytestmark = pytest.mark.crdb_skip("hstore")
 
@@ -41,7 +41,7 @@ def test_parse_ok(s, d):
     ],
 )
 def test_parse_bad(s):
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         loader = HstoreLoader(0, None)
         loader.load(s.encode())
 
@@ -71,7 +71,7 @@ def test_register_curs(hstore, conn):
 def test_register_globally(conn_cls, hstore, dsn, svcconn, global_adapters):
     info = TypeInfo.fetch(svcconn, "hstore")
     register_hstore(info)
-    assert psycopg.adapters.types[info.oid].name == "hstore"
+    assert gaussdb.adapters.types[info.oid].name == "hstore"
 
     assert svcconn.adapters.types.get(info.oid) is None
     conn = conn_cls.connect(dsn)

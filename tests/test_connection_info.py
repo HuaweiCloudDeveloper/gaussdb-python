@@ -2,9 +2,9 @@ import datetime as dt
 
 import pytest
 
-import psycopg
-from psycopg.conninfo import conninfo_to_dict, make_conninfo
-from psycopg._encodings import pg2pyenc
+import gaussdb
+from gaussdb.conninfo import conninfo_to_dict, make_conninfo
+from gaussdb._encodings import pg2pyenc
 
 from .fix_crdb import crdb_encoding
 
@@ -19,7 +19,7 @@ def test_attrs(conn, attr):
     else:
         info_attr = pgconn_attr = attr
 
-    if info_attr == "hostaddr" and psycopg.pq.version() < 120000:
+    if info_attr == "hostaddr" and gaussdb.pq.version() < 120000:
         pytest.skip("hostaddr not supported on libpq < 12")
 
     info_val = getattr(conn.info, info_attr)
@@ -27,20 +27,20 @@ def test_attrs(conn, attr):
     assert info_val == pgconn_val
 
     conn.close()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         getattr(conn.info, info_attr)
 
 
 @pytest.mark.libpq("< 12")
 def test_hostaddr_not_supported(conn):
-    with pytest.raises(psycopg.NotSupportedError):
+    with pytest.raises(gaussdb.NotSupportedError):
         conn.info.hostaddr
 
 
 def test_port(conn):
     assert conn.info.port == int(conn.pgconn.port.decode())
     conn.close()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         conn.info.port
 
 
@@ -126,8 +126,8 @@ def test_pipeline_status_no_pipeline(conn):
 @pytest.mark.opengauss_skip("This method PGconn.info is not implemented in openGauss")
 def test_no_password(dsn):
     dsn2 = make_conninfo(dsn, password="the-pass-word")
-    pgconn = psycopg.pq.PGconn.connect_start(dsn2.encode())
-    info = psycopg.ConnectionInfo(pgconn)
+    pgconn = gaussdb.pq.PGconn.connect_start(dsn2.encode())
+    info = gaussdb.ConnectionInfo(pgconn)
     assert info.password == "the-pass-word"
     assert "password" not in info.get_parameters()
     assert info.get_parameters()["dbname"] == info.dbname
@@ -137,8 +137,8 @@ def test_no_password(dsn):
 @pytest.mark.opengauss_skip("This method PGconn.info is not implemented in openGauss")
 def test_dsn_no_password(dsn):
     dsn2 = make_conninfo(dsn, password="the-pass-word")
-    pgconn = psycopg.pq.PGconn.connect_start(dsn2.encode())
-    info = psycopg.ConnectionInfo(pgconn)
+    pgconn = gaussdb.pq.PGconn.connect_start(dsn2.encode())
+    info = gaussdb.ConnectionInfo(pgconn)
     assert info.password == "the-pass-word"
     assert "password" not in info.dsn
     assert f"dbname={info.dbname}" in info.dsn
@@ -158,7 +158,7 @@ def test_server_version(conn):
 
 def test_error_message(conn):
     assert conn.info.error_message == ""
-    with pytest.raises(psycopg.ProgrammingError) as ex:
+    with pytest.raises(gaussdb.ProgrammingError) as ex:
         conn.execute("wat")
 
     assert conn.info.error_message
@@ -174,7 +174,7 @@ def test_backend_pid(conn):
     assert conn.info.backend_pid
     assert conn.info.backend_pid == conn.pgconn.backend_pid
     conn.close()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         conn.info.backend_pid
 
 
@@ -256,7 +256,7 @@ def test_encoding_env_var(conn_cls, dsn, monkeypatch, enc, out, codec):
 def test_set_encoding_unsupported(conn):
     cur = conn.cursor()
     cur.execute("set client_encoding to EUC_TW")
-    with pytest.raises(psycopg.NotSupportedError):
+    with pytest.raises(gaussdb.NotSupportedError):
         cur.execute("select 'x'")
 
 

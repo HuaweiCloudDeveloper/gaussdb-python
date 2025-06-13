@@ -6,8 +6,8 @@ from typing import Any, Callable
 from dataclasses import dataclass
 from collections.abc import Sequence
 
-from psycopg import AsyncConnection, AsyncCursor, AsyncServerCursor, Connection, Cursor
-from psycopg import ServerCursor, connect, rows
+from gaussdb import AsyncConnection, AsyncCursor, AsyncServerCursor, Connection, Cursor
+from gaussdb import ServerCursor, connect, rows
 
 
 def int_row_factory(

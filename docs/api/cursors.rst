@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 Cursor classes
 ==============
@@ -16,7 +16,7 @@ set as `Connection.cursor_factory` to require them on `!cursor()` call.
 
 This page describe the details of the `!Cursor` class interface. Please refer
 to :ref:`cursor-types` for general information about the different types of
-cursors available in Psycopg.
+cursors available in GaussDB.
 
 
 The `!Cursor` class
@@ -192,7 +192,7 @@ The `!Cursor` class
         .. warning::
 
             Failing to consume the iterator entirely will result in a
-            connection left in `~psycopg.ConnectionInfo.transaction_status`
+            connection left in `~gaussdb.ConnectionInfo.transaction_status`
             `~pq.TransactionStatus.ACTIVE` state: this connection will refuse
             to receive further commands (with a message such as *another
             command is already in progress*).
@@ -250,7 +250,7 @@ The `!Cursor` class
 
         The property affects the objects returned by the `fetchone()`,
         `fetchmany()`, `fetchall()` methods. The default
-        (`~psycopg.rows.tuple_row`) returns a tuple for each record fetched.
+        (`~gaussdb.rows.tuple_row`) returns a tuple for each record fetched.
 
         See :ref:`row-factories` for details.
 
@@ -261,13 +261,13 @@ The `!Cursor` class
     .. automethod:: scroll
 
     .. attribute:: pgresult
-        :type: Optional[psycopg.pq.PGresult]
+        :type: Optional[gaussdb.pq.PGresult]
 
         The result returned by the last query and currently exposed by the
         cursor, if available, else `!None`.
 
         It can be used to obtain low level info about the last query result
-        and to access to features not currently wrapped by Psycopg.
+        and to access to features not currently wrapped by GaussDB.
 
 
     .. rubric:: Information about the data

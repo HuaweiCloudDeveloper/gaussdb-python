@@ -1,6 +1,6 @@
 :orphan:
 
-Psycopg documentation build
+GaussDB documentation build
 ===========================
 
 Quick start::

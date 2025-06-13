@@ -13,8 +13,8 @@ import multiprocessing
 
 import pytest
 
-import psycopg
-from psycopg import errors as e
+import gaussdb
+from gaussdb import errors as e
 
 
 @pytest.mark.slow
@@ -38,7 +38,7 @@ def test_concurrent_execution(conn_cls, dsn):
 
 @pytest.mark.slow
 def test_commit_concurrency(conn):
-    # Check the condition reported in psycopg2#103
+    # Check the condition reported in _GaussDB#103
     # Because of bad status check, we commit even when a commit is already on
     # its way. We can detect this condition by the warnings.
     notices = queue.Queue()  # type: ignore[var-annotated]
@@ -66,14 +66,14 @@ def test_commit_concurrency(conn):
 @pytest.mark.slow
 @pytest.mark.subprocess
 def test_multiprocess_close(dsn, tmpdir):
-    # Check the problem reported in psycopg2#829
+    # Check the problem reported in _GaussDB#829
     # Subprocess gcs the copy of the fd after fork so it closes connection.
     module = f"""\
 import time
-import psycopg
+import gaussdb
 
 def thread():
-    conn = psycopg.connect({dsn!r})
+    conn = gaussdb.connect({dsn!r})
     curs = conn.cursor()
     for i in range(10):
         curs.execute("select 1")
@@ -179,7 +179,7 @@ def test_identify_closure(conn_cls, dsn):
         t.start()
         t0 = time.time()
         try:
-            with pytest.raises(psycopg.OperationalError):
+            with pytest.raises(gaussdb.OperationalError):
                 conn.execute("select pg_sleep(1.0)")
             t1 = time.time()
             assert 0.2 < t1 - t0 < 0.4
@@ -209,7 +209,7 @@ def test_ctrl_c_handler(dsn):
     script = f"""\
 import os
 import time
-import psycopg
+import gaussdb
 from threading import Thread
 
 def tired_of_life():
@@ -219,7 +219,7 @@ def tired_of_life():
 t = Thread(target=tired_of_life, daemon=True)
 t.start()
 
-with psycopg.connect({dsn!r}) as conn:
+with gaussdb.connect({dsn!r}) as conn:
     cur = conn.cursor()
     ctrl_c = False
     try:
@@ -229,12 +229,12 @@ with psycopg.connect({dsn!r}) as conn:
 
     assert ctrl_c, "ctrl-c not received"
     assert (
-        conn.info.transaction_status == psycopg.pq.TransactionStatus.INERROR
+        conn.info.transaction_status == gaussdb.pq.TransactionStatus.INERROR
     ), f"transaction status: {{conn.info.transaction_status!r}}"
 
     conn.rollback()
     assert (
-        conn.info.transaction_status == psycopg.pq.TransactionStatus.IDLE
+        conn.info.transaction_status == gaussdb.pq.TransactionStatus.IDLE
     ), f"transaction status: {{conn.info.transaction_status!r}}"
 
     cur.execute("select 1")
@@ -259,9 +259,9 @@ def test_ctrl_c(conn, dsn):
 
     APPNAME = "test_ctrl_c"
     script = f"""\
-import psycopg
+import gaussdb
 
-with psycopg.connect({dsn!r}, application_name={APPNAME!r}) as conn:
+with gaussdb.connect({dsn!r}, application_name={APPNAME!r}) as conn:
     conn.execute("select pg_sleep(60)")
 """
 
@@ -326,7 +326,7 @@ def test_eintr(dsn, itimername, signame):
 
     script = f"""\
 import signal
-import psycopg
+import gaussdb
 
 def signal_handler(signum, frame):
     assert signum == {sig!r}
@@ -338,7 +338,7 @@ signal.signal({sig!r}, signal_handler)
 signal.siginterrupt({sig!r}, False)
 
 
-with psycopg.connect({dsn!r}) as conn:
+with gaussdb.connect({dsn!r}) as conn:
     # Fire an interrupt signal every 0.25 seconds
     signal.setitimer({itimer!r}, 0.25, 0.25)
 
@@ -363,21 +363,21 @@ with psycopg.connect({dsn!r}) as conn:
     reason="problematic behavior only exhibited via fork",
 )
 def test_segfault_on_fork_close(dsn):
-    # https://github.com/psycopg/psycopg/issues/300
+    # https://github.com/gaussdb/gaussdb/issues/300
     script = f"""\
 import gc
-import psycopg
+import gaussdb
 from multiprocessing import Pool
 
 def test(arg):
-    conn1 = psycopg.connect({dsn!r})
+    conn1 = gaussdb.connect({dsn!r})
     conn1.close()
     conn1 = None
     gc.collect()
     return 1
 
 if __name__ == '__main__':
-    conn = psycopg.connect({dsn!r})
+    conn = gaussdb.connect({dsn!r})
     with Pool(2) as p:
         pool_result = p.map_async(test, [1, 2])
         pool_result.wait(timeout=5)
@@ -405,14 +405,14 @@ def test_concurrent_close(dsn, conn):
     def worker():
         try:
             conn.execute("select pg_sleep(3)")
-        except psycopg.OperationalError:
+        except gaussdb.OperationalError:
             pass  # expected
 
     t0 = time.time()
     th = threading.Thread(target=worker)
     th.start()
     time.sleep(0.5)
-    with psycopg.connect(dsn, autocommit=True) as conn1:
+    with gaussdb.connect(dsn, autocommit=True) as conn1:
         cur = conn1.execute("select query from pg_stat_activity where pid = %s", [pid])
         assert cur.fetchone()
         conn.close()
@@ -445,7 +445,7 @@ def test_transaction_concurrency(conn, what):
                 if what == "error":
                     1 / 0
                 elif what == "rollback":
-                    raise psycopg.Rollback()
+                    raise gaussdb.Rollback()
                 else:
                     assert what == "commit"
 
@@ -454,7 +454,7 @@ def test_transaction_concurrency(conn, what):
             assert isinstance(ex.value.__context__, ZeroDivisionError)
         elif what == "rollback":
             assert "transaction rollback" in str(ex.value)
-            assert isinstance(ex.value.__context__, psycopg.Rollback)
+            assert isinstance(ex.value.__context__, gaussdb.Rollback)
         else:
             assert "transaction commit" in str(ex.value)
 

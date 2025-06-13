@@ -1,7 +1,7 @@
 `errors` -- Package exceptions
 ==============================
 
-.. module:: psycopg.errors
+.. module:: gaussdb.errors
 
 .. index::
     single: Error; Class
@@ -9,7 +9,7 @@
 This module exposes objects to represent and examine database errors.
 
 
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. index::
     single: Exceptions; DB-API
@@ -19,7 +19,7 @@ This module exposes objects to represent and examine database errors.
 DB-API exceptions
 -----------------
 
-In compliance with the DB-API, all the exceptions raised by Psycopg
+In compliance with the DB-API, all the exceptions raised by GaussDB
 derive from the following classes:
 
 .. parsed-literal::
@@ -36,7 +36,7 @@ derive from the following classes:
             \|__ `ProgrammingError`
             \|__ `NotSupportedError`
 
-These classes are exposed both by this module and the root `psycopg` module.
+These classes are exposed both by this module and the root `gaussdb` module.
 
 .. autoexception:: Error()
 
@@ -50,10 +50,10 @@ These classes are exposed both by this module and the root `psycopg` module.
 
     .. autoattribute:: pgconn
 
-        It has been closed and will be in `~psycopg.pq.ConnStatus.BAD` state;
+        It has been closed and will be in `~gaussdb.pq.ConnStatus.BAD` state;
         however it might be useful to verify precisely what went wrong, for
-        instance checking the `~psycopg.pq.PGconn.needs_password` and
-        `~psycopg.pq.PGconn.used_password` attributes.
+        instance checking the `~gaussdb.pq.PGconn.needs_password` and
+        `~gaussdb.pq.PGconn.used_password` attributes.
         Attempting to operate this connection will raise an
         :exc:`OperationalError`.
 
@@ -75,13 +75,13 @@ These classes are exposed both by this module and the root `psycopg` module.
 .. autoexception:: NotSupportedError()
 
 
-Other Psycopg errors
+Other GaussDB errors
 ^^^^^^^^^^^^^^^^^^^^
 
-.. currentmodule:: psycopg.errors
+.. currentmodule:: gaussdb.errors
 
 
-In addition to the standard DB-API errors, Psycopg defines a few more specific
+In addition to the standard DB-API errors, GaussDB defines a few more specific
 ones.
 
 .. autoexception:: ConnectionTimeout()
@@ -98,9 +98,9 @@ Error diagnostics
 
 .. autoclass:: Diagnostic()
 
-    The object is available as the `~psycopg.Error`.\ `~psycopg.Error.diag`
+    The object is available as the `~gaussdb.Error`.\ `~gaussdb.Error.diag`
     attribute and is passed to the callback functions registered with
-    `~psycopg.Connection.add_notice_handler()`.
+    `~gaussdb.Connection.add_notice_handler()`.
 
     All the information available from the :pq:`PQresultErrorField()` function
     are exposed as attributes by the object. For instance the `!severity`
@@ -143,9 +143,9 @@ SQLSTATE exceptions
 Errors coming from a database server (as opposite as ones generated
 client-side, such as connection failed) usually have a 5-letters error code
 called SQLSTATE (available in the `~Diagnostic.sqlstate` attribute of the
-error's `~psycopg.Error.diag` attribute).
+error's `~gaussdb.Error.diag` attribute).
 
-Psycopg exposes a different class for each SQLSTATE value, allowing to
+GaussDB exposes a different class for each SQLSTATE value, allowing to
 write idiomatic error handling code according to specific conditions happening
 in the database:
 
@@ -153,7 +153,7 @@ in the database:
 
     try:
         cur.execute("LOCK TABLE mytable IN ACCESS EXCLUSIVE MODE NOWAIT")
-    except psycopg.errors.LockNotAvailable:
+    except gaussdb.errors.LockNotAvailable:
         locked = True
 
 The exception names are generated from the PostgreSQL source code and includes
@@ -168,7 +168,7 @@ the classes defined.
 .. __: https://www.postgresql.org/docs/current/errcodes-appendix.html#ERRCODES-TABLE
 
 Every exception class is a subclass of one of the :ref:`standard DB-API
-exception <dbapi-exceptions>`, thus exposing the `~psycopg.Error` interface.
+exception <dbapi-exceptions>`, thus exposing the `~gaussdb.Error` interface.
 
 .. versionchanged:: 3.1.4
     Added exceptions introduced in PostgreSQL 15.
@@ -182,9 +182,9 @@ exception <dbapi-exceptions>`, thus exposing the `~psycopg.Error` interface.
 
         try:
             cur.execute("LOCK TABLE mytable IN ACCESS EXCLUSIVE MODE NOWAIT")
-        except psycopg.errors.lookup("UNDEFINED_TABLE"):
+        except gaussdb.errors.lookup("UNDEFINED_TABLE"):
             missing = True
-        except psycopg.errors.lookup("55P03"):
+        except gaussdb.errors.lookup("55P03"):
             locked = True
 
 

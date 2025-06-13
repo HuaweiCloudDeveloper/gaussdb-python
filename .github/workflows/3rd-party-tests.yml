@@ -42,8 +42,8 @@ jobs:
             pip_sqlalchemy: sqlalchemy>=2
 
     env:
-      PSYCOPG_IMPL: ${{ matrix.impl }}
-      DEPS: ./psycopg pytest pytest-xdist greenlet
+      GAUSSDB_IMPL: ${{ matrix.impl }}
+      DEPS: ./gaussdb pytest pytest-xdist greenlet
 
     services:
       postgresql:
@@ -78,10 +78,10 @@ jobs:
           CREATE EXTENSION hstore;
           HERE
 
-      - name: Include psycopg-c to the packages to install
+      - name: Include gaussdb-c to the packages to install
         if: ${{ matrix.impl == 'c' }}
         run: |
-          echo "DEPS=$DEPS ./psycopg_c" >> $GITHUB_ENV
+          echo "DEPS=$DEPS ./gaussdb_c" >> $GITHUB_ENV
 
       - name: Install pycopg packages
         run: pip install $DEPS
@@ -108,7 +108,7 @@ jobs:
 
       - name: Run sqlalchemy tests
         env:
-          URL: postgresql+psycopg://postgres:password@127.0.0.1/test
+          URL: postgresql+gaussdb://postgres:password@127.0.0.1/test
         working-directory: sa_home/sa
         run: pytest -n 2 -q --dburi $URL --backend-only --dropfirst --color=yes --dbdriver psycopg_async
 
@@ -150,7 +150,7 @@ jobs:
             python-version: "3.12"
 
     env:
-      DEPS: ./psycopg ./psycopg_pool
+      DEPS: ./gaussdb ./gaussdb_pool
 
     services:
       postgresql:
@@ -182,10 +182,10 @@ jobs:
           SELECT version();
           HERE
 
-      - name: Include psycopg-c to the packages to install
+      - name: Include gaussdb-c to the packages to install
         if: ${{ matrix.impl == 'c' }}
         run: |
-          echo "DEPS=$DEPS ./psycopg_c" >> $GITHUB_ENV
+          echo "DEPS=$DEPS ./gaussdb_c" >> $GITHUB_ENV
 
       - name: Install pycopg packages
         run: pip install $DEPS

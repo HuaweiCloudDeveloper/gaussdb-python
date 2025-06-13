@@ -16,8 +16,8 @@ testpaths=[
 
 [tool.coverage.run]
 source = [
-    "psycopg/psycopg",
-    "psycopg_pool/psycopg_pool",
+    "gaussdb/gaussdb",
+    "gaussdb_pool/gaussdb_pool",
 ]
 [tool.coverage.report]
 exclude_lines = [
@@ -27,9 +27,9 @@ exclude_lines = [
 
 [tool.mypy]
 files = [
-    "psycopg/psycopg",
-    "psycopg_pool/psycopg_pool",
-    "psycopg_c/psycopg_c",
+    "gaussdb/gaussdb",
+    "gaussdb_pool/gaussdb_pool",
+    "gaussdb_c/gaussdb_c",
     "tests",
 ]
 warn_unused_ignores = true
@@ -57,10 +57,10 @@ disallow_untyped_calls = false
 
 [tool.codespell]
 ignore-words-list = "alot,ans,ba,fo,te,erro,varning"
-skip = "build,_build,.tox,.mypy_cache,.venv,pq.c,_psycopg.c,*.html"
+skip = "build,_build,.tox,.mypy_cache,.venv,pq.c,_gaussdb.c,*.html"
 
 [tool.isort]
 profile = "black"
 length_sort = true
 multi_line_output = 9
-sort_order = "psycopg"  # requires the isort-psycopg module
+sort_order = "gaussdb"  # requires the isort-gaussdb module

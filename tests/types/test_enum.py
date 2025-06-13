@@ -2,11 +2,11 @@ from enum import Enum, auto
 
 import pytest
 
-from psycopg import errors as e
-from psycopg import pq, sql
-from psycopg.adapt import PyFormat
-from psycopg.types import TypeInfo
-from psycopg.types.enum import EnumInfo, register_enum
+from gaussdb import errors as e
+from gaussdb import pq, sql
+from gaussdb.adapt import PyFormat
+from gaussdb.types import TypeInfo
+from gaussdb.types.enum import EnumInfo, register_enum
 
 from ..fix_crdb import crdb_encoding
 

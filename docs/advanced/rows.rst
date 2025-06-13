@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. index:: row factories
 
@@ -11,13 +11,13 @@ Cursor's `fetch*` methods, by default, return the records received from the
 database as tuples. This can be changed to better suit the needs of the
 programmer by using custom *row factories*.
 
-The module `psycopg.rows` exposes several row factories ready to be used. For
+The module `gaussdb.rows` exposes several row factories ready to be used. For
 instance, if you want to return your records as dictionaries, you can use
-`~psycopg.rows.dict_row`::
+`~gaussdb.rows.dict_row`::
 
-    >>> from psycopg.rows import dict_row
+    >>> from gaussdb.rows import dict_row
 
-    >>> conn = psycopg.connect(DSN, row_factory=dict_row)
+    >>> conn = gaussdb.connect(DSN, row_factory=dict_row)
 
     >>> conn.execute("select 'John Doe' as name, 33 as age").fetchone()
     {'name': 'John Doe', 'age': 33}
@@ -32,14 +32,14 @@ they return::
     >>> cur.execute("select 'John Doe' as name, 33 as age").fetchone()
     {'name': 'John Doe', 'age': 33}
 
-    >>> from psycopg.rows import namedtuple_row
+    >>> from gaussdb.rows import namedtuple_row
     >>> cur.row_factory = namedtuple_row
     >>> cur.execute("select 'John Doe' as name, 33 as age").fetchone()
     Row(name='John Doe', age=33)
 
 If you want to return objects of your choice you can use a row factory
-*generator*, for instance `~psycopg.rows.class_row` or
-`~psycopg.rows.args_row`, or you can :ref:`write your own row factory
+*generator*, for instance `~gaussdb.rows.class_row` or
+`~gaussdb.rows.args_row`, or you can :ref:`write your own row factory
 <row-factory-create>`::
 
     >>> from dataclasses import dataclass
@@ -50,7 +50,7 @@ If you want to return objects of your choice you can use a row factory
     ...     age: int
     ...     weight: Optional[int] = None
 
-    >>> from psycopg.rows import class_row
+    >>> from gaussdb.rows import class_row
     >>> cur = conn.cursor(row_factory=class_row(Person))
     >>> cur.execute("select 'John Doe' as name, 33 as age").fetchone()
     Person(name='John Doe', age=33, weight=None)
@@ -86,15 +86,15 @@ query is executed and properties such as `~Cursor.description` and
 which is efficient to call repeatedly (because, for instance, the names of the
 columns are extracted, sanitised, and stored in local variables).
 
-Formally, these objects are represented by the `~psycopg.rows.RowFactory` and
-`~psycopg.rows.RowMaker` protocols.
+Formally, these objects are represented by the `~gaussdb.rows.RowFactory` and
+`~gaussdb.rows.RowMaker` protocols.
 
 `~RowFactory` objects can be implemented as a class, for instance:
 
 .. code:: python
 
    from typing import Any, Sequence
-   from psycopg import Cursor
+   from gaussdb import Cursor
 
    class DictRowFactory:
        def __init__(self, cursor: Cursor[Any]):
@@ -121,7 +121,7 @@ These can then be used by specifying a `row_factory` argument in
 
 .. code:: python
 
-    conn = psycopg.connect(row_factory=DictRowFactory)
+    conn = gaussdb.connect(row_factory=DictRowFactory)
     cur = conn.execute("SELECT first_name, last_name, age FROM persons")
     person = cur.fetchone()
     print(f"{person['first_name']} {person['last_name']}")

@@ -1,5 +1,5 @@
-from psycopg import sql
-from psycopg.adapt import PyFormat, Transformer
+from gaussdb import sql
+from gaussdb.adapt import PyFormat, Transformer
 
 
 def test_quote_none(conn):

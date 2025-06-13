@@ -1,10 +1,10 @@
 import pytest
 
-import psycopg
-from psycopg import Binary
-from psycopg import errors as e
-from psycopg import pq, sql
-from psycopg.adapt import PyFormat
+import gaussdb
+from gaussdb import Binary
+from gaussdb import errors as e
+from gaussdb import pq, sql
+from gaussdb.adapt import PyFormat
 
 from ..utils import eur
 from ..fix_crdb import crdb_encoding, crdb_scs_off
@@ -52,20 +52,20 @@ def test_dump_zero(conn, fmt_in):
         pytest.skip("GaussDB allows null characters in strings for binary format.")
     cur = conn.cursor()
     s = "foo\x00bar"
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         cur.execute(f"select %{fmt_in.value}::text", (s,))
 
 
 def test_quote_zero(conn):
     cur = conn.cursor()
     s = "foo\x00bar"
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         cur.execute(sql.SQL("select {}").format(sql.Literal(s)))
 
 
 # the only way to make this pass is to reduce %% -> % every time
 # not only when there are query arguments
-# see https://github.com/psycopg/psycopg2/issues/825
+# see https://github.com/gaussdb/_GaussDB/issues/825
 @pytest.mark.xfail
 def test_quote_percent(conn):
     cur = conn.cursor()
@@ -151,7 +151,7 @@ def test_dump_text_oid(conn, fmt_in):
 
     with pytest.raises(e.IndeterminateDatatype):
         conn.execute(f"select concat(%{fmt_in.value}, %{fmt_in.value})", ["foo", "bar"])
-    conn.adapters.register_dumper(str, psycopg.types.string.StrDumper)
+    conn.adapters.register_dumper(str, gaussdb.types.string.StrDumper)
     cur = conn.execute(
         f"select concat(%{fmt_in.value}, %{fmt_in.value})", ["foo", "bar"]
     )
@@ -188,7 +188,7 @@ def test_load_badenc(conn, typename, fmt_out):
     cur = conn.cursor(binary=fmt_out)
 
     conn.execute("set client_encoding to latin1")
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         cur.execute(f"select chr(%s)::{typename}", [ord(eur)])
 
     stmt = sql.SQL("copy (select chr({})) to stdout (format {})").format(
@@ -196,7 +196,7 @@ def test_load_badenc(conn, typename, fmt_out):
     )
     with cur.copy(stmt) as copy:
         copy.set_types([typename])
-        with pytest.raises(psycopg.DataError):
+        with pytest.raises(gaussdb.DataError):
             copy.read_row()
 
 

@@ -3,28 +3,28 @@
 # DO NOT CHANGE! Change the original file instead.
 import pytest
 
-import psycopg
-from psycopg import errors as e
-from psycopg import pq, rows
-from psycopg.adapt import PyFormat
+import gaussdb
+from gaussdb import errors as e
+from gaussdb import pq, rows
+from gaussdb.adapt import PyFormat
 
 from ._test_cursor import ph
 
 
 @pytest.fixture
 def conn(conn, anyio_backend):
-    conn.cursor_factory = psycopg.RawCursor
+    conn.cursor_factory = gaussdb.RawCursor
     return conn
 
 
 def test_default_cursor(conn):
     cur = conn.cursor()
-    assert type(cur) is psycopg.RawCursor
+    assert type(cur) is gaussdb.RawCursor
 
 
 def test_str(conn):
     cur = conn.cursor()
-    assert "psycopg.%s" % psycopg.RawCursor.__name__ in str(cur)
+    assert "gaussdb.%s" % gaussdb.RawCursor.__name__ in str(cur)
 
 
 def test_sequence_only(conn):
@@ -56,7 +56,7 @@ def test_query_params_execute(conn):
     assert cur._query.query == b"select 1"
     assert not cur._query.params
 
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         cur.execute("select $1::int", ["wat"])
 
     assert cur._query.query == b"select $1::int"

@@ -2,7 +2,7 @@ import ctypes
 
 import pytest
 
-from psycopg import pq
+from gaussdb import pq
 
 
 @pytest.mark.parametrize(

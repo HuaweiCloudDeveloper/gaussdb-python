@@ -4,8 +4,8 @@ from uuid import UUID
 
 import pytest
 
-from psycopg import pq, sql
-from psycopg.adapt import PyFormat
+from gaussdb import pq, sql
+from gaussdb.adapt import PyFormat
 
 
 @pytest.mark.parametrize("fmt_in", PyFormat)
@@ -69,11 +69,11 @@ def test_uuid_load(conn, fmt_out, val):
 def test_lazy_load(dsn):
     script = f"""\
 import sys
-import psycopg
+import gaussdb
 
 assert 'uuid' not in sys.modules
 
-conn = psycopg.connect({dsn!r})
+conn = gaussdb.connect({dsn!r})
 with conn.cursor() as cur:
     cur.execute("select repeat('1', 32)::uuid")
     cur.fetchone()

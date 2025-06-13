@@ -6,7 +6,7 @@ Generate per-sqlstate errors from PostgreSQL source code.
 The script can be run at a new PostgreSQL release to refresh the module.
 """
 
-# Copyright (C) 2020 The Psycopg Team
+# Copyright (C) 2020 The GaussDB Team
 
 import os
 import re
@@ -15,7 +15,7 @@ import logging
 from collections import defaultdict, namedtuple
 from urllib.request import urlopen
 
-from psycopg.errors import get_base_exception
+from gaussdb.errors import get_base_exception
 
 logger = logging.getLogger()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -24,7 +24,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 def main():
     classes, errors = fetch_errors("9.6 10 11 12 13 14 15 16 17".split())
 
-    fn = os.path.dirname(__file__) + "/../psycopg/psycopg/errors.py"
+    fn = os.path.dirname(__file__) + "/../gaussdb/gaussdb/errors.py"
     update_file(fn, generate_module_data(classes, errors))
 
     fn = os.path.dirname(__file__) + "/../docs/api/errors.rst"

@@ -1,7 +1,7 @@
 import pytest
 
-import psycopg
-from psycopg.conninfo import conninfo_to_dict
+import gaussdb
+from gaussdb.conninfo import conninfo_to_dict
 
 
 @pytest.mark.dns
@@ -10,7 +10,7 @@ async def test_resolve_hostaddr_async_warning(recwarn):
     import_dnspython()
     conninfo = "dbname=foo"
     params = conninfo_to_dict(conninfo)
-    params = await psycopg._dns.resolve_hostaddr_async(  # type: ignore[attr-defined]
+    params = await gaussdb._dns.resolve_hostaddr_async(  # type: ignore[attr-defined]
         params
     )
     assert "resolve_hostaddr_async" in str(recwarn.pop(DeprecationWarning).message)
@@ -22,4 +22,4 @@ def import_dnspython():
     except ImportError:
         pytest.skip("dnspython package not available")
 
-    import psycopg._dns  # noqa: F401
+    import gaussdb._dns  # noqa: F401

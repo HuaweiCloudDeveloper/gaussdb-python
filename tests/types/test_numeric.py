@@ -6,11 +6,11 @@ from decimal import Decimal
 
 import pytest
 
-import psycopg
-from psycopg import pq, sql
-from psycopg.abc import Buffer
-from psycopg.adapt import PyFormat, Transformer
-from psycopg.types.numeric import FloatLoader, Int8, Int8BinaryDumper, Int8Dumper
+import gaussdb
+from gaussdb import pq, sql
+from gaussdb.abc import Buffer
+from gaussdb.adapt import PyFormat, Transformer
+from gaussdb.types.numeric import FloatLoader, Int8, Int8BinaryDumper, Int8Dumper
 
 from ..fix_crdb import is_crdb
 
@@ -576,7 +576,7 @@ def test_minus_minus_quote(conn, pgtype):
 @pytest.mark.parametrize("wrapper", "Int2 Int4 Int8 Oid Float4 Float8".split())
 @pytest.mark.parametrize("fmt_in", PyFormat)
 def test_dump_wrapper(conn, wrapper, fmt_in):
-    wrapper = getattr(psycopg.types.numeric, wrapper)
+    wrapper = getattr(gaussdb.types.numeric, wrapper)
     obj = wrapper(1)
     cur = conn.execute(
         f"select %(obj){fmt_in.value} = 1, %(obj){fmt_in.value}", {"obj": obj}
@@ -587,7 +587,7 @@ def test_dump_wrapper(conn, wrapper, fmt_in):
 
 @pytest.mark.parametrize("wrapper", "Int2 Int4 Int8 Oid Float4 Float8".split())
 def test_dump_wrapper_oid(wrapper):
-    wrapper = getattr(psycopg.types.numeric, wrapper)
+    wrapper = getattr(gaussdb.types.numeric, wrapper)
     base = wrapper.__mro__[1]
     assert base in (int, float)
     n = base(3.14)
@@ -599,10 +599,10 @@ def test_dump_wrapper_oid(wrapper):
 @pytest.mark.parametrize("wrapper", "Int2 Int4 Int8 Oid Float4 Float8".split())
 @pytest.mark.parametrize("fmt_in", PyFormat)
 def test_repr_wrapper(conn, wrapper, fmt_in):
-    wrapper = getattr(psycopg.types.numeric, wrapper)
+    wrapper = getattr(gaussdb.types.numeric, wrapper)
     cur = conn.execute(f"select pg_typeof(%{fmt_in.value})::oid", [wrapper(0)])
     oid = cur.fetchone()[0]
-    assert oid == psycopg.postgres.types[wrapper.__name__.lower()].oid
+    assert oid == gaussdb.postgres.types[wrapper.__name__.lower()].oid
 
 
 @pytest.mark.parametrize("fmt_out", pq.Format)

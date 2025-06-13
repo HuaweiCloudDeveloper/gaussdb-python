@@ -36,19 +36,19 @@ class Package:
 packages: dict[str, Package] = {}
 
 Package(
-    name="psycopg",
+    name="gaussdb",
     toml_files=[
-        PROJECT_DIR / "psycopg/pyproject.toml",
-        PROJECT_DIR / "psycopg_c/pyproject.toml",
+        PROJECT_DIR / "gaussdb/pyproject.toml",
+        PROJECT_DIR / "gaussdb_c/pyproject.toml",
     ],
     history_file=PROJECT_DIR / "docs/news.rst",
     tag_format="{version}",
-    extras=["psycopg-c", "psycopg-binary"],
+    extras=["gaussdb-c", "gaussdb-binary"],
 )
 
 Package(
-    name="psycopg_pool",
-    toml_files=[PROJECT_DIR / "psycopg_pool/pyproject.toml"],
+    name="gaussdb_pool",
+    toml_files=[PROJECT_DIR / "gaussdb_pool/pyproject.toml"],
     history_file=PROJECT_DIR / "docs/news_pool.rst",
     tag_format="pool-{version}",
     extras=[],
@@ -312,7 +312,7 @@ def parse_cmdline() -> Namespace:
         "-p",
         "--package",
         choices=list(packages.keys()),
-        default="psycopg",
+        default="gaussdb",
         help="the package to bump version [default: %(default)s]",
     )
 

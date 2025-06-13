@@ -14,8 +14,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {package: psycopg_pool, format: sdist}
-          - {package: psycopg_pool, format: wheel}
+          - {package: gaussdb_pool, format: sdist}
+          - {package: gaussdb_pool, format: wheel}
 
     steps:
       - uses: actions/checkout@v4
@@ -31,12 +31,12 @@ jobs:
         run: python -m build -o dist --${{ matrix.format }} ${{ matrix.package }}
 
       - name: Install the Python pool package and test requirements
-        run: pip install psycopg[test] dist/*
+        run: pip install gaussdb[test] dist/*
 
       - name: Test the package
         run: pytest -m 'pool and not slow and not flakey' --color yes
         env:
-          PSYCOPG_TEST_DSN: "host=127.0.0.1 user=postgres"
+          GAUSSDB_TEST_DSN: "host=127.0.0.1 user=postgres"
           PGPASSWORD: password
 
       - uses: actions/upload-artifact@v4
@@ -66,5 +66,5 @@ jobs:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
         with:
-          name: psycopg-pool-artifact
+          name: gaussdb-pool-artifact
           delete-merged: true

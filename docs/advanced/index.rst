@@ -3,7 +3,7 @@
 More advanced topics
 ====================
 
-Once you have familiarised yourself with the :ref:`Psycopg basic operations
+Once you have familiarised yourself with the :ref:`GaussDB basic operations
 <basic>`, you can take a look at the chapter of this section for more advanced
 usages.
 

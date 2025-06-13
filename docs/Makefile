@@ -14,7 +14,7 @@ help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) || true
 
 serve:
-	PSYCOPG_IMPL=python sphinx-autobuild . _build/html/
+	GAUSSDB_IMPL=python sphinx-autobuild . _build/html/
 
 .PHONY: help serve env Makefile
 
@@ -22,7 +22,7 @@ env: .venv
 
 .venv:
 	$(PYTHON) -m venv .venv
-	./.venv/bin/pip install -e "../psycopg[docs]" -e ../psycopg_pool
+	./.venv/bin/pip install -e "../gaussdb[docs]" -e ../gaussdb_pool
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).

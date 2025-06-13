@@ -6,7 +6,7 @@ ticket role
 An interpreted text role to link docs to tickets issues.
 
 :copyright: Copyright 2013 by Daniele Varrazzo.
-:copyright: Copyright 2021 The Psycopg Team
+:copyright: Copyright 2021 The GaussDB Team
 """
 
 import re

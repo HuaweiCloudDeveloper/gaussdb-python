@@ -1,7 +1,7 @@
 `_dns` -- DNS resolution utilities
 ==================================
 
-.. module:: psycopg._dns
+.. module:: gaussdb._dns
 
 This module contains a few experimental utilities to interact with the DNS
 server before performing a connection.
@@ -13,7 +13,7 @@ server before performing a connection.
 
 .. warning::
     This module depends on the `dnspython`_ package. The package is currently
-    not installed automatically as a Psycopg dependency and must be installed
+    not installed automatically as a GaussDB dependency and must be installed
     manually:
 
     .. code:: sh
@@ -28,7 +28,7 @@ server before performing a connection.
     Apply SRV DNS lookup as defined in :RFC:`2782`.
 
     :param params: The input parameters, for instance as returned by
-        `~psycopg.conninfo.conninfo_to_dict()`.
+        `~gaussdb.conninfo.conninfo_to_dict()`.
     :type params: `!dict`
     :return: An updated list of connection parameters.
 
@@ -37,7 +37,7 @@ server before performing a connection.
     If lookup is successful, return a params dict with hosts and ports replaced
     with the looked-up entries.
 
-    Raise `~psycopg.OperationalError` if no lookup is successful and no host
+    Raise `~gaussdb.OperationalError` if no lookup is successful and no host
     (looked up or unchanged) could be returned.
 
     In addition to the rules defined by RFC 2782 about the host name pattern,
@@ -49,20 +49,20 @@ server before performing a connection.
 
     .. note::
        One possible way to use this function automatically is to subclass
-       `~psycopg.Connection`, extending the
-       `~psycopg.Connection._get_connection_params()` method::
+       `~gaussdb.Connection`, extending the
+       `~gaussdb.Connection._get_connection_params()` method::
 
-           import psycopg._dns  # not imported automatically
+           import gaussdb._dns  # not imported automatically
 
-           class SrvCognizantConnection(psycopg.Connection):
+           class SrvCognizantConnection(gaussdb.Connection):
                @classmethod
                def _get_connection_params(cls, conninfo, **kwargs):
                    params = super()._get_connection_params(conninfo, **kwargs)
-                   params = psycopg._dns.resolve_srv(params)
+                   params = gaussdb._dns.resolve_srv(params)
                    return params
 
            # The name will be resolved to db1.example.com
-           cnn = SrvCognizantConnection.connect("host=_postgres._tcp.db.psycopg.org")
+           cnn = SrvCognizantConnection.connect("host=_postgres._tcp.db.gaussdb.org")
 
 
 .. function:: resolve_srv_async(params)
@@ -71,7 +71,7 @@ server before performing a connection.
     Async equivalent of `resolve_srv()`.
 
 
-.. automethod:: psycopg.Connection._get_connection_params
+.. automethod:: gaussdb.Connection._get_connection_params
 
     .. warning::
         This is an experimental method.
@@ -87,7 +87,7 @@ server before performing a connection.
             return params
 
 
-.. automethod:: psycopg.AsyncConnection._get_connection_params
+.. automethod:: gaussdb.AsyncConnection._get_connection_params
 
     .. warning::
         This is an experimental method.
@@ -100,11 +100,11 @@ server before performing a connection.
 
     .. deprecated:: 3.1
         The use of this function is not necessary anymore, because
-        `psycopg.AsyncConnection.connect()` performs non-blocking name
+        `gaussdb.AsyncConnection.connect()` performs non-blocking name
         resolution automatically.
 
     :param params: The input parameters, for instance as returned by
-        `~psycopg.conninfo.conninfo_to_dict()`.
+        `~gaussdb.conninfo.conninfo_to_dict()`.
     :type params: `!dict`
 
     If a ``host`` param is present but not ``hostname``, resolve the host
@@ -114,7 +114,7 @@ server before performing a connection.
     connecting without further DNS lookups, eventually removing hosts that are
     not resolved, keeping the lists of hosts and ports consistent.
 
-    Raise `~psycopg.OperationalError` if connection is not possible (e.g. no
+    Raise `~gaussdb.OperationalError` if connection is not possible (e.g. no
     host resolve, inconsistent lists length).
 
     See `the PostgreSQL docs`__ for explanation of how these params are used,
@@ -124,22 +124,22 @@ server before performing a connection.
            #LIBPQ-PARAMKEYWORDS
 
     .. warning::
-        Before psycopg 3.1, this function doesn't handle the ``/etc/hosts`` file.
+        Before gaussdb 3.1, this function doesn't handle the ``/etc/hosts`` file.
 
     .. note::
-       Starting from psycopg 3.1, a similar operation is performed
+       Starting from gaussdb 3.1, a similar operation is performed
        automatically by `!AsyncConnection._get_connection_params()`, so this
        function is unneeded.
 
-       In psycopg 3.0, one possible way to use this function automatically is
-       to subclass `~psycopg.AsyncConnection`, extending the
-       `~psycopg.AsyncConnection._get_connection_params()` method::
+       In gaussdb 3.0, one possible way to use this function automatically is
+       to subclass `~gaussdb.AsyncConnection`, extending the
+       `~gaussdb.AsyncConnection._get_connection_params()` method::
 
-           import psycopg._dns  # not imported automatically
+           import gaussdb._dns  # not imported automatically
 
-           class AsyncDnsConnection(psycopg.AsyncConnection):
+           class AsyncDnsConnection(gaussdb.AsyncConnection):
                @classmethod
                async def _get_connection_params(cls, conninfo, **kwargs):
                    params = await super()._get_connection_params(conninfo, **kwargs)
-                   params = await psycopg._dns.resolve_hostaddr_async(params)
+                   params = await gaussdb._dns.resolve_hostaddr_async(params)
                    return params

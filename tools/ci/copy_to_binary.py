@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Create the psycopg-binary package by renaming and patching psycopg-c
+# Create the gaussdb-binary package by renaming and patching gaussdb-c
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from pathlib import Path
 
 curdir = Path(__file__).parent
 pdir = curdir / "../.."
-target = pdir / "psycopg_binary"
+target = pdir / "gaussdb_binary"
 
 if target.exists():
     raise Exception(f"path {target} already exists")
@@ -26,14 +26,14 @@ def sed_i(pattern: str, repl: str, filename: str | Path) -> None:
             f.write(newdata)
 
 
-shutil.copytree(pdir / "psycopg_c", target)
-shutil.move(str(target / "psycopg_c"), str(target / "psycopg_binary"))
+shutil.copytree(pdir / "gaussdb_c", target)
+shutil.move(str(target / "gaussdb_c"), str(target / "gaussdb_binary"))
 shutil.move(str(target / "README-binary.rst"), str(target / "README.rst"))
-sed_i("psycopg-c", "psycopg-binary", target / "pyproject.toml")
-sed_i(r'"psycopg_c([\./][^"]+)?"', r'"psycopg_binary\1"', target / "pyproject.toml")
-sed_i(r"__impl__\s*=.*", '__impl__ = "binary"', target / "psycopg_binary/pq.pyx")
+sed_i("gaussdb-c", "gaussdb-binary", target / "pyproject.toml")
+sed_i(r'"gaussdb_c([\./][^"]+)?"', r'"gaussdb_binary\1"', target / "pyproject.toml")
+sed_i(r"__impl__\s*=.*", '__impl__ = "binary"', target / "gaussdb_binary/pq.pyx")
 for dirpath, dirnames, filenames in os.walk(target):
     for filename in filenames:
         if os.path.splitext(filename)[1] not in (".pyx", ".pxd", ".py"):
             continue
-        sed_i(r"\bpsycopg_c\b", "psycopg_binary", Path(dirpath) / filename)
+        sed_i(r"\bpsycopg_c\b", "gaussdb_binary", Path(dirpath) / filename)

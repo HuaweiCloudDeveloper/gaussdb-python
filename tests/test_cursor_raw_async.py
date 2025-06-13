@@ -1,27 +1,27 @@
 import pytest
 
-import psycopg
-from psycopg import errors as e
-from psycopg import pq, rows
-from psycopg.adapt import PyFormat
+import gaussdb
+from gaussdb import errors as e
+from gaussdb import pq, rows
+from gaussdb.adapt import PyFormat
 
 from ._test_cursor import ph
 
 
 @pytest.fixture
 async def aconn(aconn, anyio_backend):
-    aconn.cursor_factory = psycopg.AsyncRawCursor
+    aconn.cursor_factory = gaussdb.AsyncRawCursor
     return aconn
 
 
 async def test_default_cursor(aconn):
     cur = aconn.cursor()
-    assert type(cur) is psycopg.AsyncRawCursor
+    assert type(cur) is gaussdb.AsyncRawCursor
 
 
 async def test_str(aconn):
     cur = aconn.cursor()
-    assert "psycopg.%s" % psycopg.AsyncRawCursor.__name__ in str(cur)
+    assert "gaussdb.%s" % gaussdb.AsyncRawCursor.__name__ in str(cur)
 
 
 async def test_sequence_only(aconn):
@@ -53,7 +53,7 @@ async def test_query_params_execute(aconn):
     assert cur._query.query == b"select 1"
     assert not cur._query.params
 
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         await cur.execute("select $1::int", ["wat"])
 
     assert cur._query.query == b"select $1::int"

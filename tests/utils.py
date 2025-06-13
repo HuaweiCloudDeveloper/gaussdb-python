@@ -182,14 +182,14 @@ def set_autocommit(conn, value):
     """
     Set autocommit on a connection.
 
-    Give an uniform interface to both sync and async connection for psycopg
-    < 3.2, in order to run psycopg_pool 3.2 tests using psycopg 3.1.
+    Give an uniform interface to both sync and async connection for gaussdb
+    < 3.2, in order to run gaussdb_pool 3.2 tests using gaussdb 3.1.
     """
-    import psycopg
+    import gaussdb
 
-    if isinstance(conn, psycopg.Connection):
+    if isinstance(conn, gaussdb.Connection):
         conn.autocommit = value
-    elif isinstance(conn, psycopg.AsyncConnection):
+    elif isinstance(conn, gaussdb.AsyncConnection):
         return conn.set_autocommit(value)
     else:
         raise TypeError(f"not a connection: {conn}")

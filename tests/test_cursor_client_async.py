@@ -2,34 +2,34 @@ import datetime as dt
 
 import pytest
 
-import psycopg
-from psycopg import rows
+import gaussdb
+from gaussdb import rows
 
 from .fix_crdb import crdb_encoding
 
 
 @pytest.fixture
 async def aconn(aconn, anyio_backend):
-    aconn.cursor_factory = psycopg.AsyncClientCursor
+    aconn.cursor_factory = gaussdb.AsyncClientCursor
     return aconn
 
 
 async def test_default_cursor(aconn):
     cur = aconn.cursor()
-    assert type(cur) is psycopg.AsyncClientCursor
+    assert type(cur) is gaussdb.AsyncClientCursor
 
 
 async def test_str(aconn):
     cur = aconn.cursor()
-    assert "psycopg.%s" % psycopg.AsyncClientCursor.__name__ in str(cur)
+    assert "gaussdb.%s" % gaussdb.AsyncClientCursor.__name__ in str(cur)
 
 
 async def test_from_cursor_factory(aconn_cls, dsn):
     async with await aconn_cls.connect(
-        dsn, cursor_factory=psycopg.AsyncClientCursor
+        dsn, cursor_factory=gaussdb.AsyncClientCursor
     ) as aconn:
         cur = aconn.cursor()
-        assert type(cur) is psycopg.AsyncClientCursor
+        assert type(cur) is gaussdb.AsyncClientCursor
 
 
 async def test_execute_many_results_param(aconn):
@@ -61,7 +61,7 @@ async def test_query_params_execute(aconn):
     assert cur._query.query == b"select 1"
     assert not cur._query.params
 
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         await cur.execute("select %t::int", ["wat"])
 
     assert cur._query.query == b"select 'wat'::int"
@@ -88,7 +88,7 @@ async def test_leak(aconn_cls, dsn, faker, fetch, row_factory, gc):
         async with await aconn_cls.connect(dsn) as conn, conn.transaction(
             force_rollback=True
         ):
-            async with psycopg.AsyncClientCursor(conn, row_factory=row_factory) as cur:
+            async with gaussdb.AsyncClientCursor(conn, row_factory=row_factory) as cur:
                 await cur.execute(faker.drop_stmt)
                 await cur.execute(faker.create_stmt)
                 async with faker.find_insert_problem_async(conn):

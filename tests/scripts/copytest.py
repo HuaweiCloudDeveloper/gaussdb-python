@@ -9,9 +9,9 @@ from time import time
 from typing import Any
 from argparse import ArgumentParser, Namespace
 
-import psycopg
-from psycopg import sql
-from psycopg.abc import Query
+import gaussdb
+from gaussdb import sql
+from gaussdb.abc import Query
 
 logger = logging.getLogger()
 logging.basicConfig(
@@ -32,9 +32,9 @@ def main():
 
 def main_sync(args: Namespace) -> None:
     test = CopyPutTest(args)
-    with psycopg.Connection.connect(args.dsn) as conn:
+    with gaussdb.Connection.connect(args.dsn) as conn:
         with conn.cursor() as cur:
-            writer = getattr(psycopg.copy, args.writer)(cur) if args.writer else None
+            writer = getattr(gaussdb.copy, args.writer)(cur) if args.writer else None
             cur.execute(test.get_table_stmt())
             t0 = time()
             with cur.copy(test.get_copy_stmt(), writer=writer) as copy:
@@ -47,10 +47,10 @@ def main_sync(args: Namespace) -> None:
 
 async def main_async(args: Namespace) -> None:
     test = CopyPutTest(args)
-    async with await psycopg.AsyncConnection.connect(args.dsn) as conn:
+    async with await gaussdb.AsyncConnection.connect(args.dsn) as conn:
         async with conn.cursor() as cur:
             await cur.execute(test.get_table_stmt())
-            writer = getattr(psycopg.copy, args.writer)(cur) if args.writer else None
+            writer = getattr(gaussdb.copy, args.writer)(cur) if args.writer else None
             t0 = time()
             async with cur.copy(test.get_copy_stmt(), writer=writer) as copy:
                 for i in range(args.nrecs):
@@ -140,7 +140,7 @@ def parse_cmdline() -> Namespace:
 
     if args.writer:
         try:
-            getattr(psycopg.copy, args.writer)
+            getattr(gaussdb.copy, args.writer)
         except AttributeError:
             parser.error(f"unknown writer: {args.writer!r}")
 

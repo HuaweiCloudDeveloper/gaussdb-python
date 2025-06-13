@@ -2,9 +2,9 @@ import time
 
 import pytest
 
-import psycopg.crdb
-from psycopg import errors as e
-from psycopg.crdb import AsyncCrdbConnection
+import gaussdb.crdb
+from gaussdb import errors as e
+from gaussdb.crdb import AsyncCrdbConnection
 
 from ..acompat import asleep, gather, spawn
 
@@ -23,7 +23,7 @@ async def test_connect(dsn):
         assert isinstance(conn, AsyncCrdbConnection)
 
     if False:  # ASYNC
-        with psycopg.crdb.connect(dsn) as conn:
+        with gaussdb.crdb.connect(dsn) as conn:
             assert isinstance(conn, AsyncCrdbConnection)
 
 
@@ -50,7 +50,7 @@ async def test_broken_connection(aconn):
     cur = aconn.cursor()
     await cur.execute("select session_id from [show session_id]")
     (session_id,) = await cur.fetchone()
-    with pytest.raises(psycopg.DatabaseError):
+    with pytest.raises(gaussdb.DatabaseError):
         await cur.execute("cancel session %s", [session_id])
     assert aconn.closed
 
@@ -59,7 +59,7 @@ async def test_broken_connection(aconn):
 async def test_broken(aconn):
     cur = await aconn.execute("show session_id")
     (session_id,) = await cur.fetchone()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         await aconn.execute("cancel session %s", [session_id])
 
     assert aconn.closed
@@ -84,7 +84,7 @@ async def test_identify_closure(aconn_cls, dsn):
             t = spawn(closer)
             t0 = time.time()
             try:
-                with pytest.raises(psycopg.OperationalError):
+                with pytest.raises(gaussdb.OperationalError):
                     await conn.execute("select pg_sleep(3.0)")
                 dt = time.time() - t0
                 # CRDB seems to take not less than 1s

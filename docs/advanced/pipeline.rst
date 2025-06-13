@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. _pipeline-mode:
 
@@ -165,7 +165,7 @@ they will result in a single roundtrip between the client and the server:
 Pipeline mode usage
 -------------------
 
-Psycopg supports the pipeline mode via the `Connection.pipeline()` method. The
+GaussDB supports the pipeline mode via the `Connection.pipeline()` method. The
 method is a context manager: entering the ``with`` block yields a `Pipeline`
 object. At the end of block, the connection resumes the normal operation mode.
 
@@ -183,7 +183,7 @@ several operations, using `Connection.execute()`, `Cursor.execute()` and
     ...             "INSERT INTO elsewhere VALUES (%s)",
     ...             [("one",), ("two",), ("four",)])
 
-Unlike in normal mode, Psycopg will not wait for the server to receive the
+Unlike in normal mode, GaussDB will not wait for the server to receive the
 result of each query; the client will receive results in batches when the
 server flushes it output buffer. You can receive more than a single result
 by using more than one cursor in the same pipeline.
@@ -205,7 +205,7 @@ synchronization point.
 
 .. note::
 
-    Starting from Psycopg 3.1, `~Cursor.executemany()` makes use internally of
+    Starting from gaussdb.1, `~Cursor.executemany()` makes use internally of
     the pipeline mode; as a consequence there is no need to handle a pipeline
     block just to call `!executemany()` once.
 
@@ -216,7 +216,7 @@ Synchronization points
 ----------------------
 
 Flushing query results to the client can happen either when a synchronization
-point is established by Psycopg:
+point is established by GaussDB:
 
 - using the `Pipeline.sync()` method;
 - on `Connection.commit()` or `~Connection.rollback()`;
@@ -238,14 +238,14 @@ For example, in the following block:
 
 .. code:: python
 
-    >>> with psycopg.connect(autocommit=True) as conn:
+    >>> with gaussdb.connect(autocommit=True) as conn:
     ...     with conn.pipeline() as p, conn.cursor() as cur:
     ...         try:
     ...             cur.execute("INSERT INTO mytable (data) VALUES (%s)", ["one"])
     ...             cur.execute("INSERT INTO no_such_table (data) VALUES (%s)", ["two"])
     ...             conn.execute("INSERT INTO mytable (data) VALUES (%s)", ["three"])
     ...             p.sync()
-    ...         except psycopg.errors.UndefinedTable:
+    ...         except gaussdb.errors.UndefinedTable:
     ...             pass
     ...         cur.execute("INSERT INTO mytable (data) VALUES (%s)", ["four"])
 

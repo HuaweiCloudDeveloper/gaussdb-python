@@ -4,10 +4,10 @@ from decimal import Decimal
 
 import pytest
 
-from psycopg import pq, sql
-from psycopg.adapt import PyFormat
-from psycopg.types import range as range_module
-from psycopg.types.range import Range, RangeInfo, register_range
+from gaussdb import pq, sql
+from gaussdb.adapt import PyFormat
+from gaussdb.types import range as range_module
+from gaussdb.types.range import Range, RangeInfo, register_range
 
 from ..utils import eur
 from ..fix_crdb import crdb_skip_message, is_crdb

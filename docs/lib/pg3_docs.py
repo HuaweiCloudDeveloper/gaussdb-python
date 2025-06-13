@@ -3,7 +3,7 @@
 Customisation for docs generation.
 """
 
-# Copyright (C) 2020 The Psycopg Team
+# Copyright (C) 2020 The GaussDB Team
 
 from __future__ import annotations
 
@@ -35,10 +35,10 @@ def setup(app):
     app.connect("autodoc-process-signature", process_signature)
     app.connect("autodoc-before-process-signature", before_process_signature)
 
-    import psycopg  # type: ignore
+    import gaussdb  # type: ignore
 
     recover_defined_module(
-        psycopg, skip_modules=["psycopg._dns", "psycopg.types.shapely"]
+        gaussdb, skip_modules=["gaussdb._dns", "gaussdb.types.shapely"]
     )
     monkeypatch_autodoc()
 
@@ -104,7 +104,7 @@ def monkeypatch_autodoc():
         Replace a docstring such as::
 
             .. py:attribute:: ConnectionInfo.dbname
-               :module: psycopg
+               :module: gaussdb
 
                The database name of the connection.
 
@@ -114,7 +114,7 @@ def monkeypatch_autodoc():
 
             .. py:attribute:: ConnectionInfo.dbname
                :type: str
-               :module: psycopg
+               :module: gaussdb
 
                The database name of the connection.
 
@@ -164,9 +164,9 @@ def unrest(s):
     s = re.sub(r":[^`]*:`~?([^`]*)`", r"\1", s)  # drop role
     s = re.sub(r"\\(.)", r"\1", s)  # drop escape
 
-    # note that ~psycopg.pq.ConnStatus is converted to pq.ConnStatus
+    # note that ~gaussdb.pq.ConnStatus is converted to pq.ConnStatus
     # which should be interpreted well if currentmodule is set ok.
-    s = re.sub(r"(?:typing|psycopg)\.", "", s)  # drop unneeded modules
+    s = re.sub(r"(?:typing|gaussdb)\.", "", s)  # drop unneeded modules
     s = re.sub(r"~", "", s)  # drop the tilde
 
     return s

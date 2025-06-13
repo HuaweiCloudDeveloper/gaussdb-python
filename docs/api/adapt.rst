@@ -1,18 +1,18 @@
 `adapt` -- Types adaptation
 ===========================
 
-.. module:: psycopg.adapt
+.. module:: gaussdb.adapt
 
-The `!psycopg.adapt` module exposes a set of objects useful for the
+The `!gaussdb.adapt` module exposes a set of objects useful for the
 configuration of *data adaptation*, which is the conversion of Python objects
 to PostgreSQL data types and back.
 
 These objects are useful if you need to configure data adaptation, i.e.
-if you need to change the default way that Psycopg converts between types or
+if you need to change the default way that GaussDB converts between types or
 if you want to adapt custom data types and objects. You don't need this object
-in the normal use of Psycopg.
+in the normal use of GaussDB.
 
-See :ref:`adaptation` for an overview of the Psycopg adaptation system.
+See :ref:`adaptation` for an overview of the GaussDB adaptation system.
 
 .. _abstract base class: https://docs.python.org/glossary.html#term-abstract-base-class
 
@@ -23,7 +23,7 @@ Dumpers and loaders
 .. autoclass:: Dumper(cls, context=None)
 
     This is an `abstract base class`_, partially implementing the
-    `~psycopg.abc.Dumper` protocol. Subclasses *must* at least implement the
+    `~gaussdb.abc.Dumper` protocol. Subclasses *must* at least implement the
     `.dump()` method and optionally override other members.
 
     .. automethod:: dump
@@ -34,10 +34,10 @@ Dumpers and loaders
             the database.
 
     .. attribute:: format
-        :type: psycopg.pq.Format
+        :type: gaussdb.pq.Format
         :value: TEXT
 
-        Class attribute. Set it to `~psycopg.pq.Format.BINARY` if the class
+        Class attribute. Set it to `~gaussdb.pq.Format.BINARY` if the class
         `dump()` methods converts the object to binary format.
 
     .. automethod:: quote
@@ -50,16 +50,16 @@ Dumpers and loaders
 .. autoclass:: Loader(oid, context=None)
 
     This is an `abstract base class`_, partially implementing the
-    `~psycopg.abc.Loader` protocol. Subclasses *must* at least implement the
+    `~gaussdb.abc.Loader` protocol. Subclasses *must* at least implement the
     `.load()` method and optionally override other members.
 
     .. automethod:: load
 
     .. attribute:: format
-        :type: psycopg.pq.Format
+        :type: gaussdb.pq.Format
         :value: TEXT
 
-        Class attribute. Set it to `~psycopg.pq.Format.BINARY` if the class
+        Class attribute. Set it to `~gaussdb.pq.Format.BINARY` if the class
         `load()` methods converts the object from binary format.
 
 
@@ -83,7 +83,7 @@ Other objects used in adaptations
        The object where to look up for types information (such as the mapping
        between type names and oids in the specified context).
 
-       :type: `~psycopg.types.TypesRegistry`
+       :type: `~gaussdb.types.TypesRegistry`
 
    .. automethod:: get_dumper
    .. automethod:: get_dumper_by_oid
@@ -93,4 +93,4 @@ Other objects used in adaptations
 .. autoclass:: Transformer(context=None)
 
     :param context: The context where the transformer should operate.
-    :type context: `~psycopg.abc.AdaptContext`
+    :type context: `~gaussdb.abc.AdaptContext`

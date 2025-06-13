@@ -6,14 +6,14 @@ from itertools import cycle
 
 import pytest
 
-import psycopg
-from psycopg import errors as e
-from psycopg import pq, sql
-from psycopg.copy import AsyncCopy, AsyncLibpqWriter, AsyncQueuedLibpqWriter
-from psycopg.adapt import PyFormat
-from psycopg.types import TypeInfo
-from psycopg.types.hstore import register_hstore
-from psycopg.types.numeric import Int4
+import gaussdb
+from gaussdb import errors as e
+from gaussdb import pq, sql
+from gaussdb.copy import AsyncCopy, AsyncLibpqWriter, AsyncQueuedLibpqWriter
+from gaussdb.adapt import PyFormat
+from gaussdb.types import TypeInfo
+from gaussdb.types.hstore import register_hstore
+from gaussdb.types.numeric import Int4
 
 from .utils import eur
 from .acompat import alist
@@ -59,7 +59,7 @@ async def test_copy_out_iter(aconn, format, row_factory):
     else:
         want = sample_binary_rows
 
-    rf = getattr(psycopg.rows, row_factory)
+    rf = getattr(gaussdb.rows, row_factory)
     cur = aconn.cursor(row_factory=rf)
     async with cur.copy(
         f"copy ({sample_values}) to stdout (format {format.name})"
@@ -74,7 +74,7 @@ async def test_copy_out_iter(aconn, format, row_factory):
 @pytest.mark.parametrize("format", pq.Format)
 @pytest.mark.parametrize("row_factory", ["tuple_row", "dict_row", "namedtuple_row"])
 async def test_copy_out_no_result(aconn, format, row_factory):
-    rf = getattr(psycopg.rows, row_factory)
+    rf = getattr(gaussdb.rows, row_factory)
     cur = aconn.cursor(row_factory=rf)
     async with cur.copy(f"copy ({sample_values}) to stdout (format {format.name})"):
         with pytest.raises(e.ProgrammingError):
@@ -320,9 +320,9 @@ async def test_copy_big_size_block(aconn, pytype):
 @pytest.mark.parametrize("format", pq.Format)
 async def test_subclass_adapter(aconn, format):
     if format == pq.Format.TEXT:
-        from psycopg.types.string import StrDumper as BaseDumper
+        from gaussdb.types.string import StrDumper as BaseDumper
     else:
-        from psycopg.types.string import StrBinaryDumper
+        from gaussdb.types.string import StrBinaryDumper
 
         BaseDumper = StrBinaryDumper  # type: ignore
 
@@ -699,7 +699,7 @@ async def test_worker_error_propagated(aconn, monkeypatch):
         raise ZeroDivisionError
         yield
 
-    monkeypatch.setattr(psycopg._copy_async, "copy_to", copy_to_broken)
+    monkeypatch.setattr(gaussdb._copy_async, "copy_to", copy_to_broken)
     cur = aconn.cursor()
     await cur.execute("create temp table wat (a text, b text)")
     with pytest.raises(ZeroDivisionError):
@@ -778,7 +778,7 @@ async def test_copy_to_leaks(aconn_cls, dsn, faker, fmt, set_types, method, gc):
                                             break
                                 elif method == "rows":
                                     await alist(copy.rows())
-                            except (psycopg.OperationalError, psycopg.DataError) as e:
+                            except (gaussdb.OperationalError, gaussdb.DataError) as e:
                                 if "no COPY in progress" in str(
                                     e
                                 ) or "binary copy doesn't start" in str(e):

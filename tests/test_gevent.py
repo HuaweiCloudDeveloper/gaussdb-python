@@ -4,7 +4,7 @@ import subprocess as sp
 
 import pytest
 
-import psycopg
+import gaussdb
 
 pytest.importorskip("gevent")
 
@@ -22,7 +22,7 @@ gevent.monkey.patch_all()
 import json
 import time
 import gevent
-import psycopg
+import gaussdb
 
 TICK = {TICK!r}
 dts = []
@@ -38,7 +38,7 @@ def ticker():
 
 def querier():
     time.sleep(TICK * 2)
-    with psycopg.connect({dsn!r}) as conn:
+    with gaussdb.connect({dsn!r}) as conn:
         conn.execute("select pg_sleep(0.3)")
 
     global queried
@@ -56,30 +56,30 @@ print(json.dumps(dts))
         assert TICK <= dt < TICK * 1.1
 
 
-@pytest.mark.skipif("not psycopg._cmodule._psycopg")
+@pytest.mark.skipif("not gaussdb._cmodule._gaussdb")
 def test_patched_dont_use_wait_c():
-    if psycopg.waiting.wait is not psycopg.waiting.wait_c:
+    if gaussdb.waiting.wait is not gaussdb.waiting.wait_c:
         pytest.skip("wait_c not normally in use")
 
     script = """
 import gevent.monkey
 gevent.monkey.patch_all()
 
-import psycopg
-assert psycopg.waiting.wait is not psycopg.waiting.wait_c
+import gaussdb
+assert gaussdb.waiting.wait is not gaussdb.waiting.wait_c
 """
     sp.check_call([sys.executable, "-c", script])
 
 
-@pytest.mark.skipif("not psycopg._cmodule._psycopg")
+@pytest.mark.skipif("not gaussdb._cmodule._gaussdb")
 def test_unpatched_still_use_wait_c():
-    if psycopg.waiting.wait is not psycopg.waiting.wait_c:
+    if gaussdb.waiting.wait is not gaussdb.waiting.wait_c:
         pytest.skip("wait_c not normally in use")
 
     script = """
 import gevent.monkey
 
-import psycopg
-assert psycopg.waiting.wait is psycopg.waiting.wait_c
+import gaussdb
+assert gaussdb.waiting.wait is gaussdb.waiting.wait_c
 """
     sp.check_call([sys.executable, "-c", script])

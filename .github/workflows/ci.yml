@@ -51,7 +51,7 @@ jobs:
           wget -O /tmp/GaussDB_driver.zip https://dbs-download.obs.cn-north-1.myhuaweicloud.com/GaussDB/1730887196055/GaussDB_driver.zip
           unzip /tmp/GaussDB_driver.zip -d /tmp/ && rm -rf /tmp/GaussDB_driver.zip
           \cp /tmp/GaussDB_driver/Centralized/Hce2_X86_64/GaussDB-Kernel*64bit_Python.tar.gz /tmp/
-          tar -zxvf /tmp/GaussDB-Kernel*64bit_Python.tar.gz -C /tmp/ && rm -rf /tmp/GaussDB-Kernel*64bit_Python.tar.gz && rm -rf /tmp/psycopg2 && rm -rf /tmp/GaussDB_driver
+          tar -zxvf /tmp/GaussDB-Kernel*64bit_Python.tar.gz -C /tmp/ && rm -rf /tmp/GaussDB-Kernel*64bit_Python.tar.gz && rm -rf /tmp/_GaussDB && rm -rf /tmp/GaussDB_driver
           echo /tmp/lib | sudo tee /etc/ld.so.conf.d/gauss-libpq.conf
           sudo sed -i '1s|^|/tmp/lib\n|' /etc/ld.so.conf
           sudo ldconfig
@@ -62,8 +62,9 @@ jobs:
           source venv/bin/activate
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -e "./psycopg[dev,test]"
-          pip install -e ./psycopg_pool
+          pip install ./tools/isort-gaussdb/
+          pip install -e "./gaussdb[dev,test]"
+          pip install -e ./gaussdb_pool
 
           
       - name: Wait for openGauss to be ready
@@ -90,9 +91,9 @@ jobs:
 
       - name: Run tests
         env:
-          PYTHONPATH: ./psycopg:./psycopg_pool
-          PSYCOPG_IMPL: python
-          PSYCOPG_TEST_DSN: "host=127.0.0.1 port=5432 dbname=test user=root password=${{ secrets.OPENGAUSS_PASSWORD }} "
+          PYTHONPATH: ./gaussdb:./gaussdb_pool
+          GAUSSDB_IMPL: python
+          GAUSSDB_TEST_DSN: "host=127.0.0.1 port=5432 dbname=test user=root password=${{ secrets.OPENGAUSS_PASSWORD }} "
         run: |
           source venv/bin/activate
           pytest -s -v

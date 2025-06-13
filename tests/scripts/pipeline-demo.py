@@ -19,14 +19,14 @@ from contextlib import contextmanager
 from collections import deque
 from collections.abc import Iterator, Sequence
 
-from psycopg import AsyncConnection, Connection
-from psycopg import errors as e
-from psycopg import pq, waiting
-from psycopg.pq import DiagnosticField, Format
-from psycopg.abc import PipelineCommand
-from psycopg.generators import pipeline_communicate
+from gaussdb import AsyncConnection, Connection
+from gaussdb import errors as e
+from gaussdb import pq, waiting
+from gaussdb.pq import DiagnosticField, Format
+from gaussdb.abc import PipelineCommand
+from gaussdb.generators import pipeline_communicate
 
-psycopg_logger = logging.getLogger("psycopg")
+psycopg_logger = logging.getLogger("gaussdb")
 pipeline_logger = logging.getLogger("pipeline")
 args: argparse.Namespace
 
@@ -291,7 +291,7 @@ def main() -> None:
         help="number of rows to insert",
     )
     parser.add_argument(
-        "--pq", action="store_true", help="use low-level psycopg.pq API"
+        "--pq", action="store_true", help="use low-level gaussdb.pq API"
     )
     parser.add_argument(
         "--async", dest="async_", action="store_true", help="use async API"
@@ -326,7 +326,7 @@ def main() -> None:
     else:
         if pq.__impl__ != "python":
             parser.error(
-                "only supported for Python implementation (set PSYCOPG_IMPL=python)"
+                "only supported for Python implementation (set GAUSSDB_IMPL=python)"
             )
         if args.async_:
             asyncio.run(pipeline_demo_async(args.nrows, args.many, pipeline_logger))

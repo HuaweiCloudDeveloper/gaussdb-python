@@ -1,4 +1,4 @@
-.. _psycopg.conninfo:
+.. _gaussdb.conninfo:
 
 `conninfo` -- manipulate connection strings
 ===========================================
@@ -6,7 +6,7 @@
 This module contains a few utility functions to manipulate database
 connection strings.
 
-.. module:: psycopg.conninfo
+.. module:: gaussdb.conninfo
 
 .. autofunction:: conninfo_to_dict
 

@@ -2,8 +2,8 @@ import ipaddress
 
 import pytest
 
-from psycopg import pq, sql
-from psycopg.adapt import PyFormat
+from gaussdb import pq, sql
+from gaussdb.adapt import PyFormat
 
 crdb_skip_inet = pytest.mark.crdb_skip("inet")
 crdb_skip_cidr = pytest.mark.crdb_skip("cidr")

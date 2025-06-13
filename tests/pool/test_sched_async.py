@@ -8,7 +8,7 @@ import pytest
 from ..acompat import asleep, gather, spawn
 
 try:
-    from psycopg_pool.sched_async import AsyncScheduler
+    from gaussdb_pool.sched_async import AsyncScheduler
 except ImportError:
     # Tests should have been skipped if the package is not available
     pass
@@ -68,7 +68,7 @@ async def test_sched_task():
 
 @pytest.mark.slow
 async def test_sched_error(caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
     s = AsyncScheduler()
     t = spawn(s.run)
 

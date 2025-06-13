@@ -4,18 +4,18 @@
 import pytest
 from packaging.version import parse as ver
 
-import psycopg
-from psycopg import errors as e
-from psycopg import pq, rows
+import gaussdb
+from gaussdb import errors as e
+from gaussdb import pq, rows
 
 from ._test_cursor import ph
 
 pytestmark = pytest.mark.crdb_skip("server-side cursor")
 
-cursor_classes = [psycopg.ServerCursor]
-# Allow to import (not necessarily to run) the module with psycopg 3.1.
-if ver(psycopg.__version__) >= ver("3.2.0.dev0"):
-    cursor_classes.append(psycopg.RawServerCursor)
+cursor_classes = [gaussdb.ServerCursor]
+# Allow to import (not necessarily to run) the module with gaussdb 3.1.
+if ver(gaussdb.__version__) >= ver("3.2.0.dev0"):
+    cursor_classes.append(gaussdb.RawServerCursor)
 
 
 @pytest.fixture(params=cursor_classes)
@@ -25,28 +25,28 @@ def conn(conn, request, anyio_backend):
 
 
 def test_init_row_factory(conn):
-    with psycopg.ServerCursor(conn, "foo") as cur:
+    with gaussdb.ServerCursor(conn, "foo") as cur:
         assert cur.name == "foo"
         assert cur.connection is conn
         assert cur.row_factory is conn.row_factory
 
     conn.row_factory = rows.dict_row
 
-    with psycopg.ServerCursor(conn, "bar") as cur:
+    with gaussdb.ServerCursor(conn, "bar") as cur:
         assert cur.name == "bar"
         assert cur.row_factory is rows.dict_row
 
-    with psycopg.ServerCursor(conn, "baz", row_factory=rows.namedtuple_row) as cur:
+    with gaussdb.ServerCursor(conn, "baz", row_factory=rows.namedtuple_row) as cur:
         assert cur.name == "baz"
         assert cur.row_factory is rows.namedtuple_row
 
 
 def test_init_params(conn):
-    with psycopg.ServerCursor(conn, "foo") as cur:
+    with gaussdb.ServerCursor(conn, "foo") as cur:
         assert cur.scrollable is None
         assert cur.withhold is False
 
-    with psycopg.ServerCursor(conn, "bar", withhold=True, scrollable=False) as cur:
+    with gaussdb.ServerCursor(conn, "bar", withhold=True, scrollable=False) as cur:
         assert cur.scrollable is False
         assert cur.withhold is True
 
@@ -62,7 +62,7 @@ def test_funny_name(conn):
 
 def test_repr(conn):
     cur = conn.cursor("my-name")
-    assert "psycopg.%s" % conn.server_cursor_factory.__name__ in str(cur)
+    assert "gaussdb.%s" % conn.server_cursor_factory.__name__ in str(cur)
     assert "my-name" in repr(cur)
     cur.close()
 

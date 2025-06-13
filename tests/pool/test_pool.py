@@ -11,16 +11,16 @@ from collections import Counter
 
 import pytest
 
-import psycopg
-from psycopg.pq import TransactionStatus
-from psycopg.rows import Row, TupleRow, class_row
+import gaussdb
+from gaussdb.pq import TransactionStatus
+from gaussdb.rows import Row, TupleRow, class_row
 
 from ..utils import assert_type, set_autocommit
 from ..acompat import Event, gather, skip_sync, sleep, spawn
 from .test_pool_common import delay_connection
 
 try:
-    import psycopg_pool as pool
+    import gaussdb_pool as pool
 except ImportError:
     # Tests should have been skipped if the package is not available
     pass
@@ -53,10 +53,10 @@ class MyRow(dict[str, Any]):
 
 def test_generic_connection_type(dsn):
 
-    def configure(conn: psycopg.Connection[Any]) -> None:
+    def configure(conn: gaussdb.Connection[Any]) -> None:
         set_autocommit(conn, True)
 
-    class MyConnection(psycopg.Connection[Row]):
+    class MyConnection(gaussdb.Connection[Row]):
         pass
 
     with pool.ConnectionPool(
@@ -86,10 +86,10 @@ def test_generic_connection_type(dsn):
 
 def test_non_generic_connection_type(dsn):
 
-    def configure(conn: psycopg.Connection[Any]) -> None:
+    def configure(conn: gaussdb.Connection[Any]) -> None:
         set_autocommit(conn, True)
 
-    class MyConnection(psycopg.Connection[MyRow]):
+    class MyConnection(gaussdb.Connection[MyRow]):
 
         def __init__(self, *args: Any, **kwargs: Any):
             kwargs["row_factory"] = class_row(MyRow)
@@ -233,7 +233,7 @@ def test_reset(dsn):
 @pytest.mark.opengauss_skip("backend pid")
 @pytest.mark.crdb_skip("backend pid")
 def test_reset_badstate(dsn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg.pool")
+    caplog.set_level(logging.WARNING, logger="gaussdb.pool")
 
     def reset(conn):
         conn.execute("reset all")
@@ -256,7 +256,7 @@ def test_reset_badstate(dsn, caplog):
 @pytest.mark.opengauss_skip("backend pid")
 @pytest.mark.crdb_skip("backend pid")
 def test_reset_broken(dsn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg.pool")
+    caplog.set_level(logging.WARNING, logger="gaussdb.pool")
 
     def reset(conn):
         with conn.transaction():
@@ -280,7 +280,7 @@ def test_reset_broken(dsn, caplog):
 @pytest.mark.opengauss_skip("backend pid")
 @pytest.mark.crdb_skip("backend pid")
 def test_intrans_rollback(dsn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg.pool")
+    caplog.set_level(logging.WARNING, logger="gaussdb.pool")
 
     with pool.ConnectionPool(dsn, min_size=1) as p:
         conn = p.getconn()
@@ -303,12 +303,12 @@ def test_intrans_rollback(dsn, caplog):
 
 @pytest.mark.crdb_skip("backend pid")
 def test_inerror_rollback(dsn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg.pool")
+    caplog.set_level(logging.WARNING, logger="gaussdb.pool")
 
     with pool.ConnectionPool(dsn, min_size=1) as p:
         conn = p.getconn()
         pid = conn.info.backend_pid
-        with pytest.raises(psycopg.ProgrammingError):
+        with pytest.raises(gaussdb.ProgrammingError):
             conn.execute("wat")
         assert conn.info.transaction_status == TransactionStatus.INERROR
         p.putconn(conn)
@@ -326,7 +326,7 @@ def test_inerror_rollback(dsn, caplog):
 @pytest.mark.crdb_skip("backend pid")
 @pytest.mark.crdb_skip("copy")
 def test_active_close(dsn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg.pool")
+    caplog.set_level(logging.WARNING, logger="gaussdb.pool")
 
     with pool.ConnectionPool(dsn, min_size=1) as p:
         conn = p.getconn()
@@ -348,7 +348,7 @@ def test_active_close(dsn, caplog):
 @pytest.mark.opengauss_skip("backend pid")
 @pytest.mark.crdb_skip("backend pid")
 def test_fail_rollback_close(dsn, caplog, monkeypatch):
-    caplog.set_level(logging.WARNING, logger="psycopg.pool")
+    caplog.set_level(logging.WARNING, logger="gaussdb.pool")
 
     with pool.ConnectionPool(dsn, min_size=1) as p:
         conn = p.getconn()
@@ -362,7 +362,7 @@ def test_fail_rollback_close(dsn, caplog, monkeypatch):
         monkeypatch.setattr(conn, "rollback", bad_rollback)
 
         pid = conn.info.backend_pid
-        with pytest.raises(psycopg.ProgrammingError):
+        with pytest.raises(gaussdb.ProgrammingError):
             conn.execute("wat")
         assert conn.info.transaction_status == TransactionStatus.INERROR
         p.putconn(conn)
@@ -461,7 +461,7 @@ def test_grow(dsn, monkeypatch, min_size, want_times):
 @pytest.mark.slow
 @pytest.mark.timing
 def test_shrink(dsn, monkeypatch):
-    from psycopg_pool.pool import ShrinkPool
+    from gaussdb_pool.pool import ShrinkPool
 
     results: list[tuple[int, int]] = []
 
@@ -493,7 +493,7 @@ def test_shrink(dsn, monkeypatch):
 @pytest.mark.slow
 @pytest.mark.timing
 def test_reconnect(proxy, caplog, monkeypatch):
-    caplog.set_level(logging.WARNING, logger="psycopg.pool")
+    caplog.set_level(logging.WARNING, logger="gaussdb.pool")
 
     assert pool.base.AttemptWithBackoff.INITIAL_DELAY == 1.0
     assert pool.base.AttemptWithBackoff.DELAY_JITTER == 0.1
@@ -506,7 +506,7 @@ def test_reconnect(proxy, caplog, monkeypatch):
         p.wait(2.0)
         proxy.stop()
 
-        with pytest.raises(psycopg.OperationalError):
+        with pytest.raises(gaussdb.OperationalError):
             with p.connection() as conn:
                 conn.execute("select 1")
 
@@ -560,7 +560,7 @@ def test_reconnect_failure(proxy, async_cb):
         p.wait(2.0)
         proxy.stop()
 
-        with pytest.raises(psycopg.OperationalError):
+        with pytest.raises(gaussdb.OperationalError):
             with p.connection() as conn:
                 conn.execute("select 1")
 
@@ -723,7 +723,7 @@ def test_max_lifetime(dsn):
 @pytest.mark.opengauss_skip("backend pid")
 @pytest.mark.crdb_skip("backend pid")
 def test_check(dsn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg.pool")
+    caplog.set_level(logging.WARNING, logger="gaussdb.pool")
     with pool.ConnectionPool(dsn, min_size=4) as p:
         p.wait(1.0)
         with p.connection() as conn:
@@ -762,7 +762,7 @@ def test_connect_no_check(dsn):
                 pid2 = conn2.info.backend_pid
             conn.execute("select pg_terminate_backend(%s)", [pid2])
 
-        with pytest.raises(psycopg.OperationalError):
+        with pytest.raises(gaussdb.OperationalError):
             with p.connection() as conn:
                 conn.execute("select 1")
                 with p.connection() as conn2:
@@ -774,7 +774,7 @@ def test_connect_no_check(dsn):
 @pytest.mark.crdb_skip("pg_terminate_backend")
 @pytest.mark.parametrize("autocommit", [True, False])
 def test_connect_check(dsn, caplog, autocommit):
-    caplog.set_level(logging.WARNING, logger="psycopg.pool")
+    caplog.set_level(logging.WARNING, logger="gaussdb.pool")
 
     with pool.ConnectionPool(
         dsn,
@@ -808,7 +808,7 @@ def test_connect_check(dsn, caplog, autocommit):
 @pytest.mark.gaussdb_skip("pg_terminate_backend")
 @pytest.mark.opengauss_skip("pg_terminate_backend")
 def test_getconn_check(dsn, caplog, autocommit):
-    caplog.set_level(logging.WARNING, logger="psycopg.pool")
+    caplog.set_level(logging.WARNING, logger="gaussdb.pool")
 
     with pool.ConnectionPool(
         dsn,
@@ -914,7 +914,7 @@ def test_stats_check(dsn):
         with p.connection() as conn:
             pid = conn.info.backend_pid
 
-        with psycopg.Connection.connect(dsn) as conn:
+        with gaussdb.Connection.connect(dsn) as conn:
             conn.execute("select pg_terminate_backend(%s)", [pid])
 
         with p.connection() as conn:
@@ -945,8 +945,8 @@ def test_spike(dsn, monkeypatch):
 
 
 def test_debug_deadlock(dsn):
-    # https://github.com/psycopg/psycopg/issues/230
-    logger = logging.getLogger("psycopg")
+    # https://github.com/gaussdb/gaussdb/issues/230
+    logger = logging.getLogger("gaussdb")
     handler = logging.StreamHandler()
     old_level = logger.level
     logger.setLevel(logging.DEBUG)
@@ -962,7 +962,7 @@ def test_debug_deadlock(dsn):
 
 @skip_sync
 def test_cancellation_in_queue(dsn):
-    # https://github.com/psycopg/psycopg/issues/509
+    # https://github.com/gaussdb/gaussdb/issues/509
 
     nconns = 3
 
@@ -1018,7 +1018,7 @@ def test_cancellation_in_queue(dsn):
 @pytest.mark.slow
 @pytest.mark.timing
 def test_check_backoff(dsn, caplog, monkeypatch):
-    caplog.set_level(logging.INFO, logger="psycopg.pool")
+    caplog.set_level(logging.INFO, logger="gaussdb.pool")
 
     assert pool.base.AttemptWithBackoff.INITIAL_DELAY == 1.0
     assert pool.base.AttemptWithBackoff.DELAY_JITTER == 0.1

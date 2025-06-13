@@ -7,8 +7,8 @@ on:
   #   branches:
   #     - "*"
   pull_request:
-  schedule:
-    - cron: '48 6 * * *'
+  # schedule:
+  #   - cron: '48 6 * * *'
 
 concurrency:
   # Cancel older requests of the same workflow in the same branch.
@@ -59,9 +59,9 @@ jobs:
           - {impl: python, python: "pypy3.10", postgres: "postgres:14"}
 
     env:
-      PSYCOPG_IMPL: ${{ matrix.impl }}
-      DEPS: ./psycopg[test] ./psycopg_pool
-      PSYCOPG_TEST_DSN: "host=127.0.0.1 user=postgres password=password"
+      GAUSSDB_IMPL: ${{ matrix.impl }}
+      DEPS: ./gaussdb[test] ./gaussdb_pool
+      GAUSSDB_TEST_DSN: "host=127.0.0.1 user=postgres password=password"
       MARKERS: ""
 
     steps:
@@ -84,10 +84,10 @@ jobs:
       - name: Install the wanted libpq version
         run: sudo ./tools/ci/ci_install_libpq.sh ${{ matrix.libpq }}
 
-      - name: Include psycopg-c to the packages to install
+      - name: Include gaussdb-c to the packages to install
         if: ${{ matrix.impl == 'c' }}
         run: |
-          echo "DEPS=$DEPS ./psycopg_c" >> $GITHUB_ENV
+          echo "DEPS=$DEPS ./gaussdb_c" >> $GITHUB_ENV
 
       - name: Include gevent to the packages to install
         if: ${{ matrix.ext == 'gevent' }}
@@ -159,9 +159,9 @@ jobs:
           - {impl: c, python: "3.13"}
 
     env:
-      PSYCOPG_IMPL: ${{ matrix.impl }}
-      DEPS: ./psycopg[test] ./psycopg_pool
-      PSYCOPG_TEST_DSN: "host=127.0.0.1 user=runner dbname=postgres"
+      GAUSSDB_IMPL: ${{ matrix.impl }}
+      DEPS: ./gaussdb[test] ./gaussdb_pool
+      GAUSSDB_TEST_DSN: "host=127.0.0.1 user=runner dbname=postgres"
       # MacOS on GitHub Actions seems particularly slow.
       # Don't run timing-based tests as they regularly fail.
       # pproxy-based tests fail too, with the proxy not coming up in 2s.
@@ -195,10 +195,10 @@ jobs:
           echo "DYLD_LIBRARY_PATH=/opt/homebrew/opt/postgresql@${PG_VERSION}/lib/postgresql:/opt/homebrew/opt/postgresql@${PG_VERSION}/lib:$DYLD_LIBRARY_PATH" \
               >> $GITHUB_ENV
 
-      - name: Include psycopg-c to the packages to install
+      - name: Include gaussdb-c to the packages to install
         if: ${{ matrix.impl == 'c' }}
         run: |
-          echo "DEPS=$DEPS ./psycopg_c" >> $GITHUB_ENV
+          echo "DEPS=$DEPS ./gaussdb_c" >> $GITHUB_ENV
           echo "PATH=/opt/homebrew/opt/postgresql@${PG_VERSION}/bin:$PATH" >> $GITHUB_ENV
 
       - name: Install Python packages
@@ -222,9 +222,9 @@ jobs:
           - {impl: c, python: "3.9"}
 
     env:
-      PSYCOPG_IMPL: ${{ matrix.impl }}
-      DEPS: ./psycopg[test] ./psycopg_pool
-      PSYCOPG_TEST_DSN: "host=127.0.0.1 user=runner dbname=postgres"
+      GAUSSDB_IMPL: ${{ matrix.impl }}
+      DEPS: ./gaussdb[test] ./gaussdb_pool
+      GAUSSDB_TEST_DSN: "host=127.0.0.1 user=runner dbname=postgres"
       # MacOS on GitHub Actions seems particularly slow.
       # Don't run timing-based tests as they regularly fail.
       # pproxy-based tests fail too, with the proxy not coming up in 2s.
@@ -254,10 +254,10 @@ jobs:
           echo "DYLD_LIBRARY_PATH=/usr/local/opt/postgresql@${PG_VERSION}/lib/postgresql:$DYLD_LIBRARY_PATH" \
               >> $GITHUB_ENV
 
-      - name: Include psycopg-c to the packages to install
+      - name: Include gaussdb-c to the packages to install
         if: ${{ matrix.impl == 'c' }}
         run: |
-          echo "DEPS=$DEPS ./psycopg_c" >> $GITHUB_ENV
+          echo "DEPS=$DEPS ./gaussdb_c" >> $GITHUB_ENV
           echo "PATH=/usr/local/opt/postgresql@${PG_VERSION}/bin:$PATH" >> $GITHUB_ENV
 
       - name: Install Python packages
@@ -289,9 +289,9 @@ jobs:
           - {impl: c, python: "3.13"}
 
     env:
-      PSYCOPG_IMPL: ${{ matrix.impl }}
-      DEPS: ./psycopg[test] ./psycopg_pool
-      PSYCOPG_TEST_DSN: "host=127.0.0.1 dbname=postgres"
+      GAUSSDB_IMPL: ${{ matrix.impl }}
+      DEPS: ./gaussdb[test] ./gaussdb_pool
+      GAUSSDB_TEST_DSN: "host=127.0.0.1 dbname=postgres"
       # On windows pproxy doesn't seem very happy. Also a few timing test fail.
       NOT_MARKERS: "timing proxy mypy"
       PG_VERSION: "17.4"
@@ -345,9 +345,9 @@ jobs:
         run: |
           # If the wheel is not delocated, import fails with some dll not found
           # (but it won't tell which one).
-          pip wheel -v -w ./psycopg_c/dist/ ./psycopg_c/
+          pip wheel -v -w ./gaussdb_c/dist/ ./gaussdb_c/
           delvewheel repair --no-mangle "libiconv-2.dll;libwinpthread-1.dll" \
-            -w ./wheelhouse/ psycopg_c/dist/psycopg*.whl
+            -w ./wheelhouse/ gaussdb_c/dist/gaussdb*.whl
           echo "DEPS=$DEPS $(ls ./wheelhouse/*.whl)" >> $GITHUB_ENV
 
       - name: Install Python packages
@@ -380,9 +380,9 @@ jobs:
           - {impl: c, crdb: "latest-v24.3-build", python: "3.9", libpq: newest}
           - {impl: python, crdb: "latest-v23.2-build", python: "3.12"}
     env:
-      PSYCOPG_IMPL: ${{ matrix.impl }}
-      DEPS: ./psycopg[test] ./psycopg_pool
-      PSYCOPG_TEST_DSN: "host=127.0.0.1 port=26257 user=root dbname=defaultdb"
+      GAUSSDB_IMPL: ${{ matrix.impl }}
+      DEPS: ./gaussdb[test] ./gaussdb_pool
+      GAUSSDB_TEST_DSN: "host=127.0.0.1 port=26257 user=root dbname=defaultdb"
       CRDB_REPO: us-docker.pkg.dev/cockroach-cloud-images/cockroachdb/cockroach
       # Since CRDB 25.1, 'on' should become the default, which will break
       # the test suite assumption.
@@ -407,10 +407,10 @@ jobs:
       - name: Install the wanted libpq version
         run: sudo ./tools/ci/ci_install_libpq.sh ${{ matrix.libpq }}
 
-      - name: Include psycopg-c to the packages to install
+      - name: Include gaussdb-c to the packages to install
         if: ${{ matrix.impl == 'c' }}
         run: |
-          echo "DEPS=$DEPS ./psycopg_c" >> $GITHUB_ENV
+          echo "DEPS=$DEPS ./gaussdb_c" >> $GITHUB_ENV
 
       - name: Install Python packages
         run: pip install $DEPS

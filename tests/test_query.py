@@ -1,9 +1,9 @@
 import pytest
 
-import psycopg
-from psycopg import pq
-from psycopg.adapt import PyFormat, Transformer
-from psycopg._queries import PostgresQuery, _split_query
+import gaussdb
+from gaussdb import pq
+from gaussdb.adapt import PyFormat, Transformer
+from gaussdb._queries import PostgresQuery, _split_query
 
 
 @pytest.mark.parametrize(
@@ -61,7 +61,7 @@ def test_split_query(input, want):
     ],
 )
 def test_split_query_bad(input):
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         _split_query(input)
 
 
@@ -158,5 +158,5 @@ def test_pq_query_badtype(query, params):
 )
 def test_pq_query_badprog(query, params):
     pq = PostgresQuery(Transformer())
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         pq.convert(query, params)

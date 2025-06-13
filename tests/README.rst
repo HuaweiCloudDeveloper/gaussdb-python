@@ -1,22 +1,22 @@
-psycopg test suite
+gaussdb test suite
 ===================
 
 Quick version
 -------------
 
 To run tests on the current code you can install the ``test`` extra of the
-package, specify a connection string  in the ``PSYCOPG_TEST_DSN`` env var to
+package, specify a connection string  in the ``GAUSSDB_TEST_DSN`` env var to
 connect to a test database, and run ``pytest``::
 
-    $ pip install -e "psycopg[test]"
-    $ export PSYCOPG_TEST_DSN="host=localhost dbname=psycopg_test"
+    $ pip install -e "gaussdb[test]"
+    $ export GAUSSDB_TEST_DSN="host=localhost dbname=gaussdb_test"
     $ pytest
 
 
 Test options
 ------------
 
-- The tests output header shows additional psycopg related information,
+- The tests output header shows additional gaussdb related information,
   on top of the one normally displayed by ``pytest`` and the extensions used::
 
       $ pytest
@@ -27,18 +27,18 @@ Test options
       libpq wrapper implementation: c
 
 
-- By default the tests run using the ``pq`` implementation that psycopg would
+- By default the tests run using the ``pq`` implementation that gaussdb would
   choose (the C module if installed, else the Python one). In order to test a
   different implementation, use the normal `pq module selection mechanism`__
-  of the ``PSYCOPG_IMPL`` env var::
+  of the ``GAUSSDB_IMPL`` env var::
 
-      $ PSYCOPG_IMPL=python pytest 
+      $ GAUSSDB_IMPL=python pytest 
       ========================= test session starts =========================
       [...]
       libpq available: 130002
       libpq wrapper implementation: python
 
-  .. __: https://www.psycopg.org/psycopg3/docs/api/pq.html#pq-module-implementations
+  .. __: https://www.gaussdb.org/gaussdb/docs/api/pq.html#pq-module-implementations
 
 
 - Slow tests have a ``slow`` marker which can be selected to reduce test
@@ -79,10 +79,10 @@ test dsn in order to connect to a database running on the docker host: specify
 a set of env vars working for your setup::
 
     $ docker run -ti --rm --volume `pwd`:/src --workdir /src \
-      -e PSYCOPG_TEST_DSN -e PGHOST=172.17.0.1 -e PGUSER=`whoami` \
+      -e GAUSSDB_TEST_DSN -e PGHOST=172.17.0.1 -e PGUSER=`whoami` \
       python:3.9 bash
 
-    # pip install -e "./psycopg[test]" ./psycopg_pool ./psycopg_c
+    # pip install -e "./gaussdb[test]" ./gaussdb_pool ./gaussdb_c
     # pytest
 
 
@@ -96,5 +96,5 @@ You can run CRDB in a docker container using::
 
 And use the following connection string to run the tests::
 
-    export PSYCOPG_TEST_DSN="host=localhost port=26257 user=root dbname=defaultdb"
+    export GAUSSDB_TEST_DSN="host=localhost port=26257 user=root dbname=defaultdb"
     pytest ...

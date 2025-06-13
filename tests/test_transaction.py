@@ -5,9 +5,9 @@ import logging
 
 import pytest
 
-from psycopg import Rollback
-from psycopg import errors as e
-from psycopg import pq
+from gaussdb import Rollback
+from gaussdb import errors as e
+from gaussdb import pq
 
 from ._test_transaction import create_test_table  # noqa  # autouse fixture
 from ._test_transaction import ExpectedException, crdb_skip_external_observer
@@ -91,7 +91,7 @@ def test_context_inerror_rollback_no_clobber(conn_cls, conn, pipeline, dsn, capl
         # Only 'aconn' is possibly in pipeline mode, but the transaction and
         # checks are on 'conn2'.
         pytest.skip("not applicable")
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
 
     with pytest.raises(ZeroDivisionError):
         with conn_cls.connect(dsn) as conn2:
@@ -110,7 +110,7 @@ def test_context_inerror_rollback_no_clobber(conn_cls, conn, pipeline, dsn, capl
 
 @pytest.mark.crdb_skip("copy")
 def test_context_active_rollback_no_clobber(conn_cls, dsn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
 
     conn = conn_cls.connect(dsn)
     try:

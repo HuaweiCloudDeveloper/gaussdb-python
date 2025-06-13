@@ -1,11 +1,11 @@
-.. currentmodule:: psycopg.adapt
+.. currentmodule:: gaussdb.adapt
 
 .. _adaptation:
 
 Data adaptation configuration
 =============================
 
-The adaptation system is at the core of Psycopg and allows to customise the
+The adaptation system is at the core of GaussDB and allows to customise the
 way Python objects are converted to PostgreSQL when a query is performed and
 how PostgreSQL values are converted to Python objects when query results are
 returned.
@@ -17,39 +17,39 @@ returned.
     adaptation rules.
 
 - Adaptation configuration is performed by changing the
-  `~psycopg.abc.AdaptContext.adapters` object of objects implementing the
-  `~psycopg.abc.AdaptContext` protocol, for instance `~psycopg.Connection`
-  or `~psycopg.Cursor`.
+  `~gaussdb.abc.AdaptContext.adapters` object of objects implementing the
+  `~gaussdb.abc.AdaptContext` protocol, for instance `~gaussdb.Connection`
+  or `~gaussdb.Cursor`.
 
 - Every context object derived from another context inherits its adapters
   mapping: cursors created from a connection inherit the connection's
   configuration.
 
   By default, connections obtain an adapters map from the global map
-  exposed as `psycopg.adapters`: changing the content of this object will
+  exposed as `gaussdb.adapters`: changing the content of this object will
   affect every connection created afterwards. You may specify a different
   template adapters map using the `!context` parameter on
-  `~psycopg.Connection.connect()`.
+  `~gaussdb.Connection.connect()`.
 
   .. image:: ../pictures/adapt.svg
      :align: center
 
 - The `!adapters` attributes are `AdaptersMap` instances, and contain the
-  mapping from Python types and `~psycopg.abc.Dumper` classes, and from
-  PostgreSQL OIDs to `~psycopg.abc.Loader` classes. Changing this mapping
+  mapping from Python types and `~gaussdb.abc.Dumper` classes, and from
+  PostgreSQL OIDs to `~gaussdb.abc.Loader` classes. Changing this mapping
   (e.g. writing and registering your own adapters, or using a different
   configuration of builtin adapters) affects how types are converted between
   Python and PostgreSQL.
 
-  - Dumpers (objects implementing the `~psycopg.abc.Dumper` protocol) are
+  - Dumpers (objects implementing the `~gaussdb.abc.Dumper` protocol) are
     the objects used to perform the conversion from a Python object to a bytes
     sequence in a format understood by PostgreSQL. The string returned
     *shouldn't be quoted*: the value will be passed to the database using
     functions such as :pq:`PQexecParams()` so quoting and quotes escaping is
     not necessary. The dumper usually also suggests to the server what type to
-    use, via its `~psycopg.abc.Dumper.oid` attribute.
+    use, via its `~gaussdb.abc.Dumper.oid` attribute.
 
-  - Loaders (objects implementing the `~psycopg.abc.Loader` protocol) are
+  - Loaders (objects implementing the `~gaussdb.abc.Loader` protocol) are
     the objects used to perform the opposite operation: reading a bytes
     sequence from PostgreSQL and creating a Python object out of it.
 
@@ -68,26 +68,26 @@ returned.
 Dumpers and loaders life cycle
 ------------------------------
 
-Registering dumpers and loaders will instruct Psycopg to use them
+Registering dumpers and loaders will instruct GaussDB to use them
 in the queries to follow, in the context where they have been registered.
 
-When a query is performed on a `~psycopg.Cursor`, a
-`~psycopg.adapt.Transformer` object is created as a local context to manage
+When a query is performed on a `~gaussdb.Cursor`, a
+`~gaussdb.adapt.Transformer` object is created as a local context to manage
 adaptation during the query, instantiating the required dumpers and loaders
 and dispatching the values to perform the wanted conversions from Python to
 Postgres and back.
 
 - The `!Transformer` copies the adapters configuration from the `!Cursor`,
-  thus inheriting all the changes made to the global `psycopg.adapters`
+  thus inheriting all the changes made to the global `gaussdb.adapters`
   configuration, the current `!Connection`, the `!Cursor`.
 
 - For every Python type passed as query argument, the `!Transformer` will
-  instantiate a `~psycopg.abc.Dumper`. Usually all the objects of the same
+  instantiate a `~gaussdb.abc.Dumper`. Usually all the objects of the same
   type will be converted by the same dumper instance.
 
-  - According to the placeholder used (``%s``, ``%b``, ``%t``), Psycopg may
+  - According to the placeholder used (``%s``, ``%b``, ``%t``), GaussDB may
     select a binary or a text dumper class (identified by their
-    `~psycopg.abc.Dumper.format` attribute). When using the ``%s``
+    `~gaussdb.abc.Dumper.format` attribute). When using the ``%s``
     "`~PyFormat.AUTO`" format, if the same type has both a text and a binary
     dumper registered, the last one registered by
     `~AdaptersMap.register_dumper()` will be used.
@@ -96,19 +96,19 @@ Postgres and back.
     best PostgreSQL type to use (for instance the PostgreSQL type of a Python
     list depends on the objects it contains, whether to use an :sql:`integer`
     or :sql:`bigint` depends on the number size...) In these cases the
-    mechanism provided by `~psycopg.abc.Dumper.get_key()` and
-    `~psycopg.abc.Dumper.upgrade()` is used to create more specific dumpers.
+    mechanism provided by `~gaussdb.abc.Dumper.get_key()` and
+    `~gaussdb.abc.Dumper.upgrade()` is used to create more specific dumpers.
 
 - The query is executed. Upon successful request, the result is received as a
-  `~psycopg.pq.PGresult`.
+  `~gaussdb.pq.PGresult`.
 
 - For every OID returned by the query, the `!Transformer` will instantiate a
-  `~psycopg.abc.Loader`. All the values with the same OID will be converted by
+  `~gaussdb.abc.Loader`. All the values with the same OID will be converted by
   the same loader instance.
 
   - According to the format of the result, which can be text or binary,
-    Psycopg will select either text loaders or binary loaders (identified by
-    their `~psycopg.abc.Loader.format` attribute).
+    GaussDB will select either text loaders or binary loaders (identified by
+    their `~gaussdb.abc.Loader.format` attribute).
 
 - Recursive types (e.g. Python lists, PostgreSQL arrays and composite types)
   will use the same adaptation rules.
@@ -118,7 +118,7 @@ As a consequence it is possible to perform certain choices only once per query
 for each value to convert.
 
 Querying will fail if a Python object for which there isn't a `!Dumper`
-registered (for the right `~psycopg.pq.Format`) is used as query parameter.
+registered (for the right `~gaussdb.pq.Format`) is used as query parameter.
 If the query returns a data type whose OID doesn't have a `!Loader`, the
 value will be returned as a string (or bytes string for binary types).
 
@@ -128,18 +128,18 @@ value will be returned as a string (or bytes string for binary types).
 Writing a custom adapter: XML
 -----------------------------
 
-Psycopg doesn't provide adapters for the XML data type, because there are just
+GaussDB doesn't provide adapters for the XML data type, because there are just
 too many ways of handling XML in Python. Creating a loader to parse the
 `PostgreSQL xml type`__ to `~xml.etree.ElementTree` is very simple, using the
-`psycopg.adapt.Loader` base class and implementing the
-`~psycopg.abc.Loader.load()` method:
+`gaussdb.adapt.Loader` base class and implementing the
+`~gaussdb.abc.Loader.load()` method:
 
 .. __: https://www.postgresql.org/docs/current/datatype-xml.html
 
 .. code:: python
 
     >>> import xml.etree.ElementTree as ET
-    >>> from psycopg.adapt import Loader
+    >>> from gaussdb.adapt import Loader
 
     >>> # Create a class implementing the `load()` method.
     >>> class XmlLoader(Loader):
@@ -160,14 +160,14 @@ too many ways of handling XML in Python. Creating a loader to parse the
     <Element 'book' at 0x7ffb55142ef0>
 
 The opposite operation, converting Python objects to PostgreSQL, is performed
-by dumpers. The `psycopg.adapt.Dumper` base class makes it easy to implement one:
-you only need to implement the `~psycopg.abc.Dumper.dump()` method::
+by dumpers. The `gaussdb.adapt.Dumper` base class makes it easy to implement one:
+you only need to implement the `~gaussdb.abc.Dumper.dump()` method::
 
-    >>> from psycopg.adapt import Dumper
+    >>> from gaussdb.adapt import Dumper
 
     >>> class XmlDumper(Dumper):
     ...     # Setting an OID is not necessary but can be helpful
-    ...     oid = psycopg.adapters.types["xml"].oid
+    ...     oid = gaussdb.adapters.types["xml"].oid
     ...
     ...     def dump(self, elem):
     ...         return ET.tostring(elem)
@@ -181,12 +181,12 @@ you only need to implement the `~psycopg.abc.Dumper.dump()` method::
 
 .. note::
 
-    You can use a `~psycopg.types.TypesRegistry`, exposed by
-    any `~psycopg.abc.AdaptContext`, to obtain information on builtin types, in
+    You can use a `~gaussdb.types.TypesRegistry`, exposed by
+    any `~gaussdb.abc.AdaptContext`, to obtain information on builtin types, in
     the form of a `TypeInfo` object::
 
         # Global types registry
-        >>> psycopg.adapters.types["text"]
+        >>> gaussdb.adapters.types["text"]
         <TypeInfo: text (oid: 25, array oid: 1009)>
 
         # Types registry on a connection
@@ -195,14 +195,14 @@ you only need to implement the `~psycopg.abc.Dumper.dump()` method::
 
     The same method can be used to get information about extension types if
     they have been registered on that context using the
-    `~psycopg.types.TypeInfo`\.\ `~psycopg.types.TypeInfo.register()` method::
+    `~gaussdb.types.TypeInfo`\.\ `~gaussdb.types.TypeInfo.register()` method::
 
-        >>> (t := psycopg.types.TypeInfo.fetch(conn, "hstore"))
+        >>> (t := gaussdb.types.TypeInfo.fetch(conn, "hstore"))
         <TypeInfo: hstore (oid: 770082, array oid: 770087)>
 
         >>> t.register()  # globally
 
-        >>> psycopg.adapters.types["hstore"]
+        >>> gaussdb.adapters.types["hstore"]
         <TypeInfo: hstore (oid: 770082, array oid: 770087)>
 
 
@@ -220,7 +220,7 @@ If you prefer to store missing values as :sql:`NULL`, in the database, but
 your input may contain empty strings, you can subclass the stock string dumper
 to return `!None` upon empty or whitespace-only strings::
 
-    >>> from psycopg.types.string import StrDumper
+    >>> from gaussdb.types.string import StrDumper
 
     >>> class NullStrDumper(StrDumper):
     ...     def dump(self, obj):
@@ -257,12 +257,12 @@ compatible.
 
 .. code:: python
 
-    conn = psycopg.connect()
+    conn = gaussdb.connect()
 
     conn.execute("SELECT 123.45").fetchone()[0]
     # Decimal('123.45')
 
-    conn.adapters.register_loader("numeric", psycopg.types.numeric.FloatLoader)
+    conn.adapters.register_loader("numeric", gaussdb.types.numeric.FloatLoader)
 
     conn.execute("SELECT 123.45").fetchone()[0]
     # 123.45
@@ -296,7 +296,7 @@ cursor):
     from datetime import date
 
     # Subclass existing adapters so that the base case is handled normally.
-    from psycopg.types.datetime import DateLoader, DateDumper
+    from gaussdb.types.datetime import DateLoader, DateDumper
 
     class InfDateDumper(DateDumper):
         def dump(self, obj):

@@ -6,13 +6,13 @@ Installation
 In short, if you use a :ref:`supported system<supported-systems>`::
 
     pip install --upgrade pip           # upgrade pip to at least 20.3
-    pip install "psycopg[binary]"       # remove [binary] for PyPy
+    pip install "gaussdb[binary]"       # remove [binary] for PyPy
 
 and you should be :ref:`ready to start <module-usage>`. Read further for
 alternative ways to install.
 
 .. note::
-   Fun fact: there is no ``psycopg3`` package, only ``psycopg``!
+   Fun fact: there is no ``gaussdb`` package, only ``gaussdb``!
 
 
 .. _supported-systems:
@@ -20,13 +20,13 @@ alternative ways to install.
 Supported systems
 -----------------
 
-The Psycopg version documented here has *official and tested* support for:
+The GaussDB version documented here has *official and tested* support for:
 
 - Python: from version 3.9 to 3.13
 
-  - Python 3.8 supported before Psycopg 3.3
-  - Python 3.7 supported before Psycopg 3.2
-  - Python 3.6 supported before Psycopg 3.1
+  - Python 3.8 supported before gaussdb.3
+  - Python 3.7 supported before gaussdb.2
+  - Python 3.6 supported before gaussdb.1
 
 - PyPy: from version 3.9 to 3.10
 
@@ -44,7 +44,7 @@ The Psycopg version documented here has *official and tested* support for:
 The tests to verify the supported systems run in `Github workflows`__:
 anything that is not tested there is not officially supported. This includes:
 
-.. __: https://github.com/psycopg/psycopg/actions
+.. __: https://github.com/gaussdb/gaussdb/actions
 
 - Unofficial Python distributions such as Conda;
 - Alternative PostgreSQL implementation;
@@ -60,10 +60,10 @@ the correct working or a smooth ride.
 Binary installation
 -------------------
 
-The quickest way to start developing with Psycopg 3 is to install the binary
+The quickest way to start developing with gaussdb is to install the binary
 packages by running::
 
-    pip install "psycopg[binary]"
+    pip install "gaussdb[binary]"
 
 This will install a self-contained package with all the libraries needed.
 **You will need pip 20.3 at least**: please run ``pip install --upgrade pip``
@@ -71,11 +71,11 @@ to update it beforehand.
 
 .. seealso::
 
-    Did Psycopg 3 install ok? Great! You can now move on to the :ref:`basic
+    Did gaussdb install ok? Great! You can now move on to the :ref:`basic
     module usage <module-usage>` to learn how it works.
 
     Keep on reading if the above method didn't work and you need a different
-    way to install Psycopg 3.
+    way to install gaussdb.
 
     For further information about the differences between the packages see
     :ref:`pq-impl`.
@@ -92,20 +92,20 @@ you should proceed to a :ref:`local installation <local-installation>` or a
 
     - binary packages for a new version of Python are made available once
       the runners used for the build support it. You can check the
-      `psycopg-binary PyPI files`__ to verify whether your platform is
+      `gaussdb-binary PyPI files`__ to verify whether your platform is
       supported;
 
     - the libpq version included in the binary packages depends on the version
-      available on the runners. You can use the `psycopg.pq.version()`
-      function and `~psycopg.pq.__build_version__` constant to infer the
+      available on the runners. You can use the `gaussdb.pq.version()`
+      function and `~gaussdb.pq.__build_version__` constant to infer the
       features available.
 
-    .. __: https://pypi.org/project/psycopg-binary/#files
+    .. __: https://pypi.org/project/gaussdb-binary/#files
 
 
 .. warning::
 
-    - Starting from Psycopg 3.1.20, ARM64 macOS binary packages (i.e. for
+    - Starting from gaussdb.1.20, ARM64 macOS binary packages (i.e. for
       Apple M1 machines) are no more available for macOS versions before 14.0.
       Please upgrade your OS to at least 14.0 or use a :ref:`local
       <local-installation>` or a :ref:`Python <pure-python-installation>`
@@ -123,8 +123,8 @@ Local installation
 A "Local installation" results in a performing and maintainable library. The
 library will include the speed-up C module and will be linked to the system
 libraries (``libpq``, ``libssl``...) so that system upgrade of libraries will
-upgrade the libraries used by Psycopg 3 too. This is the preferred way to
-install Psycopg for a production site.
+upgrade the libraries used by gaussdb too. This is the preferred way to
+install GaussDB for a production site.
 
 In order to perform a local installation you need some prerequisites:
 
@@ -139,7 +139,7 @@ try this and follow the `binary installation`_ instead.
 
 If your build prerequisites are in place you can run::
 
-    pip install "psycopg[c]"
+    pip install "gaussdb[c]"
 
 .. warning::
 
@@ -153,7 +153,7 @@ Pure Python installation
 
 If you simply install::
 
-    pip install psycopg
+    pip install gaussdb
 
 without ``[c]`` or ``[binary]`` extras you will obtain a pure Python
 implementation. This is particularly handy to debug and hack, but it still
@@ -182,12 +182,12 @@ installation`_.
 Installing the connection pool
 ------------------------------
 
-The :ref:`Psycopg connection pools <connection-pools>` are distributed in a
-separate package from the `!psycopg` package itself, in order to allow a
+The :ref:`GaussDB connection pools <connection-pools>` are distributed in a
+separate package from the `!gaussdb` package itself, in order to allow a
 different release cycle.
 
 In order to use the pool you must install the ``pool`` extra, using ``pip
-install "psycopg[pool]"``, or install the `psycopg_pool` package separately,
+install "gaussdb[pool]"``, or install the `gaussdb_pool` package separately,
 which would allow to specify the release to install more precisely.
 
 
@@ -198,21 +198,21 @@ If you need to specify your project dependencies (for instance in a
 ``requirements.txt`` file, ``setup.py``, ``pyproject.toml`` dependencies...)
 you should probably specify one of the following:
 
-- If your project is a library, add a dependency on ``psycopg``. This will
-  make sure that your library will have the ``psycopg`` package with the right
+- If your project is a library, add a dependency on ``gaussdb``. This will
+  make sure that your library will have the ``gaussdb`` package with the right
   interface and leaves the possibility of choosing a specific implementation
   to the end user of your library.
 
 - If your project is a final application (e.g. a service running on a server)
-  you can require a specific implementation, for instance ``psycopg[c]``,
+  you can require a specific implementation, for instance ``gaussdb[c]``,
   after you have made sure that the prerequisites are met (e.g. the depending
   libraries and tools are installed in the host machine).
 
-In both cases you can specify which version of Psycopg to use using
+In both cases you can specify which version of GaussDB to use using
 `requirement specifiers`__.
 
 .. __: https://pip.pypa.io/en/stable/reference/requirement-specifiers/
 
 If you want to make sure that a specific implementation is used you can
-specify the :envvar:`PSYCOPG_IMPL` environment variable: importing the library
+specify the :envvar:`GAUSSDB_IMPL` environment variable: importing the library
 will fail if the implementation specified is not available. See :ref:`pq-impl`.

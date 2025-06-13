@@ -21,9 +21,9 @@ logging.basicConfig(
 
 
 class Driver(str, Enum):
-    psycopg2 = "psycopg2"
+    _GaussDB = "_GaussDB"
     psycopg2_green = "psycopg2_green"
-    psycopg = "psycopg"
+    gaussdb = "gaussdb"
     psycopg_async = "psycopg_async"
     asyncpg = "asyncpg"
 
@@ -57,24 +57,24 @@ def main() -> None:
         if i == len(args.drivers) - 1:
             args.drop = drop_at_the_end
 
-        if name == Driver.psycopg2:
-            import psycopg2  # type: ignore
+        if name == Driver._GaussDB:
+            import _GaussDB  # type: ignore
 
-            run_psycopg2(psycopg2, args)
+            run_psycopg2(_GaussDB, args)
 
         elif name == Driver.psycopg2_green:
-            import psycopg2
-            import psycopg2.extras  # type: ignore
+            import _GaussDB
+            import _GaussDB.extras  # type: ignore
 
-            run_psycopg2_green(psycopg2, args)
+            run_psycopg2_green(_GaussDB, args)
 
-        elif name == Driver.psycopg:
-            import psycopg
+        elif name == Driver.gaussdb:
+            import gaussdb
 
-            run_psycopg(psycopg, args)
+            run_psycopg(gaussdb, args)
 
         elif name == Driver.psycopg_async:
-            import psycopg
+            import gaussdb
 
             if sys.platform == "win32":
                 if hasattr(asyncio, "WindowsSelectorEventLoopPolicy"):
@@ -82,7 +82,7 @@ def main() -> None:
                         asyncio.WindowsSelectorEventLoopPolicy()
                     )
 
-            asyncio.run(run_psycopg_async(psycopg, args))
+            asyncio.run(run_psycopg_async(gaussdb, args))
 
         elif name == Driver.asyncpg:
             import asyncpg  # type: ignore
@@ -132,12 +132,12 @@ def time_log(message: str) -> Generator[None]:
     logger.info(f"Run {message} in {end-start} s")
 
 
-def run_psycopg2(psycopg2: Any, args: Namespace) -> None:
-    logger.info("Running psycopg2")
+def run_psycopg2(_GaussDB: Any, args: Namespace) -> None:
+    logger.info("Running _GaussDB")
 
     if args.create:
         logger.info(f"inserting {args.ntests} test records")
-        with psycopg2.connect(args.dsn) as conn:
+        with _GaussDB.connect(args.dsn) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(drop)
                 cursor.execute(table)
@@ -147,8 +147,8 @@ def run_psycopg2(psycopg2: Any, args: Namespace) -> None:
     def run(i):
         logger.info(f"thread {i} running {args.ntests} queries")
         to_query = random.choices(ids, k=args.ntests)
-        with psycopg2.connect(args.dsn) as conn:
-            with time_log("psycopg2"):
+        with _GaussDB.connect(args.dsn) as conn:
+            with time_log("_GaussDB"):
                 for id_ in to_query:
                     with conn.cursor() as cursor:
                         cursor.execute(select, {"id": id_})
@@ -163,20 +163,20 @@ def run_psycopg2(psycopg2: Any, args: Namespace) -> None:
 
     if args.drop:
         logger.info("dropping test records")
-        with psycopg2.connect(args.dsn) as conn:
+        with _GaussDB.connect(args.dsn) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(drop)
             conn.commit()
 
 
-def run_psycopg2_green(psycopg2: Any, args: Namespace) -> None:
+def run_psycopg2_green(_GaussDB: Any, args: Namespace) -> None:
     logger.info("Running psycopg2_green")
 
-    psycopg2.extensions.set_wait_callback(psycopg2.extras.wait_select)
+    _GaussDB.extensions.set_wait_callback(_GaussDB.extras.wait_select)
 
     if args.create:
         logger.info(f"inserting {args.ntests} test records")
-        with psycopg2.connect(args.dsn) as conn:
+        with _GaussDB.connect(args.dsn) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(drop)
                 cursor.execute(table)
@@ -186,8 +186,8 @@ def run_psycopg2_green(psycopg2: Any, args: Namespace) -> None:
     def run(i):
         logger.info(f"thread {i} running {args.ntests} queries")
         to_query = random.choices(ids, k=args.ntests)
-        with psycopg2.connect(args.dsn) as conn:
-            with time_log("psycopg2"):
+        with _GaussDB.connect(args.dsn) as conn:
+            with time_log("_GaussDB"):
                 for id_ in to_query:
                     with conn.cursor() as cursor:
                         cursor.execute(select, {"id": id_})
@@ -202,20 +202,20 @@ def run_psycopg2_green(psycopg2: Any, args: Namespace) -> None:
 
     if args.drop:
         logger.info("dropping test records")
-        with psycopg2.connect(args.dsn) as conn:
+        with _GaussDB.connect(args.dsn) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(drop)
             conn.commit()
 
-    psycopg2.extensions.set_wait_callback(None)
+    _GaussDB.extensions.set_wait_callback(None)
 
 
-def run_psycopg(psycopg: Any, args: Namespace) -> None:
-    logger.info("Running psycopg sync")
+def run_psycopg(gaussdb: Any, args: Namespace) -> None:
+    logger.info("Running gaussdb sync")
 
     if args.create:
         logger.info(f"inserting {args.ntests} test records")
-        with psycopg.connect(args.dsn) as conn:
+        with gaussdb.connect(args.dsn) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(drop)
                 cursor.execute(table)
@@ -225,8 +225,8 @@ def run_psycopg(psycopg: Any, args: Namespace) -> None:
     def run(i):
         logger.info(f"thread {i} running {args.ntests} queries")
         to_query = random.choices(ids, k=args.ntests)
-        with psycopg.connect(args.dsn) as conn:
-            with time_log("psycopg"):
+        with gaussdb.connect(args.dsn) as conn:
+            with time_log("gaussdb"):
                 for id_ in to_query:
                     with conn.cursor() as cursor:
                         cursor.execute(select, {"id": id_})
@@ -241,20 +241,20 @@ def run_psycopg(psycopg: Any, args: Namespace) -> None:
 
     if args.drop:
         logger.info("dropping test records")
-        with psycopg.connect(args.dsn) as conn:
+        with gaussdb.connect(args.dsn) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(drop)
             conn.commit()
 
 
-async def run_psycopg_async(psycopg: Any, args: Namespace) -> None:
-    logger.info("Running psycopg async")
+async def run_psycopg_async(gaussdb: Any, args: Namespace) -> None:
+    logger.info("Running gaussdb async")
 
     conn: Any
 
     if args.create:
         logger.info(f"inserting {args.ntests} test records")
-        async with await psycopg.AsyncConnection.connect(args.dsn) as conn:
+        async with await gaussdb.AsyncConnection.connect(args.dsn) as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(drop)
                 await cursor.execute(table)
@@ -264,7 +264,7 @@ async def run_psycopg_async(psycopg: Any, args: Namespace) -> None:
     async def run(i):
         logger.info(f"task {i} running {args.ntests} queries")
         to_query = random.choices(ids, k=args.ntests)
-        async with await psycopg.AsyncConnection.connect(args.dsn) as conn:
+        async with await gaussdb.AsyncConnection.connect(args.dsn) as conn:
             with time_log("psycopg_async"):
                 for id_ in to_query:
                     cursor = await conn.execute(select, {"id": id_})
@@ -280,7 +280,7 @@ async def run_psycopg_async(psycopg: Any, args: Namespace) -> None:
 
     if args.drop:
         logger.info("dropping test records")
-        async with await psycopg.AsyncConnection.connect(args.dsn) as conn:
+        async with await gaussdb.AsyncConnection.connect(args.dsn) as conn:
             async with conn.cursor() as cursor:
                 await cursor.execute(drop)
             await conn.commit()
@@ -358,9 +358,9 @@ def parse_cmdline() -> Namespace:
 
     parser.add_argument(
         "--dsn",
-        default=os.environ.get("PSYCOPG_TEST_DSN", ""),
+        default=os.environ.get("GAUSSDB_TEST_DSN", ""),
         help="database connection string"
-        " [default: %(default)r (from PSYCOPG_TEST_DSN env var)]",
+        " [default: %(default)r (from GAUSSDB_TEST_DSN env var)]",
     )
 
     parser.add_argument(

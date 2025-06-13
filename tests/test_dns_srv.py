@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-import psycopg
-from psycopg.conninfo import conninfo_to_dict
+import gaussdb
+from gaussdb.conninfo import conninfo_to_dict
 
 from .test_dns import import_dnspython
 
@@ -48,7 +48,7 @@ samples_ok = [
 def test_srv(conninfo, want, env, fake_srv, setpgenv):
     setpgenv(env)
     params = conninfo_to_dict(conninfo)
-    params = psycopg._dns.resolve_srv(params)  # type: ignore[attr-defined]
+    params = gaussdb._dns.resolve_srv(params)  # type: ignore[attr-defined]
     assert conninfo_to_dict(want) == params
 
 
@@ -57,7 +57,7 @@ def test_srv(conninfo, want, env, fake_srv, setpgenv):
 async def test_srv_async(conninfo, want, env, afake_srv, setpgenv):
     setpgenv(env)
     params = conninfo_to_dict(conninfo)
-    params = await psycopg._dns.resolve_srv_async(params)  # type: ignore[attr-defined]
+    params = await gaussdb._dns.resolve_srv_async(params)  # type: ignore[attr-defined]
     assert conninfo_to_dict(want) == params
 
 
@@ -71,8 +71,8 @@ samples_bad = [
 def test_srv_bad(conninfo, env, fake_srv, setpgenv):
     setpgenv(env)
     params = conninfo_to_dict(conninfo)
-    with pytest.raises(psycopg.OperationalError):
-        psycopg._dns.resolve_srv(params)  # type: ignore[attr-defined]
+    with pytest.raises(gaussdb.OperationalError):
+        gaussdb._dns.resolve_srv(params)  # type: ignore[attr-defined]
 
 
 @pytest.mark.anyio
@@ -80,15 +80,15 @@ def test_srv_bad(conninfo, env, fake_srv, setpgenv):
 async def test_srv_bad_async(conninfo, env, afake_srv, setpgenv):
     setpgenv(env)
     params = conninfo_to_dict(conninfo)
-    with pytest.raises(psycopg.OperationalError):
-        await psycopg._dns.resolve_srv_async(params)  # type: ignore[attr-defined]
+    with pytest.raises(gaussdb.OperationalError):
+        await gaussdb._dns.resolve_srv_async(params)  # type: ignore[attr-defined]
 
 
 @pytest.fixture
 def fake_srv(monkeypatch):
     f = get_fake_srv_function(monkeypatch)
     monkeypatch.setattr(
-        psycopg._dns.resolver,  # type: ignore[attr-defined]
+        gaussdb._dns.resolver,  # type: ignore[attr-defined]
         "resolve",
         f,
     )
@@ -102,7 +102,7 @@ def afake_srv(monkeypatch):
         return f(qname, rdtype)
 
     monkeypatch.setattr(
-        psycopg._dns.async_resolver,  # type: ignore[attr-defined]
+        gaussdb._dns.async_resolver,  # type: ignore[attr-defined]
         "resolve",
         af,
     )

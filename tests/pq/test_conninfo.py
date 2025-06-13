@@ -1,7 +1,7 @@
 import pytest
 
-import psycopg
-from psycopg import pq
+import gaussdb
+from gaussdb import pq
 
 
 def test_defaults(monkeypatch):
@@ -43,6 +43,6 @@ def test_conninfo_parse_96():
 
 
 def test_conninfo_parse_bad():
-    with pytest.raises(psycopg.OperationalError) as e:
+    with pytest.raises(gaussdb.OperationalError) as e:
         pq.Conninfo.parse(b"bad_conninfo=")
         assert "bad_conninfo" in str(e.value)

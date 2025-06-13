@@ -1,7 +1,7 @@
 import pytest
 
-import psycopg
-from psycopg import pq
+import gaussdb
+from gaussdb import pq
 
 pytestmark = pytest.mark.crdb_skip("copy")
 
@@ -33,20 +33,20 @@ sample_binary = b"".join(sample_binary_rows)
 
 
 def test_put_data_no_copy(pgconn):
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.put_copy_data(b"wat")
 
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.put_copy_data(b"wat")
 
 
 def test_put_end_no_copy(pgconn):
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.put_copy_end()
 
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.put_copy_end()
 
 
@@ -139,11 +139,11 @@ def test_copy_out_error_end(pgconn):
 
 
 def test_get_data_no_copy(pgconn):
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.get_copy_data(0)
 
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.get_copy_data(0)
 
 

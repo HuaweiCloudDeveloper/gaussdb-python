@@ -1,5 +1,5 @@
 """
-Tests common to psycopg.AsyncCursor and its subclasses.
+Tests common to gaussdb.AsyncCursor and its subclasses.
 """
 
 import weakref
@@ -9,10 +9,10 @@ from typing import Any
 import pytest
 from packaging.version import parse as ver
 
-import psycopg
-from psycopg import pq, rows, sql
-from psycopg.adapt import PyFormat
-from psycopg.types import TypeInfo
+import gaussdb
+from gaussdb import pq, rows, sql
+from gaussdb.adapt import PyFormat
+from gaussdb.types import TypeInfo
 
 from . import _test_cursor
 from .utils import raiseif
@@ -24,12 +24,12 @@ execmany = _test_cursor.execmany  # avoid F811 underneath
 _execmany = _test_cursor._execmany  # needed by the execmany fixture
 
 
-cursor_classes = [psycopg.AsyncCursor, psycopg.AsyncClientCursor]
-# Allow to import (not necessarily to run) the module with psycopg 3.1.
-# Needed to test psycopg_pool 3.2 tests with psycopg 3.1 imported, i.e. to run
+cursor_classes = [gaussdb.AsyncCursor, gaussdb.AsyncClientCursor]
+# Allow to import (not necessarily to run) the module with gaussdb 3.1.
+# Needed to test gaussdb_pool 3.2 tests with gaussdb 3.1 imported, i.e. to run
 # `pytest -m pool`. (which might happen when releasing pool packages).
-if ver(psycopg.__version__) >= ver("3.2.0.dev0"):
-    cursor_classes.append(psycopg.AsyncRawCursor)
+if ver(gaussdb.__version__) >= ver("3.2.0.dev0"):
+    cursor_classes.append(gaussdb.AsyncRawCursor)
 
 
 @pytest.fixture(params=cursor_classes)
@@ -61,7 +61,7 @@ async def test_close(aconn):
     await cur.close()
     assert cur.closed
 
-    with pytest.raises(psycopg.InterfaceError):
+    with pytest.raises(gaussdb.InterfaceError):
         await cur.execute("select 'foo'")
 
     await cur.close()
@@ -80,7 +80,7 @@ async def test_cursor_close_fetchone(aconn):
     await cur.close()
     assert cur.closed
 
-    with pytest.raises(psycopg.InterfaceError):
+    with pytest.raises(gaussdb.InterfaceError):
         await cur.fetchone()
 
 
@@ -95,7 +95,7 @@ async def test_cursor_close_fetchmany(aconn):
     await cur.close()
     assert cur.closed
 
-    with pytest.raises(psycopg.InterfaceError):
+    with pytest.raises(gaussdb.InterfaceError):
         await cur.fetchmany(2)
 
 
@@ -110,7 +110,7 @@ async def test_cursor_close_fetchall(aconn):
     await cur.close()
     assert cur.closed
 
-    with pytest.raises(psycopg.InterfaceError):
+    with pytest.raises(gaussdb.InterfaceError):
         await cur.fetchall()
 
 
@@ -149,7 +149,7 @@ async def test_statusmessage(aconn):
     await cur.execute("create table statusmessage (dummy_column int)")
     assert cur.statusmessage == "CREATE TABLE"
 
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         await cur.execute("wat")
     assert cur.statusmessage is None
 
@@ -166,11 +166,11 @@ async def test_query_parse_cache_size(aconn):
 
     # Warning: testing internal structures. Test might need refactoring with the code.
     cache: Any
-    if cls is psycopg.AsyncCursor:
-        cache = psycopg._queries._query2pg
-    elif cls is psycopg.AsyncClientCursor:
-        cache = psycopg._queries._query2pg_client
-    elif cls is psycopg.AsyncRawCursor:
+    if cls is gaussdb.AsyncCursor:
+        cache = gaussdb._queries._query2pg
+    elif cls is gaussdb.AsyncClientCursor:
+        cache = gaussdb._queries._query2pg_client
+    elif cls is gaussdb.AsyncRawCursor:
         pytest.skip("RawCursor has no query parse cache")
     else:
         assert False, cls
@@ -189,7 +189,7 @@ async def test_query_parse_cache_size(aconn):
         (f"select 1 -- {'%s' * 60}", ("x",) * 60, h0 + 2, m0 + 2),
     ]
     for i, (query, params, hits, misses) in enumerate(tests):
-        pq = cur._query_cls(psycopg.adapt.Transformer())
+        pq = cur._query_cls(gaussdb.adapt.Transformer())
         pq.convert(query, params)
         ci = cache.cache_info()
         assert ci.hits == hits, f"at {i}"
@@ -231,7 +231,7 @@ async def test_execute_empty_query(aconn, query):
     cur = aconn.cursor()
     await cur.execute(query)
     assert cur.pgresult.status == pq.ExecStatus.EMPTY_QUERY
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         await cur.fetchone()
 
 
@@ -261,7 +261,7 @@ async def test_executemany_type_change(aconn):
 async def test_execute_copy(aconn, query):
     cur = aconn.cursor()
     await cur.execute("create table testcopy (id int)")
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         await cur.execute(query)
 
 
@@ -278,7 +278,7 @@ async def test_fetchone(aconn):
 
 async def test_binary_cursor_execute(aconn):
     with raiseif(
-        aconn.cursor_factory is psycopg.AsyncClientCursor, psycopg.NotSupportedError
+        aconn.cursor_factory is gaussdb.AsyncClientCursor, gaussdb.NotSupportedError
     ) as ex:
         cur = aconn.cursor(binary=True)
         await cur.execute(ph(cur, "select %s, %s"), [1, None])
@@ -293,7 +293,7 @@ async def test_binary_cursor_execute(aconn):
 async def test_execute_binary(aconn):
     cur = aconn.cursor()
     with raiseif(
-        aconn.cursor_factory is psycopg.AsyncClientCursor, psycopg.NotSupportedError
+        aconn.cursor_factory is gaussdb.AsyncClientCursor, gaussdb.NotSupportedError
     ) as ex:
         await cur.execute(ph(cur, "select %s, %s"), [1, None], binary=True)
     if ex:
@@ -390,7 +390,7 @@ async def test_executemany_returning_discard(aconn, execmany):
         [(10, "hello"), (20, "world")],
     )
     assert cur.rowcount == 2
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         await cur.fetchone()
     assert cur.nextset() is None
 
@@ -404,7 +404,7 @@ async def test_executemany_no_result(aconn, execmany):
     )
     assert cur.rowcount == 1
     assert cur.statusmessage.startswith("INSERT")
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         await cur.fetchone()
     pgresult = cur.pgresult
     assert cur.nextset()
@@ -436,7 +436,7 @@ async def test_executemany_rowcount_no_hit(aconn, execmany):
 )
 async def test_executemany_badquery(aconn, query):
     cur = aconn.cursor()
-    with pytest.raises(psycopg.DatabaseError):
+    with pytest.raises(gaussdb.DatabaseError):
         await cur.executemany(ph(cur, query), [(10, "hello"), (20, "world")])
 
 
@@ -448,7 +448,7 @@ async def test_executemany_null_first(aconn, fmt_in):
         ph(cur, f"insert into testmany values (%{fmt_in.value}, %{fmt_in.value})"),
         [[1, None], [3, 4]],
     )
-    with pytest.raises((psycopg.DataError, psycopg.ProgrammingError)):
+    with pytest.raises((gaussdb.DataError, gaussdb.ProgrammingError)):
         await cur.executemany(
             ph(cur, f"insert into testmany values (%{fmt_in.value}, %{fmt_in.value})"),
             [[1, ""], [3, 4]],
@@ -554,7 +554,7 @@ async def test_row_factory(aconn):
     cur = aconn.cursor(row_factory=my_row_factory)
 
     await cur.execute("reset search_path")
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         await cur.fetchone()
 
     await cur.execute("select 'foo' as bar")
@@ -602,7 +602,7 @@ async def test_bad_row_factory(aconn):
 
 async def test_scroll(aconn):
     cur = aconn.cursor()
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         await cur.scroll(0)
 
     await cur.execute("select generate_series(0,9)")
@@ -705,7 +705,7 @@ async def test_stream_chunked_invalid_size(aconn):
 @pytest.mark.libpq("< 17")
 async def test_stream_chunked_not_supported(aconn):
     cur = aconn.cursor()
-    with pytest.raises(psycopg.NotSupportedError):
+    with pytest.raises(gaussdb.NotSupportedError):
         await anext(cur.stream("select generate_series(1, 4)", size=2))
 
 
@@ -735,14 +735,14 @@ async def test_stream_chunked_row_factory(aconn):
 )
 async def test_stream_badquery(aconn, query):
     cur = aconn.cursor()
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         async for rec in cur.stream(query):
             pass
 
 
 async def test_stream_error_tx(aconn):
     cur = aconn.cursor()
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         async for rec in cur.stream("wat"):
             pass
     assert aconn.info.transaction_status == pq.TransactionStatus.INERROR
@@ -751,7 +751,7 @@ async def test_stream_error_tx(aconn):
 async def test_stream_error_notx(aconn):
     await aconn.set_autocommit(True)
     cur = aconn.cursor()
-    with pytest.raises(psycopg.ProgrammingError):
+    with pytest.raises(gaussdb.ProgrammingError):
         async for rec in cur.stream("wat"):
             pass
     assert aconn.info.transaction_status == pq.TransactionStatus.IDLE
@@ -784,7 +784,7 @@ async def test_stream_error_python_consumed(aconn):
 async def test_stream_close(aconn, autocommit):
     await aconn.set_autocommit(autocommit)
     cur = aconn.cursor()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         async for rec in cur.stream("select generate_series(1, 3)"):
             if rec[0] == 1:
                 await aconn.close()
@@ -796,7 +796,7 @@ async def test_stream_close(aconn, autocommit):
 
 async def test_stream_binary_cursor(aconn):
     with raiseif(
-        aconn.cursor_factory is psycopg.AsyncClientCursor, psycopg.NotSupportedError
+        aconn.cursor_factory is gaussdb.AsyncClientCursor, gaussdb.NotSupportedError
     ):
         cur = aconn.cursor(binary=True)
         recs = []
@@ -812,7 +812,7 @@ async def test_stream_execute_binary(aconn):
     cur = aconn.cursor()
     recs = []
     with raiseif(
-        aconn.cursor_factory is psycopg.AsyncClientCursor, psycopg.NotSupportedError
+        aconn.cursor_factory is gaussdb.AsyncClientCursor, gaussdb.NotSupportedError
     ):
         async for rec in cur.stream(
             "select x::int4 from generate_series(1, 2) x", binary=True
@@ -852,7 +852,7 @@ async def test_str(aconn):
 
 @pytest.mark.pipeline
 async def test_message_0x33(aconn):
-    # https://github.com/psycopg/psycopg/issues/314
+    # https://github.com/gaussdb/gaussdb/issues/314
     notices = []
     aconn.add_notice_handler(lambda diag: notices.append(diag.message_primary))
 

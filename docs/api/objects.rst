@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 Other top-level objects
 =======================
@@ -75,7 +75,7 @@ Connection information
     .. autoattribute:: hostaddr
 
         Only available if the libpq used is from PostgreSQL 12 or newer.
-        Raise `~psycopg.NotSupportedError` otherwise. You can use the
+        Raise `~gaussdb.NotSupportedError` otherwise. You can use the
         `~Capabilities.has_hostaddr` capability to check for support.
 
     .. autoattribute:: port
@@ -118,13 +118,13 @@ Libpq capabilities information
 .. autoclass:: Capabilities
 
     An instance of this object is normally exposed by the module as the object
-    `psycopg.capabilities`.
+    `gaussdb.capabilities`.
 
     Every feature check is implemented by an `!has_SOMETHING()` method. All
     the methods return a boolean value stating if the capability is supported,
     which can be used by a program to degrade gracefully::
 
-        if psycopg.capabilities.has_pipeline()
+        if gaussdb.capabilities.has_pipeline()
             with conn.pipeline():
                 operations(conn)
         else:
@@ -136,11 +136,11 @@ Libpq capabilities information
     feature is not supported. This allows to make a check at import time,
     crashing early and with a clear description of the problem.
 
-        >>> import psycopg
-        >>> psycopg.capabilities.has_pipeline(check=True)
+        >>> import gaussdb
+        >>> gaussdb.capabilities.has_pipeline(check=True)
         Traceback (most recent call last):
           ...
-        psycopg.NotSupportedError: the feature 'Connection.pipeline()' is not available:
+        gaussdb.NotSupportedError: the feature 'Connection.pipeline()' is not available:
             the client libpq version (imported from system libraries) is 13.4; the
             feature requires libpq version 14.0 or newer
 

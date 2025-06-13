@@ -8,9 +8,9 @@ from uuid import uuid4
 
 import pytest
 
-from psycopg import errors as e
-from psycopg import pq
-from psycopg.rows import namedtuple_row
+from gaussdb import errors as e
+from gaussdb import pq
+from gaussdb.rows import namedtuple_row
 
 from ..acompat import Queue, gather, spawn
 

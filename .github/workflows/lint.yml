@@ -27,7 +27,9 @@ jobs:
 
       - name: install packages to tests
         run: |
-          pip install ./psycopg[dev,test]
+          pip install ./tools/isort-gaussdb/
+          pip install ./gaussdb[dev,test]
+          pip install ./gaussdb_pool
           pip install types-polib
           pip install pre-commit
 
@@ -41,7 +43,9 @@ jobs:
 
       - name: Install packages for async_to_sync
         run: |
-            pip install ./psycopg[dev,test]
+            pip install ./tools/isort-gaussdb/
+            pip install ./gaussdb[dev,test]
+            pip install ./gaussdb_pool
             pip install types-polib
 
       - name: Check for sync/async inconsistencies
@@ -51,7 +55,12 @@ jobs:
         run: sudo apt-get install -y libgeos-dev
 
       - name: Install Python packages to generate docs
-        run: pip install ./psycopg[docs] ./psycopg_pool
+        run: |
+            pip install furo
+            pip install ./tools/isort-gaussdb/
+            pip install ./gaussdb[dev,test]
+            pip install ./gaussdb_pool
+            pip install types-polib
 
       - name: Check documentation
         run: sphinx-build -W -T -b html docs docs/_build/html

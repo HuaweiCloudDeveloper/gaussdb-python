@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from psycopg import pq
-from psycopg.abc import AdaptContext, Buffer, Dumper, Loader, PyFormat
+from gaussdb import pq
+from gaussdb.abc import AdaptContext, Buffer, Dumper, Loader, PyFormat
 
 
 def f() -> None:
