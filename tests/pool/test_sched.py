@@ -11,7 +11,7 @@ import pytest
 from ..acompat import gather, sleep, spawn
 
 try:
-    from psycopg_pool.sched import Scheduler
+    from gaussdb_pool.sched import Scheduler
 except ImportError:
     # Tests should have been skipped if the package is not available
     pass
@@ -69,7 +69,7 @@ def test_sched_task():
 
 @pytest.mark.slow
 def test_sched_error(caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
     s = Scheduler()
     t = spawn(s.run)
 

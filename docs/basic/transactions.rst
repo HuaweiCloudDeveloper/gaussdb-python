@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. index:: Transactions management
 .. index:: InFailedSqlTransaction
@@ -9,7 +9,7 @@
 Transactions management
 =======================
 
-Psycopg has a behaviour that may seem surprising compared to
+GaussDB has a behaviour that may seem surprising compared to
 :program:`psql`: by default, any database operation will start a new
 transaction. As a consequence, changes made by any cursor of the connection
 will not be visible until `Connection.commit()` is called, and will be
@@ -25,12 +25,12 @@ as PgBouncer) will also discard a connection left in transaction state, so, if
 possible you will want to commit or rollback a connection before finishing
 working with it.
 
-An example of what will happen, the first time you will use Psycopg (and to be
+An example of what will happen, the first time you will use GaussDB (and to be
 disappointed by it), is likely:
 
 .. code:: python
 
-    conn = psycopg.connect()
+    conn = gaussdb.connect()
 
     # Creating a cursor doesn't start a transaction or affect the connection
     # in any way.
@@ -56,7 +56,7 @@ There are a few things going wrong here, let's see how they can be improved.
 One obvious problem after the run above is that, firing up :program:`psql`,
 you will see no new record in the table ``data``. One way to fix the problem
 is to call `!conn.commit()` before closing the connection. Thankfully, if you
-use the :ref:`connection context <with-connection>`, Psycopg will commit the
+use the :ref:`connection context <with-connection>`, GaussDB will commit the
 connection at the end of the block (or roll it back if the block is exited
 with an exception):
 
@@ -66,7 +66,7 @@ sequence of database statements:
 .. code-block:: python
     :emphasize-lines: 1
 
-    with psycopg.connect() as conn:
+    with gaussdb.connect() as conn:
 
         cur = conn.cursor()
 
@@ -113,7 +113,7 @@ Autocommit transactions
 -----------------------
 
 The manual commit requirement can be suspended using `~Connection.autocommit`,
-either as connection attribute or as `~psycopg.Connection.connect()`
+either as connection attribute or as `~gaussdb.Connection.connect()`
 parameter. This may be required to run operations that cannot be executed
 inside a transaction, such as :sql:`CREATE DATABASE`, :sql:`VACUUM`,
 :sql:`CALL` on `stored procedures`__ using transaction control.
@@ -125,7 +125,7 @@ With an autocommit transaction, the above sequence of operation results in:
 .. code-block:: python
     :emphasize-lines: 1
 
-    with psycopg.connect(autocommit=True) as conn:
+    with gaussdb.connect(autocommit=True) as conn:
 
         cur = conn.cursor()
 
@@ -167,7 +167,7 @@ use a `!transaction()` context:
 .. code-block:: python
     :emphasize-lines: 8
 
-    with psycopg.connect(autocommit=True) as conn:
+    with gaussdb.connect(autocommit=True) as conn:
 
         cur = conn.cursor()
 
@@ -196,7 +196,7 @@ as explained in :ref:`transactions`:
 
 .. code:: python
 
-    conn = psycopg.connect()
+    conn = gaussdb.connect()
 
     cur = conn.cursor()
 
@@ -230,7 +230,7 @@ context.
     what's demanded by the DBAPI, the personal preference of several experienced
     developers is to:
 
-    - use a connection block: ``with psycopg.connect(...) as conn``;
+    - use a connection block: ``with gaussdb.connect(...) as conn``;
     - use an autocommit connection, either passing `!autocommit=True` as
       `!connect()` parameter or setting the attribute ``conn.autocommit =
       True``;
@@ -284,7 +284,7 @@ but not entirely committed yet.
 
 .. code:: python
 
-    from psycopg import Rollback
+    from gaussdb import Rollback
 
     with conn.transaction() as outer_tx:
         for command in commands():
@@ -302,7 +302,7 @@ but not entirely committed yet.
 Transaction characteristics
 ---------------------------
 
-You can set `transaction parameters`__ for the transactions that Psycopg
+You can set `transaction parameters`__ for the transactions that GaussDB
 handles. They affect the transactions started implicitly by non-autocommit
 transactions and the ones started explicitly by `Connection.transaction()` for
 both autocommit and non-autocommit transactions.
@@ -339,7 +339,7 @@ connection.
    failures. `In certain concurrent update cases`__, PostgreSQL will raise an
    exception looking like::
 
-        psycopg2.errors.SerializationFailure: could not serialize access
+        _GaussDB.errors.SerializationFailure: could not serialize access
         due to concurrent update
 
    In this case the application must be prepared to repeat the operation that
@@ -359,7 +359,7 @@ Two-Phase Commit protocol support
 
 .. versionadded:: 3.1
 
-Psycopg exposes the two-phase commit features available in PostgreSQL
+GaussDB exposes the two-phase commit features available in PostgreSQL
 implementing the `two-phase commit extensions`__ proposed by the DBAPI.
 
 The DBAPI model of two-phase commit is inspired by the `XA specification`__,
@@ -382,7 +382,7 @@ database using `~Connection.tpc_recover()` and completed using the above
 `!tpc_commit()` and `!tpc_rollback()`.
 
 PostgreSQL doesn't follow the XA standard though, and the ID for a PostgreSQL
-prepared transaction can be any string up to 200 characters long. Psycopg's
+prepared transaction can be any string up to 200 characters long. GaussDB's
 `Xid` objects can represent both XA-style transactions IDs (such as the ones
 created by the `!xid()` method) and PostgreSQL transaction IDs identified by
 an unparsed string.

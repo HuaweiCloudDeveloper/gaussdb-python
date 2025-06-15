@@ -1,3 +1,0 @@
-# Include the build backend in the distributed files.
-# It doesn't seem it can be specified in pyproject.toml
-include build_backend/*.py

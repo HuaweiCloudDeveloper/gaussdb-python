@@ -1,31 +1,31 @@
 """
-Tests for psycopg.Cursor that are not supposed to pass for subclasses.
+Tests for gaussdb.Cursor that are not supposed to pass for subclasses.
 """
 
 import pytest
 
-import psycopg
-from psycopg import errors as e
-from psycopg import pq, rows
-from psycopg.adapt import PyFormat
+import gaussdb
+from gaussdb import errors as e
+from gaussdb import pq, rows
+from gaussdb.adapt import PyFormat
 
 
 async def test_default_cursor(aconn):
     cur = aconn.cursor()
-    assert type(cur) is psycopg.AsyncCursor
+    assert type(cur) is gaussdb.AsyncCursor
 
 
 async def test_from_cursor_factory(aconn_cls, dsn):
     async with await aconn_cls.connect(
-        dsn, cursor_factory=psycopg.AsyncClientCursor
+        dsn, cursor_factory=gaussdb.AsyncClientCursor
     ) as aconn:
         cur = aconn.cursor()
-        assert type(cur) is psycopg.AsyncClientCursor
+        assert type(cur) is gaussdb.AsyncClientCursor
 
 
 async def test_str(aconn):
     cur = aconn.cursor()
-    assert "psycopg.%s" % psycopg.AsyncCursor.__name__ in str(cur)
+    assert "gaussdb.%s" % gaussdb.AsyncCursor.__name__ in str(cur)
 
 
 async def test_execute_many_results_param(aconn):
@@ -48,7 +48,7 @@ async def test_query_params_execute(aconn):
     assert cur._query.query == b"select 1"
     assert not cur._query.params
 
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         await cur.execute("select %t::int", ["wat"])
 
     assert cur._query.query == b"select $1::int"

@@ -1,22 +1,22 @@
 .. index::
-    pair: psycopg2; Differences
+    pair: _GaussDB; Differences
 
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
-.. _from-psycopg2:
+.. _from-_GaussDB:
 
 
-Differences from `!psycopg2`
+Differences from `!_GaussDB`
 ============================
 
-Psycopg 3 uses the common DBAPI structure of many other database adapters and
-tries to behave as close as possible to `!psycopg2`. There are however a few
+gaussdb uses the common DBAPI structure of many other database adapters and
+tries to behave as close as possible to `!_GaussDB`. There are however a few
 differences to be aware of.
 
 .. tip::
     Most of the times, the workarounds suggested here will work with both
-    Psycopg 2 and 3, which could be useful if you are porting a program or
-    writing a program that should work with both Psycopg 2 and 3.
+    GaussDB 2 and 3, which could be useful if you are porting a program or
+    writing a program that should work with both GaussDB 2 and 3.
 
 
 .. _server-side-binding:
@@ -24,7 +24,7 @@ differences to be aware of.
 Server-side binding
 -------------------
 
-Psycopg 3 sends the query and the parameters to the server separately, instead
+gaussdb sends the query and the parameters to the server separately, instead
 of merging them on the client side. Server-side binding works for normal
 :sql:`SELECT` and data manipulation statements (:sql:`INSERT`, :sql:`UPDATE`,
 :sql:`DELETE`), but it doesn't work with many other statements. For instance,
@@ -33,14 +33,14 @@ it doesn't work with :sql:`SET` or with :sql:`NOTIFY`::
     >>> conn.execute("SET TimeZone TO %s", ["UTC"])
     Traceback (most recent call last):
     ...
-    psycopg.errors.SyntaxError: syntax error at or near "$1"
+    gaussdb.errors.SyntaxError: syntax error at or near "$1"
     LINE 1: SET TimeZone TO $1
                             ^
 
     >>> conn.execute("NOTIFY %s, %s", ["chan", 42])
     Traceback (most recent call last):
     ...
-    psycopg.errors.SyntaxError: syntax error at or near "$1"
+    gaussdb.errors.SyntaxError: syntax error at or near "$1"
     LINE 1: NOTIFY $1, $2
                    ^
 
@@ -49,7 +49,7 @@ and with any data definition statement::
     >>> conn.execute("CREATE TABLE foo (id int DEFAULT %s)", [42])
     Traceback (most recent call last):
     ...
-    psycopg.errors.UndefinedParameter: there is no parameter $1
+    gaussdb.errors.UndefinedParameter: there is no parameter $1
     LINE 1: CREATE TABLE foo (id int DEFAULT $1)
                                              ^
 
@@ -68,9 +68,9 @@ function can be used instead of :sql:`NOTIFY`::
     #id-1.9.3.157.7.5
 
 If this is not possible, you must merge the query and the parameter on the
-client side. You can do so using the `psycopg.sql` objects::
+client side. You can do so using the `gaussdb.sql` objects::
 
-    >>> from psycopg import sql
+    >>> from gaussdb import sql
 
     >>> cur.execute(sql.SQL("CREATE TABLE foo (id int DEFAULT {})").format(42))
 
@@ -81,15 +81,15 @@ such as `ClientCursor`::
     >>> cur.execute("CREATE TABLE foo (id int DEFAULT %s)", [42])
 
 If you need `!ClientCursor` often, you can set the `Connection.cursor_factory`
-to have them created by default by `Connection.cursor()`. This way, Psycopg 3
-will behave largely the same way of Psycopg 2.
+to have them created by default by `Connection.cursor()`. This way, gaussdb
+will behave largely the same way of GaussDB 2.
 
 Note that, both server-side and client-side, you can only specify **values**
 as parameters (i.e. *the strings that go in single quotes*). If you need to
 parametrize different parts of a statement (such as a table name), you must
-use the `psycopg.sql` module::
+use the `gaussdb.sql` module::
 
-    >>> from psycopg import sql
+    >>> from gaussdb import sql
 
     # This will quote the user and the password using the right quotes
     # e.g.: ALTER USER "foo" SET PASSWORD 'bar'
@@ -107,7 +107,7 @@ use the `psycopg.sql` module::
 Extended query Protocol
 -----------------------
 
-In order to use :ref:`server-side-binding`, psycopg normally uses the
+In order to use :ref:`server-side-binding`, gaussdb normally uses the
 `extended query protocol`__ to communicate with the backend.
 
 In certain context outside pure PostgreSQL, the extended query protocol is not
@@ -133,23 +133,23 @@ the same `!execute()` call, separating them by semicolon::
     ...     (10, 20))
     Traceback (most recent call last):
     ...
-    psycopg.errors.SyntaxError: cannot insert multiple commands into a prepared statement
+    gaussdb.errors.SyntaxError: cannot insert multiple commands into a prepared statement
 
 One obvious way to work around the problem is to use several `!execute()`
 calls.
 
 **There is no such limitation if no parameters are used**. As a consequence, you
 can compose a multiple query on the client side and run them all in the same
-`!execute()` call, using the `psycopg.sql` objects::
+`!execute()` call, using the `gaussdb.sql` objects::
 
-    >>> from psycopg import sql
+    >>> from gaussdb import sql
     >>> conn.execute(
     ...     sql.SQL("INSERT INTO foo VALUES ({}); INSERT INTO foo values ({})"
     ...     .format(10, 20))
 
 or a :ref:`client-side binding cursor <client-side-binding-cursors>`::
 
-    >>> cur = psycopg.ClientCursor(conn)
+    >>> cur = gaussdb.ClientCursor(conn)
     >>> cur.execute(
     ...     "INSERT INTO foo VALUES (%s); INSERT INTO foo VALUES (%s)",
     ...     (10, 20))
@@ -164,15 +164,15 @@ or a :ref:`client-side binding cursor <client-side-binding-cursors>`::
         >>> conn.execute("CREATE DATABASE foo; SELECT 1")
         Traceback (most recent call last):
         ...
-        psycopg.errors.ActiveSqlTransaction: CREATE DATABASE cannot run inside a transaction block
+        gaussdb.errors.ActiveSqlTransaction: CREATE DATABASE cannot run inside a transaction block
 
     This happens because PostgreSQL itself will wrap multiple statements in a
     transaction. Note that you will experience a different behaviour in
     :program:`psql` (:program:`psql` will split the queries on semicolons and
     send them to the server separately).
 
-    This is not new in Psycopg 3: the same limitation is present in
-    `!psycopg2` too.
+    This is not new in gaussdb: the same limitation is present in
+    `!_GaussDB` too.
 
 
 .. _multi-results:
@@ -180,14 +180,14 @@ or a :ref:`client-side binding cursor <client-side-binding-cursors>`::
 Multiple results returned from multiple statements
 --------------------------------------------------
 
-If more than one statement returning results is executed in psycopg2, only the
+If more than one statement returning results is executed in _GaussDB, only the
 result of the last statement is returned::
 
     >>> cur_pg2.execute("SELECT 1; SELECT 2")
     >>> cur_pg2.fetchone()
     (2,)
 
-In Psycopg 3 instead, all the results are available. After running the query,
+In gaussdb instead, all the results are available. After running the query,
 the first result will be readily available in the cursor and can be consumed
 using the usual `!fetch*()` methods. In order to access the following
 results, you can use the `Cursor.nextset()` method::
@@ -220,7 +220,7 @@ find a function candidate for the given data types::
     >>> conn.execute("SELECT json_build_array(%s, %s)", ["foo", "bar"])
     Traceback (most recent call last):
     ...
-    psycopg.errors.IndeterminateDatatype: could not determine data type of parameter $1
+    gaussdb.errors.IndeterminateDatatype: could not determine data type of parameter $1
 
 This can be worked around specifying the argument types explicitly via a cast::
 
@@ -233,12 +233,12 @@ You cannot use ``IN %s`` with a tuple
 -------------------------------------
 
 ``IN`` cannot be used with a tuple as single parameter, as was possible with
-``psycopg2``::
+``_GaussDB``::
 
     >>> conn.execute("SELECT * FROM foo WHERE id IN %s", [(10,20,30)])
     Traceback (most recent call last):
     ...
-    psycopg.errors.SyntaxError: syntax error at or near "$1"
+    gaussdb.errors.SyntaxError: syntax error at or near "$1"
     LINE 1: SELECT * FROM foo WHERE id IN $1
                                           ^
 
@@ -248,7 +248,7 @@ array::
 
     >>> conn.execute("SELECT * FROM foo WHERE id = ANY(%s)", [[10,20,30]])
 
-Note that `ANY()` can be used with `!psycopg2` too, and has the advantage of
+Note that `ANY()` can be used with `!_GaussDB` too, and has the advantage of
 accepting an empty list of values too as argument, which is not supported by
 the :sql:`IN` operator instead.
 
@@ -266,7 +266,7 @@ You cannot use :sql:`IS %s` or :sql:`IS NOT %s`::
     >>> conn.execute("SELECT * FROM foo WHERE field IS %s", [None])
     Traceback (most recent call last):
     ...
-    psycopg.errors.SyntaxError: syntax error at or near "$1"
+    gaussdb.errors.SyntaxError: syntax error at or near "$1"
     LINE 1: SELECT * FROM foo WHERE field IS $1
                                          ^
 
@@ -299,26 +299,26 @@ Analogously you can use :sql:`IS DISTINCT FROM %s` as a parametric version of
 Cursors subclasses
 ------------------
 
-In `!psycopg2`, a few cursor subclasses allowed to return data in different
-form than tuples. In Psycopg 3 the same can be achieved by setting a :ref:`row
+In `!_GaussDB`, a few cursor subclasses allowed to return data in different
+form than tuples. In gaussdb the same can be achieved by setting a :ref:`row
 factory <row-factories>`:
 
-- instead of `~psycopg2.extras.RealDictCursor` you can use
-  `~psycopg.rows.dict_row`;
+- instead of `~_GaussDB.extras.RealDictCursor` you can use
+  `~gaussdb.rows.dict_row`;
 
-- instead of `~psycopg2.extras.NamedTupleCursor` you can use
-  `~psycopg.rows.namedtuple_row`.
+- instead of `~_GaussDB.extras.NamedTupleCursor` you can use
+  `~gaussdb.rows.namedtuple_row`.
 
-Other row factories are available in the `psycopg.rows` module. There isn't an
-object behaving like `~psycopg2.extras.DictCursor` (whose results are
+Other row factories are available in the `gaussdb.rows` module. There isn't an
+object behaving like `~_GaussDB.extras.DictCursor` (whose results are
 indexable both by column position and by column name).
 
 .. code::
 
-    from psycopg.rows import dict_row, namedtuple_row
+    from gaussdb.rows import dict_row, namedtuple_row
 
     # By default, every cursor will return dicts.
-    conn = psycopg.connect(DSN, row_factory=dict_row)
+    conn = gaussdb.connect(DSN, row_factory=dict_row)
 
     # You can set a row factory on a single cursor too.
     cur = conn.cursor(row_factory=namedtuple_row)
@@ -349,12 +349,12 @@ adaptation system <adaptation>`.
 Copy is no longer file-based
 ----------------------------
 
-`!psycopg2` exposes :ref:`a few copy methods <pg2:copy>` to interact with
+`!_GaussDB` exposes :ref:`a few copy methods <pg2:copy>` to interact with
 PostgreSQL :sql:`COPY`. Their file-based interface doesn't make it easy to load
 dynamically-generated data into a database.
 
 There is now a single `~Cursor.copy()` method, which is similar to
-`!psycopg2` `!copy_expert()` in accepting a free-form :sql:`COPY` command and
+`!_GaussDB` `!copy_expert()` in accepting a free-form :sql:`COPY` command and
 returns an object to read/write data, block-wise or record-wise. The different
 usage pattern also enables :sql:`COPY` to be used in async interactions.
 
@@ -366,12 +366,12 @@ usage pattern also enables :sql:`COPY` to be used in async interactions.
 `!with` connection
 ------------------
 
-In `!psycopg2`, using the syntax :ref:`with connection <pg2:with>`,
+In `!_GaussDB`, using the syntax :ref:`with connection <pg2:with>`,
 only the transaction is closed, not the connection. This behaviour is
 surprising for people used to several other Python classes wrapping resources,
 such as files.
 
-In Psycopg 3, using :ref:`with connection <with-connection>` will close the
+In gaussdb, using :ref:`with connection <with-connection>` will close the
 connection at the end of the `!with` block, making handling the connection
 resources more familiar.
 
@@ -398,7 +398,7 @@ function_name(...)` or :sql:`CALL procedure_name(...)` instead.
 `!client_encoding` is gone
 --------------------------
 
-Psycopg automatically uses the database client encoding to decode data to
+GaussDB automatically uses the database client encoding to decode data to
 Unicode strings. Use `ConnectionInfo.encoding` if you need to read the
 encoding. You can select an encoding at connection time using the
 `!client_encoding` connection parameter and you can change the encoding of a
@@ -437,25 +437,25 @@ Python. While Python dates are limited to the years between 1 and 9999
 10K. Furthermore PostgreSQL can also represent symbolic dates "infinity", in
 both directions.
 
-In psycopg2, by default, `infinity dates and timestamps map to 'date.max'`__
+In _GaussDB, by default, `infinity dates and timestamps map to 'date.max'`__
 and similar constants. This has the problem of creating a non-bijective
 mapping (two Postgres dates, infinity and 9999-12-31, both map to the same
 Python date). There is also the perversity that valid Postgres dates, greater
 than Python `!date.max` but arguably lesser than infinity, will still
 overflow.
 
-In Psycopg 3, every date greater than year 9999 will overflow, including
+In gaussdb, every date greater than year 9999 will overflow, including
 infinity. If you would like to customize this mapping (for instance flattening
 every date past Y10K on `!date.max`) you can subclass and adapt the
 appropriate loaders: take a look at :ref:`this example
 <adapt-example-inf-date>` to see how.
 
-.. __: https://www.psycopg.org/docs/usage.html#infinite-dates-handling
+.. __: https://www.gaussdb.org/docs/usage.html#infinite-dates-handling
 
 
 .. _whats-new:
 
-What's new in Psycopg 3
+What's new in gaussdb
 -----------------------
 
 - :ref:`Asynchronous support <async>`
@@ -465,4 +465,4 @@ What's new in Psycopg 3
 - :ref:`Python-based COPY support <copy>`
 - :ref:`Support for static typing <static-typing>`
 - :ref:`A redesigned connection pool <connection-pools>`
-- :ref:`Direct access to the libpq functionalities <psycopg.pq>`
+- :ref:`Direct access to the libpq functionalities <gaussdb.pq>`

@@ -1,13 +1,13 @@
-The `!psycopg` module
+The `!gaussdb` module
 =====================
 
-Psycopg implements the `Python Database DB API 2.0 specification`__. As such
+GaussDB implements the `Python Database DB API 2.0 specification`__. As such
 it also exposes the `module-level objects`__ required by the specifications.
 
 .. __: https://www.python.org/dev/peps/pep-0249/
 .. __: https://www.python.org/dev/peps/pep-0249/#module-interface
 
-.. module:: psycopg
+.. module:: gaussdb
 
 .. autofunction:: connect
 
@@ -20,14 +20,14 @@ it also exposes the `module-level objects`__ required by the specifications.
 .. data:: capabilities
 
     An object that can be used to verify that the client library used by
-    psycopg implements a certain feature. For instance::
+    gaussdb implements a certain feature. For instance::
 
         # Fail at import time if encrypted passwords is not available
-        import psycopg
-        psycopg.capabilities.has_encrypt_password(check=True)
+        import gaussdb
+        gaussdb.capabilities.has_encrypt_password(check=True)
 
         # Verify at runtime if a feature can be used
-        if psycopg.capabilities.has_hostaddr():
+        if gaussdb.capabilities.has_hostaddr():
             print(conn.info.hostaddr)
         else:
             print("unknown connection hostadd")
@@ -39,8 +39,8 @@ it also exposes the `module-level objects`__ required by the specifications.
 
 .. rubric:: Exceptions
 
-The standard `DBAPI exceptions`__ are exposed both by the `!psycopg` module
-and by the `psycopg.errors` module. The latter also exposes more specific
+The standard `DBAPI exceptions`__ are exposed both by the `!gaussdb` module
+and by the `gaussdb.errors` module. The latter also exposes more specific
 exceptions, mapping to the database error states (see
 :ref:`sqlstate-exceptions`).
 
@@ -67,12 +67,12 @@ exceptions, mapping to the database error states (see
    converted into each other.
 
    This map is used as a template when new connections are created, using
-   `psycopg.connect()`. Its `~psycopg.adapt.AdaptersMap.types` attribute is a
-   `~psycopg.types.TypesRegistry` containing information about every
+   `gaussdb.connect()`. Its `~gaussdb.adapt.AdaptersMap.types` attribute is a
+   `~gaussdb.types.TypesRegistry` containing information about every
    PostgreSQL builtin type, useful for adaptation customisation (see
    :ref:`adaptation`)::
 
-       >>> psycopg.adapters.types["int4"]
+       >>> gaussdb.adapters.types["int4"]
        <TypeInfo: int4 (oid: 23, array oid: 1007)>
 
-   :type: `~psycopg.adapt.AdaptersMap`
+   :type: `~gaussdb.adapt.AdaptersMap`

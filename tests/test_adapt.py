@@ -6,15 +6,15 @@ from typing import Any
 
 import pytest
 
-import psycopg
-from psycopg import errors as e
-from psycopg import postgres, pq, sql
-from psycopg.abc import Buffer
-from psycopg.adapt import Dumper, Loader, PyFormat, Transformer
-from psycopg._cmodule import _psycopg
-from psycopg.postgres import types as builtins
-from psycopg.types.array import ListBinaryDumper, ListDumper
-from psycopg.types.string import StrBinaryDumper, StrDumper
+import gaussdb
+from gaussdb import errors as e
+from gaussdb import postgres, pq, sql
+from gaussdb.abc import Buffer
+from gaussdb.adapt import Dumper, Loader, PyFormat, Transformer
+from gaussdb._cmodule import _gaussdb
+from gaussdb.postgres import types as builtins
+from gaussdb.types.array import ListBinaryDumper, ListDumper
+from gaussdb.types.string import StrBinaryDumper, StrDumper
 
 
 @pytest.mark.parametrize(
@@ -59,7 +59,7 @@ def test_quote(data, result):
     ],
 )
 def test_quote_none(data, result, global_adapters):
-    psycopg.adapters.register_dumper(str, StrNoneDumper)
+    gaussdb.adapters.register_dumper(str, StrNoneDumper)
     t = Transformer()
     dumper = t.get_dumper(data, PyFormat.TEXT)
     assert dumper.quote(data) == result
@@ -81,8 +81,8 @@ def test_register_dumper_by_class_name(conn):
 
 @pytest.mark.crdb("skip", reason="global adapters don't affect crdb")
 def test_dump_global_ctx(conn_cls, dsn, global_adapters, pgconn):
-    psycopg.adapters.register_dumper(MyStr, make_bin_dumper("gb"))
-    psycopg.adapters.register_dumper(MyStr, make_dumper("gt"))
+    gaussdb.adapters.register_dumper(MyStr, make_bin_dumper("gb"))
+    gaussdb.adapters.register_dumper(MyStr, make_dumper("gt"))
     with conn_cls.connect(dsn) as conn:
         cur = conn.execute("select %s", [MyStr("hello")])
         assert cur.fetchone() == ("hellogt",)
@@ -172,7 +172,7 @@ def test_loader_protocol(conn):
 
 def test_subclass_loader(conn):
     # This might be a C fast object: make sure that the Python code is called
-    from psycopg.types.string import TextLoader
+    from gaussdb.types.string import TextLoader
 
     class MyTextLoader(TextLoader):
         def load(self, data):
@@ -216,8 +216,8 @@ def test_register_loader_by_type_name(conn):
 
 @pytest.mark.crdb("skip", reason="global adapters don't affect crdb")
 def test_load_global_ctx(conn_cls, dsn, global_adapters):
-    psycopg.adapters.register_loader("text", make_loader("gt"))
-    psycopg.adapters.register_loader("text", make_bin_loader("gb"))
+    gaussdb.adapters.register_loader("text", make_loader("gt"))
+    gaussdb.adapters.register_loader("text", make_bin_loader("gb"))
     with conn_cls.connect(dsn) as conn:
         cur = conn.cursor(binary=False).execute("select 'hello'::text")
         assert cur.fetchone() == ("hellogt",)
@@ -326,7 +326,7 @@ def test_list_dumper(conn, fmt_out):
 
     L: list[list[Any]] = []
     L.append(L)
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         assert t.get_dumper(L, fmt_in)
 
 
@@ -417,17 +417,17 @@ def test_no_cast_needed(conn, fmt_in):
 
 
 @pytest.mark.slow
-@pytest.mark.skipif(_psycopg is None, reason="C module test")
+@pytest.mark.skipif(_gaussdb is None, reason="C module test")
 def test_optimised_adapters():
     # All the optimised adapters available
     c_adapters = {}
-    for n in dir(_psycopg):
+    for n in dir(_gaussdb):
         if n.startswith("_") or n in ("CDumper", "CLoader"):
             continue
-        obj = getattr(_psycopg, n)
+        obj = getattr(_gaussdb, n)
         if not isinstance(obj, type):
             continue
-        if not issubclass(obj, (_psycopg.CDumper, _psycopg.CLoader)):
+        if not issubclass(obj, (_gaussdb.CDumper, _gaussdb.CLoader)):
             continue
         c_adapters[n] = obj
 
@@ -448,8 +448,8 @@ def test_optimised_adapters():
     assert i >= 10
 
     # Check that every optimised adapter is the optimised version of a Py one
-    for n in dir(psycopg.types):
-        mod = getattr(psycopg.types, n)
+    for n in dir(gaussdb.types):
+        mod = getattr(gaussdb.types, n)
         if not isinstance(mod, ModuleType):
             continue
         for n1 in dir(mod):

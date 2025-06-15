@@ -5,9 +5,9 @@ import socket
 
 import pytest
 
-import psycopg
-from psycopg import generators, waiting
-from psycopg.pq import ConnStatus, ExecStatus
+import gaussdb
+from gaussdb import generators, waiting
+from gaussdb.pq import ConnStatus, ExecStatus
 
 skip_if_not_linux = pytest.mark.skipif(
     not sys.platform.startswith("linux"), reason="non-Linux platform"
@@ -23,7 +23,7 @@ waitfns = [
         "wait_epoll", marks=pytest.mark.skipif("not hasattr(select, 'epoll')")
     ),
     pytest.param("wait_poll", marks=pytest.mark.skipif("not hasattr(select, 'poll')")),
-    pytest.param("wait_c", marks=pytest.mark.skipif("not psycopg._cmodule._psycopg")),
+    pytest.param("wait_c", marks=pytest.mark.skipif("not gaussdb._cmodule._gaussdb")),
 ]
 
 events = ["R", "W", "RW"]
@@ -40,7 +40,7 @@ def test_wait_conn(dsn, timeout):
 
 def test_wait_conn_bad(dsn):
     gen = generators.connect("dbname=nosuchdb")
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         waiting.wait_conn(gen)
 
 
@@ -79,7 +79,7 @@ def test_wait_bad(pgconn, waitfn):
     pgconn.send_query(b"select 1")
     gen = generators.execute(pgconn)
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         waitfn(gen, pgconn.socket)
 
 
@@ -127,7 +127,7 @@ def test_wait_large_fd(dsn, fname):
         except OSError:
             pytest.skip("can't open the number of files needed for the test")
 
-        pgconn = psycopg.pq.PGconn.connect(dsn.encode())
+        pgconn = gaussdb.pq.PGconn.connect(dsn.encode())
         try:
             assert pgconn.socket > 1024
             pgconn.send_query(b"select 1")
@@ -156,7 +156,7 @@ async def test_wait_conn_async(dsn, timeout):
 @pytest.mark.anyio
 async def test_wait_conn_async_bad(dsn):
     gen = generators.connect("dbname=nosuchdb")
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         await waiting.wait_conn_async(gen)
 
 
@@ -190,5 +190,5 @@ async def test_wait_async_bad(pgconn):
     gen = generators.execute(pgconn)
     socket = pgconn.socket
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         await waiting.wait_async(gen, socket)

@@ -2,8 +2,8 @@ import codecs
 
 import pytest
 
-import psycopg
-from psycopg import _encodings as encodings
+import gaussdb
+from gaussdb import _encodings as encodings
 
 
 def test_names_normalised():
@@ -40,7 +40,7 @@ def test_pg2py(pyenc, pgenc):
 
 @pytest.mark.parametrize("pgenc", ["MULE_INTERNAL", "EUC_TW"])
 def test_pg2py_missing(pgenc):
-    with pytest.raises(psycopg.NotSupportedError):
+    with pytest.raises(gaussdb.NotSupportedError):
         encodings.pg2pyenc(pgenc.encode())
 
 

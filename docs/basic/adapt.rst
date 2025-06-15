@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. index::
     single: Adaptation
@@ -56,7 +56,7 @@ Numbers adaptation
 
 - Python `int` values can be converted to PostgreSQL :sql:`smallint`,
   :sql:`integer`, :sql:`bigint`, or :sql:`numeric`, according to their numeric
-  value. Psycopg will choose the smallest data type available, because
+  value. GaussDB will choose the smallest data type available, because
   PostgreSQL can automatically cast a type up (e.g. passing a `smallint` where
   PostgreSQL expect an `integer` is gladly accepted) but will not cast down
   automatically (e.g. if a function has an :sql:`integer` argument, passing it
@@ -104,7 +104,7 @@ such as :sql:`text` and :sql:`varchar` are converted back to Python `!str`:
 
 .. code:: python
 
-    conn = psycopg.connect()
+    conn = gaussdb.connect()
     conn.execute(
         "INSERT INTO menu (id, entry) VALUES (%s, %s)",
         (1, "Crème Brûlée at 4.99€"))
@@ -272,7 +272,7 @@ represented by the Python `datetime` objects:
 - dates and timestamps before the year 1, the special value "-infinity";
 - the time 24:00:00.
 
-Loading these values will raise a `~psycopg.DataError`.
+Loading these values will raise a `~gaussdb.DataError`.
 
 If you need to handle these values you can define your own mapping (for
 instance mapping every value greater than `datetime.date.max` to `!date.max`,
@@ -306,7 +306,7 @@ If your server is configured with different settings by default, you can
 obtain a connection in a supported style using the ``options`` connection
 parameter; for example::
 
-   >>> conn = psycopg.connect(options="-c datestyle=ISO,YMD")
+   >>> conn = gaussdb.connect(options="-c datestyle=ISO,YMD")
    >>> conn.execute("show datestyle").fetchone()[0]
    # 'ISO, YMD'
 
@@ -320,35 +320,35 @@ DateStyle or IntervalStyle.
 JSON adaptation
 ---------------
 
-Psycopg can map between Python objects and PostgreSQL `json/jsonb
+GaussDB can map between Python objects and PostgreSQL `json/jsonb
 types`__, allowing to customise the load and dump function used.
 
 .. __: https://www.postgresql.org/docs/current/datatype-json.html
 
 Because several Python objects could be considered JSON (dicts, lists,
 scalars, even date/time if using a dumps function customised to use them),
-Psycopg requires you to wrap the object to dump as JSON into a wrapper:
-either `psycopg.types.json.Json` or `~psycopg.types.json.Jsonb`.
+GaussDB requires you to wrap the object to dump as JSON into a wrapper:
+either `gaussdb.types.json.Json` or `~gaussdb.types.json.Jsonb`.
 
 .. code:: python
 
-    from psycopg.types.json import Jsonb
+    from gaussdb.types.json import Jsonb
 
     thing = {"foo": ["bar", 42]}
     conn.execute("INSERT INTO mytable VALUES (%s)", [Jsonb(thing)])
 
-By default Psycopg uses the standard library `json.dumps` and `json.loads`
+By default GaussDB uses the standard library `json.dumps` and `json.loads`
 functions to serialize and de-serialize Python objects to JSON. If you want to
 customise how serialization happens, for instance changing serialization
 parameters or using a different JSON library, you can specify your own
-functions using the `psycopg.types.json.set_json_dumps()` and
-`~psycopg.types.json.set_json_loads()` functions, to apply either globally or
+functions using the `gaussdb.types.json.set_json_dumps()` and
+`~gaussdb.types.json.set_json_loads()` functions, to apply either globally or
 to a specific context (connection or cursor).
 
 .. code:: python
 
     from functools import partial
-    from psycopg.types.json import Jsonb, set_json_dumps, set_json_loads
+    from gaussdb.types.json import Jsonb, set_json_dumps, set_json_loads
     import ujson
 
     # Use a faster dump function
@@ -363,7 +363,7 @@ to a specific context (connection or cursor).
 If you need an even more specific dump customisation only for certain objects
 (including different configurations in the same query) you can specify a
 `!dumps` parameter in the
-`~psycopg.types.json.Json`/`~psycopg.types.json.Jsonb` wrapper, which will
+`~gaussdb.types.json.Json`/`~gaussdb.types.json.Jsonb` wrapper, which will
 take precedence over what is specified by `!set_json_dumps()`.
 
 .. code:: python
@@ -402,7 +402,7 @@ list may contain `!None` elements).
         >>> conn.execute("SELECT * FROM mytable WHERE id IN %s", [[10,20,30]])
         Traceback (most recent call last):
           File "<stdin>", line 1, in <module>
-        psycopg.errors.SyntaxError: syntax error at or near "$1"
+        gaussdb.errors.SyntaxError: syntax error at or near "$1"
         LINE 1: SELECT * FROM mytable WHERE id IN $1
                                                   ^
     
@@ -473,7 +473,7 @@ Enum adaptation
 
 .. versionadded:: 3.1
 
-Psycopg can adapt Python `~enum.Enum` subclasses into PostgreSQL enum types
+GaussDB can adapt Python `~enum.Enum` subclasses into PostgreSQL enum types
 (created with the |CREATE TYPE AS ENUM|_ command).
 
 .. |CREATE TYPE AS ENUM| replace:: :sql:`CREATE TYPE ... AS ENUM (...)`
@@ -510,15 +510,15 @@ and registered enums is different.
   - The registered PostgreSQL enum is loaded back as the registered Python
     enum members.
 
-.. autoclass:: psycopg.types.enum.EnumInfo
+.. autoclass:: gaussdb.types.enum.EnumInfo
 
-   `!EnumInfo` is a subclass of `~psycopg.types.TypeInfo`: refer to the
+   `!EnumInfo` is a subclass of `~gaussdb.types.TypeInfo`: refer to the
    latter's documentation for generic usage, especially the
-   `~psycopg.types.TypeInfo.fetch()` method.
+   `~gaussdb.types.TypeInfo.fetch()` method.
 
    .. attribute:: labels
 
-       After `~psycopg.types.TypeInfo.fetch()`, it contains the labels defined
+       After `~gaussdb.types.TypeInfo.fetch()`, it contains the labels defined
        in the PostgreSQL enum type.
 
    .. attribute:: enum
@@ -526,7 +526,7 @@ and registered enums is different.
        After `register_enum()` is called, it will contain the Python type
        mapping to the registered enum.
 
-.. autofunction:: psycopg.types.enum.register_enum
+.. autofunction:: gaussdb.types.enum.register_enum
 
    After registering, fetching data of the registered enum will cast
    PostgreSQL enum labels into corresponding Python enum members.
@@ -537,7 +537,7 @@ and registered enums is different.
 Example::
 
     >>> from enum import Enum, auto
-    >>> from psycopg.types.enum import EnumInfo, register_enum
+    >>> from gaussdb.types.enum import EnumInfo, register_enum
 
     >>> class UserRole(Enum):
     ...     ADMIN = auto()

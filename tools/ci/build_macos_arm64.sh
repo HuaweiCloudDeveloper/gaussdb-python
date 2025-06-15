@@ -101,9 +101,9 @@ export CIBW_BUILD='cp{38,39,310,311,312,313}-*'
 export CIBW_TEST_REQUIRES="./psycopg[test] ./psycopg_pool"
 export CIBW_TEST_COMMAND="pytest {project}/tests -m 'not slow and not flakey' --color yes"
 
-export PSYCOPG_IMPL=binary
-export PSYCOPG_TEST_DSN="dbname=postgres"
-export PSYCOPG_TEST_WANT_LIBPQ_BUILD=">= ${pg_version}"
-export PSYCOPG_TEST_WANT_LIBPQ_IMPORT=">= ${pg_version}"
+export GAUSSDB_IMPL=binary
+export GAUSSDB_TEST_DSN="dbname=postgres"
+export GAUSSDB_TEST_WANT_LIBPQ_BUILD=">= ${pg_version}"
+export GAUSSDB_TEST_WANT_LIBPQ_IMPORT=">= ${pg_version}"
 
 cibuildwheel psycopg_binary

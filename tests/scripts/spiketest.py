@@ -15,9 +15,9 @@ import time
 import logging
 import threading
 
-import psycopg
-import psycopg_pool
-from psycopg.rows import Row
+import gaussdb
+import gaussdb_pool
+from gaussdb.rows import Row
 
 
 def main() -> None:
@@ -28,9 +28,9 @@ def main() -> None:
             level=loglevel, format="%(asctime)s %(levelname)s %(message)s"
         )
 
-        logging.getLogger("psycopg2.pool").setLevel(loglevel)
+        logging.getLogger("_GaussDB.pool").setLevel(loglevel)
 
-    with psycopg_pool.ConnectionPool(
+    with gaussdb_pool.ConnectionPool(
         opt.dsn,
         min_size=opt.min_size,
         max_size=opt.max_size,
@@ -102,7 +102,7 @@ class Measurer:
             time.sleep(interval)
 
 
-class DelayedConnection(psycopg.Connection[Row]):
+class DelayedConnection(gaussdb.Connection[Row]):
     """A connection adding a delay to the connection time."""
 
     @classmethod

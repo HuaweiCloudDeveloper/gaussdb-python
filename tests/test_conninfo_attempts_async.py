@@ -1,7 +1,7 @@
 import pytest
 
-import psycopg
-from psycopg.conninfo import conninfo_attempts_async, conninfo_to_dict
+import gaussdb
+from gaussdb.conninfo import conninfo_attempts_async, conninfo_to_dict
 
 pytestmark = pytest.mark.anyio
 
@@ -169,7 +169,7 @@ async def test_conninfo_attempts(conninfo, want, env, fake_resolve):
 async def test_conninfo_attempts_bad(setpgenv, conninfo, env, fake_resolve):
     setpgenv(env)
     params = conninfo_to_dict(conninfo)
-    with pytest.raises(psycopg.Error):
+    with pytest.raises(gaussdb.Error):
         await conninfo_attempts_async(params)
 
 

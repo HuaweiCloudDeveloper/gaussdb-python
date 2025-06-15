@@ -9,15 +9,15 @@ from dataclasses import dataclass
 
 import pytest
 
-import psycopg
-from psycopg.conninfo import conninfo_to_dict
+import gaussdb
+from gaussdb.conninfo import conninfo_to_dict
 
 try:
-    from psycopg.conninfo import _DEFAULT_CONNECT_TIMEOUT as DEFAULT_TIMEOUT
+    from gaussdb.conninfo import _DEFAULT_CONNECT_TIMEOUT as DEFAULT_TIMEOUT
 except ImportError:
-    # Allow tests to import (not necessarily to pass all) if the psycopg module
-    # imported is not the one expected (e.g. running psycopg pool tests on the
-    # master branch with psycopg 3.1.x imported).
+    # Allow tests to import (not necessarily to pass all) if the gaussdb module
+    # imported is not the one expected (e.g. running gaussdb pool tests on the
+    # master branch with gaussdb 3.1.x imported).
     DEFAULT_TIMEOUT = 130
 
 
@@ -39,7 +39,7 @@ class ParamDef:
 param_isolation = ParamDef(
     name="isolation_level",
     guc="isolation",
-    values=list(psycopg.IsolationLevel),
+    values=list(gaussdb.IsolationLevel),
     non_default="repeatable read",
 )
 param_read_only = ParamDef(
@@ -57,7 +57,7 @@ param_deferrable = ParamDef(
 
 # Map Python values to Postgres values for the tx_params possible values
 tx_values_map = {
-    v.name.lower().replace("_", " "): v.value for v in psycopg.IsolationLevel
+    v.name.lower().replace("_", " "): v.value for v in gaussdb.IsolationLevel
 }
 tx_values_map["on"] = True
 tx_values_map["off"] = False

@@ -9,13 +9,13 @@ from typing import Any
 
 import pytest
 
-import psycopg
+import gaussdb
 
 from ..utils import set_autocommit
 from ..acompat import Event, gather, is_alive, skip_async, skip_sync, sleep, spawn
 
 try:
-    import psycopg_pool as pool
+    import gaussdb_pool as pool
 except ImportError:
     # Tests should have been skipped if the package is not available
     pass
@@ -38,7 +38,7 @@ def test_defaults(pool_cls, dsn):
 
 def test_connection_class(pool_cls, dsn):
 
-    class MyConn(psycopg.Connection[Any]):
+    class MyConn(gaussdb.Connection[Any]):
         pass
 
     with pool_cls(dsn, connection_class=MyConn, min_size=min_size(pool_cls)) as p:
@@ -129,7 +129,7 @@ def test_setup_no_timeout(pool_cls, dsn, proxy):
 
 @pytest.mark.slow
 def test_configure_badstate(pool_cls, dsn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg.pool")
+    caplog.set_level(logging.WARNING, logger="gaussdb.pool")
 
     def configure(conn):
         conn.execute("select 1")
@@ -144,7 +144,7 @@ def test_configure_badstate(pool_cls, dsn, caplog):
 
 @pytest.mark.slow
 def test_configure_broken(pool_cls, dsn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg.pool")
+    caplog.set_level(logging.WARNING, logger="gaussdb.pool")
 
     def configure(conn):
         with conn.transaction():
@@ -499,7 +499,7 @@ def test_reopen(pool_cls, dsn):
     assert p._sched_runner is None
     assert not p._workers
 
-    with pytest.raises(psycopg.OperationalError, match="cannot be reused"):
+    with pytest.raises(gaussdb.OperationalError, match="cannot be reused"):
         p.open()
 
 
@@ -586,8 +586,8 @@ def test_stats_usage(pool_cls, dsn):
 
 
 def test_debug_deadlock(pool_cls, dsn):
-    # https://github.com/psycopg/psycopg/issues/230
-    logger = logging.getLogger("psycopg")
+    # https://github.com/gaussdb/gaussdb/issues/230
+    logger = logging.getLogger("gaussdb")
     handler = logging.StreamHandler()
     old_level = logger.level
     logger.setLevel(logging.DEBUG)
@@ -609,12 +609,12 @@ def test_check_connection(pool_cls, conn_cls, dsn, autocommit):
     set_autocommit(conn, autocommit)
     pool_cls.check_connection(conn)
     assert not conn.closed
-    assert conn.info.transaction_status == psycopg.pq.TransactionStatus.IDLE
+    assert conn.info.transaction_status == gaussdb.pq.TransactionStatus.IDLE
 
     with conn_cls.connect(dsn) as conn2:
         conn2.execute("select pg_terminate_backend(%s)", [conn.info.backend_pid])
 
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pool_cls.check_connection(conn)
 
     assert conn.closed
@@ -651,7 +651,7 @@ def test_check_timeout(pool_cls, dsn):
 
 @skip_sync
 def test_cancellation_in_queue(pool_cls, dsn):
-    # https://github.com/psycopg/psycopg/issues/509
+    # https://github.com/gaussdb/gaussdb/issues/509
 
     nconns = 3
 
@@ -728,8 +728,8 @@ def delay_connection(monkeypatch, sec):
         sleep(max(0, sec - (t1 - t0)))
         return rv
 
-    connect_orig = psycopg.Connection.connect
-    monkeypatch.setattr(psycopg.Connection, "connect", connect_delay)
+    connect_orig = gaussdb.Connection.connect
+    monkeypatch.setattr(gaussdb.Connection, "connect", connect_delay)
 
 
 def ensure_waiting(p, num=1):

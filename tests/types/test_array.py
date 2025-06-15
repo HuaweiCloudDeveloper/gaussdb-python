@@ -7,13 +7,13 @@ from decimal import Decimal
 
 import pytest
 
-import psycopg
-import psycopg.types.numeric
-from psycopg import pq, sql
-from psycopg.adapt import Dumper, PyFormat, Transformer
-from psycopg.types import TypeInfo
-from psycopg.postgres import types as builtins
-from psycopg.types.array import register_array
+import gaussdb
+import gaussdb.types.numeric
+from gaussdb import pq, sql
+from gaussdb.adapt import Dumper, PyFormat, Transformer
+from gaussdb.types import TypeInfo
+from gaussdb.postgres import types as builtins
+from gaussdb.types.array import register_array
 
 from ..test_adapt import StrNoneBinaryDumper, StrNoneDumper
 
@@ -124,7 +124,7 @@ def test_dump_list_int(conn, obj, want):
 )
 def test_bad_binary_array(input):
     tx = Transformer()
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         tx.get_dumper(input, PyFormat.BINARY).dump(input)
 
 
@@ -205,7 +205,7 @@ def test_numbers_array(num, type, fmt_in):
 @pytest.mark.parametrize("fmt_in", PyFormat)
 @pytest.mark.parametrize("fmt_out", pq.Format)
 def test_list_number_wrapper(conn, wrapper, fmt_in, fmt_out):
-    wrapper = getattr(psycopg.types.numeric, wrapper)
+    wrapper = getattr(gaussdb.types.numeric, wrapper)
     if wrapper is Decimal:
         want_cls = Decimal
     else:
@@ -222,10 +222,10 @@ def test_list_number_wrapper(conn, wrapper, fmt_in, fmt_out):
 
 
 def test_mix_types(conn):
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         conn.execute("select %s", ([1, 0.5],))
 
-    with pytest.raises(psycopg.DataError):
+    with pytest.raises(gaussdb.DataError):
         conn.execute("select %s", ([1, Decimal("0.5")],))
 
 
@@ -280,7 +280,7 @@ def test_dump_list_no_comma_separator(conn):
 
     class BoxDumper(Dumper):
         format = pq.Format.TEXT
-        oid = psycopg.postgres.types["box"].oid
+        oid = gaussdb.postgres.types["box"].oid
 
         def dump(self, box):
             return ("(%s,%s),(%s,%s)" % box.coords).encode()

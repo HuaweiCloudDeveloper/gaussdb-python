@@ -9,8 +9,8 @@ from typing import Any
 
 import pytest
 
-import psycopg
-from psycopg.rows import RowMaker
+import gaussdb
+from gaussdb.rows import RowMaker
 
 
 @pytest.fixture(scope="session")
@@ -32,7 +32,7 @@ def execmany(svcconn, _execmany):
 
 def ph(cur: Any, query: str) -> str:
     """Change placeholders in a query from %s to $n if testing  a raw cursor"""
-    from psycopg.raw_cursor import RawCursorMixin
+    from gaussdb.raw_cursor import RawCursorMixin
 
     if not isinstance(cur, RawCursorMixin):
         return query
@@ -52,7 +52,7 @@ def ph(cur: Any, query: str) -> str:
 
 
 def my_row_factory(
-    cursor: psycopg.Cursor[list[str]] | psycopg.AsyncCursor[list[str]],
+    cursor: gaussdb.Cursor[list[str]] | gaussdb.AsyncCursor[list[str]],
 ) -> RowMaker[list[str]]:
     if cursor.description is not None:
         titles = [c.name for c in cursor.description]
@@ -62,4 +62,4 @@ def my_row_factory(
 
         return mkrow
     else:
-        return psycopg.rows.no_result
+        return gaussdb.rows.no_result

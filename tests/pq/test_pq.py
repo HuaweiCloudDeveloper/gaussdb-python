@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-import psycopg
-from psycopg import pq
+import gaussdb
+from gaussdb import pq
 
 from ..utils import check_libpq_version
 
@@ -18,16 +18,16 @@ def test_build_version():
     assert pq.__build_version__ and pq.__build_version__ >= 70400
 
 
-@pytest.mark.skipif("not os.environ.get('PSYCOPG_TEST_WANT_LIBPQ_BUILD')")
+@pytest.mark.skipif("not os.environ.get('GAUSSDB_TEST_WANT_LIBPQ_BUILD')")
 def test_want_built_version():
-    want = os.environ["PSYCOPG_TEST_WANT_LIBPQ_BUILD"]
+    want = os.environ["GAUSSDB_TEST_WANT_LIBPQ_BUILD"]
     got = pq.__build_version__
     assert not check_libpq_version(got, want)
 
 
-@pytest.mark.skipif("not os.environ.get('PSYCOPG_TEST_WANT_LIBPQ_IMPORT')")
+@pytest.mark.skipif("not os.environ.get('GAUSSDB_TEST_WANT_LIBPQ_IMPORT')")
 def test_want_import_version():
-    want = os.environ["PSYCOPG_TEST_WANT_LIBPQ_IMPORT"]
+    want = os.environ["GAUSSDB_TEST_WANT_LIBPQ_IMPORT"]
     got = pq.version()
     assert not check_libpq_version(got, want)
 
@@ -38,8 +38,8 @@ def test_want_import_version():
 
 @pytest.mark.libpq(">= 14")
 def test_pipeline_supported(conn):
-    assert psycopg.Pipeline.is_supported()
-    assert psycopg.AsyncPipeline.is_supported()
+    assert gaussdb.Pipeline.is_supported()
+    assert gaussdb.AsyncPipeline.is_supported()
 
     with conn.pipeline():
         pass
@@ -47,10 +47,10 @@ def test_pipeline_supported(conn):
 
 @pytest.mark.libpq("< 14")
 def test_pipeline_not_supported(conn):
-    assert not psycopg.Pipeline.is_supported()
-    assert not psycopg.AsyncPipeline.is_supported()
+    assert not gaussdb.Pipeline.is_supported()
+    assert not gaussdb.AsyncPipeline.is_supported()
 
-    with pytest.raises(psycopg.NotSupportedError) as exc:
+    with pytest.raises(gaussdb.NotSupportedError) as exc:
         with conn.pipeline():
             pass
 

@@ -1,4 +1,4 @@
-.. _psycopg.pq:
+.. _gaussdb.pq:
 
 `pq` -- libpq wrapper module
 ============================
@@ -6,16 +6,16 @@
 .. index::
     single: libpq
 
-.. module:: psycopg.pq
+.. module:: gaussdb.pq
 
-Psycopg is built around the libpq_, the PostgreSQL client library, which
+GaussDB is built around the libpq_, the PostgreSQL client library, which
 performs most of the network communications and returns query results in C
 structures.
 
 .. _libpq: https://www.postgresql.org/docs/current/libpq.html
 
 The low-level functions of the library are exposed by the objects in the
-`!psycopg.pq` module.
+`!gaussdb.pq` module.
 
 
 .. _pq-impl:
@@ -34,28 +34,28 @@ same interface. Current implementations are:
   in Cython_). It is much better performing than the ``python``
   implementation, however it requires development packages installed on the
   client machine. It can be installed using the ``c`` extra, i.e. running
-  ``pip install "psycopg[c]"``.
+  ``pip install "gaussdb[c]"``.
 
 - ``binary``: a pre-compiled C implementation, bundled with all the required
   libraries. It is the easiest option to deal with, fast to install and it
   should require no development tool or client library, however it may be not
   available for every platform. You can install it using the ``binary`` extra,
-  i.e. running ``pip install "psycopg[binary]"``.
+  i.e. running ``pip install "gaussdb[binary]"``.
 
 .. _Cython: https://cython.org/
 
-The implementation currently used is available in the `~psycopg.pq.__impl__`
+The implementation currently used is available in the `~gaussdb.pq.__impl__`
 module constant.
 
-At import time, Psycopg 3 will try to use the best implementation available
+At import time, gaussdb will try to use the best implementation available
 and will fail if none is usable. You can force the use of a specific
-implementation by exporting the env var :envvar:`PSYCOPG_IMPL`: importing the
+implementation by exporting the env var :envvar:`GAUSSDB_IMPL`: importing the
 library will fail if the requested implementation is not available::
 
-    $ PSYCOPG_IMPL=c python -c "import psycopg"
+    $ GAUSSDB_IMPL=c python -c "import gaussdb"
     Traceback (most recent call last):
        ...
-    ImportError: couldn't import requested psycopg 'c' implementation: No module named 'psycopg_c'
+    ImportError: couldn't import requested gaussdb 'c' implementation: No module named 'gaussdb_c'
 
 
 Module content
@@ -64,7 +64,7 @@ Module content
 .. autodata:: __impl__
 
     The choice of implementation is automatic but can be forced setting the
-    :envvar:`PSYCOPG_IMPL` env var.
+    :envvar:`GAUSSDB_IMPL` env var.
 
 
 .. autofunction:: version
@@ -126,7 +126,7 @@ Objects wrapping libpq structures and functions
         B	39	DataRow	 1 29 '2022-09-14 14:12:16.648035+02'
         B	13	CommandComplete	 "SELECT 1"
         B	5	ReadyForQuery	 T
-        <psycopg.Cursor [TUPLES_OK] [INTRANS] (database=postgres) at 0x7f18a18ba040>
+        <gaussdb.Cursor [TUPLES_OK] [INTRANS] (database=postgres) at 0x7f18a18ba040>
         >>> conn.pgconn.untrace()
 
 

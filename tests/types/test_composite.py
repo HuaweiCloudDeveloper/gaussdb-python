@@ -1,11 +1,11 @@
 import pytest
 
-from psycopg import postgres, pq, sql
-from psycopg.adapt import PyFormat
-from psycopg.postgres import types as builtins
-from psycopg.types.range import Range
-from psycopg.types.composite import CompositeInfo, TupleBinaryDumper, TupleDumper
-from psycopg.types.composite import register_composite
+from gaussdb import postgres, pq, sql
+from gaussdb.adapt import PyFormat
+from gaussdb.postgres import types as builtins
+from gaussdb.types.range import Range
+from gaussdb.types.composite import CompositeInfo, TupleBinaryDumper, TupleDumper
+from gaussdb.types.composite import register_composite
 
 from ..utils import eur
 from ..fix_crdb import crdb_skip_message, is_crdb

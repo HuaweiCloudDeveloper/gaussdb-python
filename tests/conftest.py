@@ -9,7 +9,7 @@ from typing import Any
 
 import pytest
 
-from psycopg import pq
+from gaussdb import pq
 
 pytest_plugins = (
     "tests.fix_db",
@@ -18,7 +18,7 @@ pytest_plugins = (
     "tests.fix_mypy",
     "tests.fix_faker",
     "tests.fix_proxy",
-    "tests.fix_psycopg",
+    "tests.fix_gaussdb",
     "tests.fix_crdb",
     "tests.fix_gc",
     "tests.pool.fix_pool",
@@ -31,7 +31,7 @@ def pytest_configure(config):
         "flakey(reason): this test may fail unpredictably')",
         # There are troubles on travis with these kind of tests and I cannot
         # catch the exception for my life.
-        "subprocess: the test import psycopg after subprocess",
+        "subprocess: the test import gaussdb after subprocess",
         "timing: the test is timing based and can fail on cheese hardware",
         "gevent: the test requires the gevent module to be installed",
         "dns: the test requires dnspython to run",
@@ -113,7 +113,7 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
 
 
 def get_database_type():
-    dsn = os.getenv("DSN") or os.getenv("PSYCOPG_TEST_DSN")
+    dsn = os.getenv("DSN") or os.getenv("GAUSSDB_TEST_DSN")
     if not dsn:
         print("DSN environment variable not set")
         return ""

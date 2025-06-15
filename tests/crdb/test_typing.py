@@ -7,32 +7,32 @@ from ..test_typing import _test_reveal
     "conn, type",
     [
         (
-            "psycopg.crdb.connect()",
-            "psycopg.crdb.CrdbConnection[Tuple[Any, ...]]",
+            "gaussdb.crdb.connect()",
+            "gaussdb.crdb.CrdbConnection[Tuple[Any, ...]]",
         ),
         (
-            "psycopg.crdb.connect(row_factory=rows.dict_row)",
-            "psycopg.crdb.CrdbConnection[Dict[str, Any]]",
+            "gaussdb.crdb.connect(row_factory=rows.dict_row)",
+            "gaussdb.crdb.CrdbConnection[Dict[str, Any]]",
         ),
         (
-            "psycopg.crdb.CrdbConnection.connect()",
-            "psycopg.crdb.CrdbConnection[Tuple[Any, ...]]",
+            "gaussdb.crdb.CrdbConnection.connect()",
+            "gaussdb.crdb.CrdbConnection[Tuple[Any, ...]]",
         ),
         (
-            "psycopg.crdb.CrdbConnection.connect(row_factory=rows.tuple_row)",
-            "psycopg.crdb.CrdbConnection[Tuple[Any, ...]]",
+            "gaussdb.crdb.CrdbConnection.connect(row_factory=rows.tuple_row)",
+            "gaussdb.crdb.CrdbConnection[Tuple[Any, ...]]",
         ),
         (
-            "psycopg.crdb.CrdbConnection.connect(row_factory=rows.dict_row)",
-            "psycopg.crdb.CrdbConnection[Dict[str, Any]]",
+            "gaussdb.crdb.CrdbConnection.connect(row_factory=rows.dict_row)",
+            "gaussdb.crdb.CrdbConnection[Dict[str, Any]]",
         ),
         (
-            "await psycopg.crdb.AsyncCrdbConnection.connect()",
-            "psycopg.crdb.AsyncCrdbConnection[Tuple[Any, ...]]",
+            "await gaussdb.crdb.AsyncCrdbConnection.connect()",
+            "gaussdb.crdb.AsyncCrdbConnection[Tuple[Any, ...]]",
         ),
         (
-            "await psycopg.crdb.AsyncCrdbConnection.connect(row_factory=rows.dict_row)",
-            "psycopg.crdb.AsyncCrdbConnection[Dict[str, Any]]",
+            "await gaussdb.crdb.AsyncCrdbConnection.connect(row_factory=rows.dict_row)",
+            "gaussdb.crdb.AsyncCrdbConnection[Dict[str, Any]]",
         ),
     ],
 )
@@ -43,7 +43,7 @@ def test_connection_type(conn, type, mypy):
 
 def _test_reveal_crdb(stmts, type, mypy):
     stmts = f"""\
-import psycopg.crdb
+import gaussdb.crdb
 {stmts}
 """
     _test_reveal(stmts, type, mypy)

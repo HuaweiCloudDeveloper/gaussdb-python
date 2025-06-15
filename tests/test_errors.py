@@ -7,9 +7,9 @@ from weakref import ref
 
 import pytest
 
-import psycopg
-from psycopg import errors as e
-from psycopg import pq
+import gaussdb
+from gaussdb import errors as e
+from gaussdb import pq
 
 from .utils import eur
 from .fix_crdb import is_crdb
@@ -295,7 +295,7 @@ def test_unknown_sqlstate(conn):
 
 
 def test_pgconn_error(conn_cls):
-    with pytest.raises(psycopg.OperationalError) as excinfo:
+    with pytest.raises(gaussdb.OperationalError) as excinfo:
         conn_cls.connect("dbname=nosuchdb")
 
     exc = excinfo.value
@@ -304,7 +304,7 @@ def test_pgconn_error(conn_cls):
 
 
 def test_pgconn_error_pickle(conn_cls):
-    with pytest.raises(psycopg.OperationalError) as excinfo:
+    with pytest.raises(gaussdb.OperationalError) as excinfo:
         conn_cls.connect("dbname=nosuchdb")
 
     exc = pickle.loads(pickle.dumps(excinfo.value))
@@ -341,7 +341,7 @@ def test_blank_sqlstate(conn):
     ],
 )
 def test_strip_severity_unstripped(msg):
-    from psycopg.pq.misc import strip_severity
+    from gaussdb.pq.misc import strip_severity
 
     out = strip_severity(msg)
     assert out == msg.strip()
@@ -356,7 +356,7 @@ def test_strip_severity_unstripped(msg):
     ],
 )
 def test_strip_severity_l10n(msg):
-    from psycopg.pq.misc import strip_severity
+    from gaussdb.pq.misc import strip_severity
 
     out = strip_severity(msg)
     assert out == msg.split(":", 1)[1].strip()

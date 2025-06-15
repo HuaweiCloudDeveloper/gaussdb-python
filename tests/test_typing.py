@@ -22,44 +22,44 @@ def test_typing_example(mypy, filename):
     "conn, type",
     [
         (
-            "psycopg.connect()",
-            "psycopg.Connection[Tuple[Any, ...]]",
+            "gaussdb.connect()",
+            "gaussdb.Connection[Tuple[Any, ...]]",
         ),
         (
-            "psycopg.connect(row_factory=rows.tuple_row)",
-            "psycopg.Connection[Tuple[Any, ...]]",
+            "gaussdb.connect(row_factory=rows.tuple_row)",
+            "gaussdb.Connection[Tuple[Any, ...]]",
         ),
         (
-            "psycopg.connect(row_factory=rows.dict_row)",
-            "psycopg.Connection[Dict[str, Any]]",
+            "gaussdb.connect(row_factory=rows.dict_row)",
+            "gaussdb.Connection[Dict[str, Any]]",
         ),
         (
-            "psycopg.connect(row_factory=rows.namedtuple_row)",
-            "psycopg.Connection[NamedTuple]",
+            "gaussdb.connect(row_factory=rows.namedtuple_row)",
+            "gaussdb.Connection[NamedTuple]",
         ),
         (
-            "psycopg.connect(row_factory=rows.class_row(Thing))",
-            "psycopg.Connection[Thing]",
+            "gaussdb.connect(row_factory=rows.class_row(Thing))",
+            "gaussdb.Connection[Thing]",
         ),
         (
-            "psycopg.connect(row_factory=thing_row)",
-            "psycopg.Connection[Thing]",
+            "gaussdb.connect(row_factory=thing_row)",
+            "gaussdb.Connection[Thing]",
         ),
         (
-            "psycopg.Connection.connect()",
-            "psycopg.Connection[Tuple[Any, ...]]",
+            "gaussdb.Connection.connect()",
+            "gaussdb.Connection[Tuple[Any, ...]]",
         ),
         (
-            "psycopg.Connection.connect(row_factory=rows.dict_row)",
-            "psycopg.Connection[Dict[str, Any]]",
+            "gaussdb.Connection.connect(row_factory=rows.dict_row)",
+            "gaussdb.Connection[Dict[str, Any]]",
         ),
         (
-            "await psycopg.AsyncConnection.connect()",
-            "psycopg.AsyncConnection[Tuple[Any, ...]]",
+            "await gaussdb.AsyncConnection.connect()",
+            "gaussdb.AsyncConnection[Tuple[Any, ...]]",
         ),
         (
-            "await psycopg.AsyncConnection.connect(row_factory=rows.dict_row)",
-            "psycopg.AsyncConnection[Dict[str, Any]]",
+            "await gaussdb.AsyncConnection.connect(row_factory=rows.dict_row)",
+            "gaussdb.AsyncConnection[Dict[str, Any]]",
         ),
     ],
 )
@@ -72,77 +72,77 @@ def test_connection_type(conn, type, mypy):
     "conn, curs, type",
     [
         (
-            "psycopg.connect()",
+            "gaussdb.connect()",
             "conn.cursor()",
-            "psycopg.Cursor[Tuple[Any, ...]]",
+            "gaussdb.Cursor[Tuple[Any, ...]]",
         ),
         (
-            "psycopg.connect(row_factory=rows.dict_row)",
+            "gaussdb.connect(row_factory=rows.dict_row)",
             "conn.cursor()",
-            "psycopg.Cursor[Dict[str, Any]]",
+            "gaussdb.Cursor[Dict[str, Any]]",
         ),
         (
-            "psycopg.connect(row_factory=rows.dict_row)",
+            "gaussdb.connect(row_factory=rows.dict_row)",
             "conn.cursor(row_factory=rows.namedtuple_row)",
-            "psycopg.Cursor[NamedTuple]",
+            "gaussdb.Cursor[NamedTuple]",
         ),
         (
-            "psycopg.connect(row_factory=rows.class_row(Thing))",
+            "gaussdb.connect(row_factory=rows.class_row(Thing))",
             "conn.cursor()",
-            "psycopg.Cursor[Thing]",
+            "gaussdb.Cursor[Thing]",
         ),
         (
-            "psycopg.connect(row_factory=thing_row)",
+            "gaussdb.connect(row_factory=thing_row)",
             "conn.cursor()",
-            "psycopg.Cursor[Thing]",
+            "gaussdb.Cursor[Thing]",
         ),
         (
-            "psycopg.connect()",
+            "gaussdb.connect()",
             "conn.cursor(row_factory=thing_row)",
-            "psycopg.Cursor[Thing]",
+            "gaussdb.Cursor[Thing]",
         ),
         # Async cursors
         (
-            "await psycopg.AsyncConnection.connect()",
+            "await gaussdb.AsyncConnection.connect()",
             "conn.cursor()",
-            "psycopg.AsyncCursor[Tuple[Any, ...]]",
+            "gaussdb.AsyncCursor[Tuple[Any, ...]]",
         ),
         (
-            "await psycopg.AsyncConnection.connect()",
+            "await gaussdb.AsyncConnection.connect()",
             "conn.cursor(row_factory=thing_row)",
-            "psycopg.AsyncCursor[Thing]",
+            "gaussdb.AsyncCursor[Thing]",
         ),
         # Server-side cursors
         (
-            "psycopg.connect()",
+            "gaussdb.connect()",
             "conn.cursor(name='foo')",
-            "psycopg.ServerCursor[Tuple[Any, ...]]",
+            "gaussdb.ServerCursor[Tuple[Any, ...]]",
         ),
         (
-            "psycopg.connect(row_factory=rows.dict_row)",
+            "gaussdb.connect(row_factory=rows.dict_row)",
             "conn.cursor(name='foo')",
-            "psycopg.ServerCursor[Dict[str, Any]]",
+            "gaussdb.ServerCursor[Dict[str, Any]]",
         ),
         (
-            "psycopg.connect()",
+            "gaussdb.connect()",
             "conn.cursor(name='foo', row_factory=rows.dict_row)",
-            "psycopg.ServerCursor[Dict[str, Any]]",
+            "gaussdb.ServerCursor[Dict[str, Any]]",
         ),
         # Async server-side cursors
         (
-            "await psycopg.AsyncConnection.connect()",
+            "await gaussdb.AsyncConnection.connect()",
             "conn.cursor(name='foo')",
-            "psycopg.AsyncServerCursor[Tuple[Any, ...]]",
+            "gaussdb.AsyncServerCursor[Tuple[Any, ...]]",
         ),
         (
-            "await psycopg.AsyncConnection.connect(row_factory=rows.dict_row)",
+            "await gaussdb.AsyncConnection.connect(row_factory=rows.dict_row)",
             "conn.cursor(name='foo')",
-            "psycopg.AsyncServerCursor[Dict[str, Any]]",
+            "gaussdb.AsyncServerCursor[Dict[str, Any]]",
         ),
         (
-            "await psycopg.AsyncConnection.connect()",
+            "await gaussdb.AsyncConnection.connect()",
             "conn.cursor(name='foo', row_factory=rows.dict_row)",
-            "psycopg.AsyncServerCursor[Dict[str, Any]]",
+            "gaussdb.AsyncServerCursor[Dict[str, Any]]",
         ),
     ],
 )
@@ -158,67 +158,67 @@ obj = {curs}
     "conn, curs, type",
     [
         (
-            "psycopg.connect()",
-            "psycopg.Cursor(conn)",
-            "psycopg.Cursor[Tuple[Any, ...]]",
+            "gaussdb.connect()",
+            "gaussdb.Cursor(conn)",
+            "gaussdb.Cursor[Tuple[Any, ...]]",
         ),
         (
-            "psycopg.connect(row_factory=rows.dict_row)",
-            "psycopg.Cursor(conn)",
-            "psycopg.Cursor[Dict[str, Any]]",
+            "gaussdb.connect(row_factory=rows.dict_row)",
+            "gaussdb.Cursor(conn)",
+            "gaussdb.Cursor[Dict[str, Any]]",
         ),
         (
-            "psycopg.connect(row_factory=rows.dict_row)",
-            "psycopg.Cursor(conn, row_factory=rows.namedtuple_row)",
-            "psycopg.Cursor[NamedTuple]",
+            "gaussdb.connect(row_factory=rows.dict_row)",
+            "gaussdb.Cursor(conn, row_factory=rows.namedtuple_row)",
+            "gaussdb.Cursor[NamedTuple]",
         ),
         # Async cursors
         (
-            "await psycopg.AsyncConnection.connect()",
-            "psycopg.AsyncCursor(conn)",
-            "psycopg.AsyncCursor[Tuple[Any, ...]]",
+            "await gaussdb.AsyncConnection.connect()",
+            "gaussdb.AsyncCursor(conn)",
+            "gaussdb.AsyncCursor[Tuple[Any, ...]]",
         ),
         (
-            "await psycopg.AsyncConnection.connect(row_factory=rows.dict_row)",
-            "psycopg.AsyncCursor(conn)",
-            "psycopg.AsyncCursor[Dict[str, Any]]",
+            "await gaussdb.AsyncConnection.connect(row_factory=rows.dict_row)",
+            "gaussdb.AsyncCursor(conn)",
+            "gaussdb.AsyncCursor[Dict[str, Any]]",
         ),
         (
-            "await psycopg.AsyncConnection.connect()",
-            "psycopg.AsyncCursor(conn, row_factory=thing_row)",
-            "psycopg.AsyncCursor[Thing]",
+            "await gaussdb.AsyncConnection.connect()",
+            "gaussdb.AsyncCursor(conn, row_factory=thing_row)",
+            "gaussdb.AsyncCursor[Thing]",
         ),
         # Server-side cursors
         (
-            "psycopg.connect()",
-            "psycopg.ServerCursor(conn, 'foo')",
-            "psycopg.ServerCursor[Tuple[Any, ...]]",
+            "gaussdb.connect()",
+            "gaussdb.ServerCursor(conn, 'foo')",
+            "gaussdb.ServerCursor[Tuple[Any, ...]]",
         ),
         (
-            "psycopg.connect(row_factory=rows.dict_row)",
-            "psycopg.ServerCursor(conn, name='foo')",
-            "psycopg.ServerCursor[Dict[str, Any]]",
+            "gaussdb.connect(row_factory=rows.dict_row)",
+            "gaussdb.ServerCursor(conn, name='foo')",
+            "gaussdb.ServerCursor[Dict[str, Any]]",
         ),
         (
-            "psycopg.connect(row_factory=rows.dict_row)",
-            "psycopg.ServerCursor(conn, 'foo', row_factory=rows.namedtuple_row)",
-            "psycopg.ServerCursor[NamedTuple]",
+            "gaussdb.connect(row_factory=rows.dict_row)",
+            "gaussdb.ServerCursor(conn, 'foo', row_factory=rows.namedtuple_row)",
+            "gaussdb.ServerCursor[NamedTuple]",
         ),
         # Async server-side cursors
         (
-            "await psycopg.AsyncConnection.connect()",
-            "psycopg.AsyncServerCursor(conn, name='foo')",
-            "psycopg.AsyncServerCursor[Tuple[Any, ...]]",
+            "await gaussdb.AsyncConnection.connect()",
+            "gaussdb.AsyncServerCursor(conn, name='foo')",
+            "gaussdb.AsyncServerCursor[Tuple[Any, ...]]",
         ),
         (
-            "await psycopg.AsyncConnection.connect(row_factory=rows.dict_row)",
-            "psycopg.AsyncServerCursor(conn, name='foo')",
-            "psycopg.AsyncServerCursor[Dict[str, Any]]",
+            "await gaussdb.AsyncConnection.connect(row_factory=rows.dict_row)",
+            "gaussdb.AsyncServerCursor(conn, name='foo')",
+            "gaussdb.AsyncServerCursor[Dict[str, Any]]",
         ),
         (
-            "await psycopg.AsyncConnection.connect()",
-            "psycopg.AsyncServerCursor(conn, name='foo', row_factory=rows.dict_row)",
-            "psycopg.AsyncServerCursor[Dict[str, Any]]",
+            "await gaussdb.AsyncConnection.connect()",
+            "gaussdb.AsyncServerCursor(conn, name='foo', row_factory=rows.dict_row)",
+            "gaussdb.AsyncServerCursor[Dict[str, Any]]",
         ),
     ],
 )
@@ -254,7 +254,7 @@ def test_fetchone_type(conn_class, server_side, curs, type, mypy):
     if server_side:
         curs = curs.replace("(", "(name='foo',", 1)
     stmts = f"""\
-conn = {await_} psycopg.{conn_class}.connect()
+conn = {await_} gaussdb.{conn_class}.connect()
 curs = {curs}
 obj = {await_} curs.fetchone()
 """
@@ -290,7 +290,7 @@ def test_iter_type(conn_class, server_side, curs, type, mypy):
     if server_side:
         curs = curs.replace("(", "(name='foo',", 1)
     stmts = f"""\
-conn = {await_}psycopg.{conn_class}.connect()
+conn = {await_}gaussdb.{conn_class}.connect()
 curs = {curs}
 {async_}for obj in curs:
     pass
@@ -323,7 +323,7 @@ def test_fetchsome_type(conn_class, server_side, curs, type, method, mypy):
     if server_side:
         curs = curs.replace("(", "(name='foo',", 1)
     stmts = f"""\
-conn = {await_} psycopg.{conn_class}.connect()
+conn = {await_} gaussdb.{conn_class}.connect()
 curs = {curs}
 obj = {await_} curs.{method}()
 """
@@ -346,14 +346,14 @@ def test_cur_subclass_execute(mypy, conn_class, server_side):
 
     src = f"""\
 from typing import Any, cast
-import psycopg
-from psycopg.rows import Row, TupleRow
+import gaussdb
+from gaussdb.rows import Row, TupleRow
 
-class MyCursor(psycopg.{cur_base_class}[Row]):
+class MyCursor(gaussdb.{cur_base_class}[Row]):
     pass
 
 {async_}def test() -> None:
-    conn = {await_} psycopg.{conn_class}.connect()
+    conn = {await_} gaussdb.{conn_class}.connect()
 
     cur: MyCursor[TupleRow]
     reveal_type(cur)
@@ -380,15 +380,15 @@ def _test_reveal(stmts, type, mypy):
 from __future__ import annotations
 
 from typing import Any, Callable, Dict, NamedTuple, Sequence, Tuple
-import psycopg
-from psycopg import rows
+import gaussdb
+from gaussdb import rows
 
 class Thing:
     def __init__(self, **kwargs: Any) -> None:
         self.kwargs = kwargs
 
 def thing_row(
-    cur: psycopg.Cursor[Any] | psycopg.AsyncCursor[Any],
+    cur: gaussdb.Cursor[Any] | gaussdb.AsyncCursor[Any],
 ) -> Callable[[Sequence[Any]], Thing]:
     assert cur.description
     names = [d.name for d in cur.description]
@@ -432,10 +432,10 @@ reveal_type(ref)
 def test_generic_connect(conn, type, mypy):
     src = f"""
 from typing import Any, Dict, Tuple
-import psycopg
-from psycopg import rows
+import gaussdb
+from gaussdb import rows
 
-class MyConnection(psycopg.Connection[rows.Row]):
+class MyConnection(gaussdb.Connection[rows.Row]):
     pass
 
 obj = {conn}

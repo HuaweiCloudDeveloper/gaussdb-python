@@ -2,7 +2,7 @@
 """
 Update the maps of builtin types and names.
 
-This script updates some of the files in psycopg source code with data read
+This script updates some of the files in gaussdb source code with data read
 from a database catalog.
 
 Hint: use docker to upgrade types from a new version in isolation. Run:
@@ -21,20 +21,20 @@ import argparse
 import subprocess as sp
 from pathlib import Path
 
-import psycopg
-from psycopg.pq import version_pretty
-from psycopg.crdb import CrdbConnection
-from psycopg.rows import TupleRow
-from psycopg._compat import TypeAlias
+import gaussdb
+from gaussdb.pq import version_pretty
+from gaussdb.crdb import CrdbConnection
+from gaussdb.rows import TupleRow
+from gaussdb._compat import TypeAlias
 
-Connection: TypeAlias = psycopg.Connection[TupleRow]
+Connection: TypeAlias = gaussdb.Connection[TupleRow]
 
 ROOT = Path(__file__).parent.parent
 
 
 def main() -> None:
     opt = parse_cmdline()
-    conn = psycopg.connect(opt.dsn, autocommit=True)
+    conn = gaussdb.connect(opt.dsn, autocommit=True)
 
     if CrdbConnection.is_crdb(conn):
         conn = CrdbConnection.connect(opt.dsn, autocommit=True)
@@ -46,7 +46,7 @@ def main() -> None:
 
 
 def update_python_types(conn: Connection) -> None:
-    fn = ROOT / "psycopg/psycopg/postgres.py"
+    fn = ROOT / "gaussdb/gaussdb/postgres.py"
 
     lines = []
     lines.extend(get_version_comment(conn))
@@ -59,7 +59,7 @@ def update_python_types(conn: Connection) -> None:
 
 
 def update_python_oids(conn: Connection) -> None:
-    fn = ROOT / "psycopg/psycopg/_oids.py"
+    fn = ROOT / "gaussdb/gaussdb/_oids.py"
 
     lines = []
     lines.extend(get_version_comment(conn))
@@ -70,7 +70,7 @@ def update_python_oids(conn: Connection) -> None:
 
 
 def update_cython_oids(conn: Connection) -> None:
-    fn = ROOT / "psycopg_c/psycopg_c/_psycopg/oids.pxd"
+    fn = ROOT / "gaussdb_c/gaussdb_c/_gaussdb/oids.pxd"
 
     lines = []
     lines.extend(get_version_comment(conn))
@@ -80,7 +80,7 @@ def update_cython_oids(conn: Connection) -> None:
 
 
 def update_crdb_python_oids(conn: Connection) -> None:
-    fn = ROOT / "psycopg/psycopg/crdb/_types.py"
+    fn = ROOT / "gaussdb/gaussdb/crdb/_types.py"
 
     lines = []
     lines.extend(get_version_comment(conn))

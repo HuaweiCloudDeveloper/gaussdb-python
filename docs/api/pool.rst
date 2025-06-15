@@ -1,10 +1,10 @@
-`!psycopg_pool` -- Connection pool implementations
+`!gaussdb_pool` -- Connection pool implementations
 ==================================================
 
 .. index::
     double: Connection; Pool
 
-.. module:: psycopg_pool
+.. module:: gaussdb_pool
 
 A connection pool is an object used to create and maintain a limited amount of
 PostgreSQL connections, reducing the time requested by the program to obtain a
@@ -15,11 +15,11 @@ threads or tasks to use a controlled amount of resources on the server. See
 This package exposes a few connection pool classes:
 
 - `ConnectionPool` is a synchronous connection pool yielding
-  `~psycopg.Connection` objects and can be used by multithread applications.
+  `~gaussdb.Connection` objects and can be used by multithread applications.
 
 - `AsyncConnectionPool` has an interface similar to `!ConnectionPool`, but
   with `asyncio` functions replacing blocking functions, and yields
-  `~psycopg.AsyncConnection` instances.
+  `~gaussdb.AsyncConnection` instances.
 
 - `NullConnectionPool` is a `!ConnectionPool` subclass exposing the same
   interface of its parent, but not keeping any unused connection in its state.
@@ -29,12 +29,12 @@ This package exposes a few connection pool classes:
   `!NullConnectionPool`, but with the same async interface of the
   `!AsyncConnectionPool`.
 
-.. note:: The `!psycopg_pool` package is distributed separately from the main
-   `psycopg` package: use ``pip install "psycopg[pool]"``, or ``pip install
-   psycopg_pool``, to make it available. See :ref:`pool-installation`.
+.. note:: The `!gaussdb_pool` package is distributed separately from the main
+   `gaussdb` package: use ``pip install "gaussdb[pool]"``, or ``pip install
+   gaussdb_pool``, to make it available. See :ref:`pool-installation`.
 
-   The version numbers indicated in this page refer to the `!psycopg_pool`
-   package, not to `psycopg`.
+   The version numbers indicated in this page refer to the `!gaussdb_pool`
+   package, not to `gaussdb`.
 
 
 The `!ConnectionPool` class
@@ -42,19 +42,19 @@ The `!ConnectionPool` class
 
 .. autoclass:: ConnectionPool
 
-   This class implements a connection pool serving `~psycopg.Connection`
+   This class implements a connection pool serving `~gaussdb.Connection`
    instances (or subclasses). The constructor has *alot* of arguments, but
    only `!conninfo` and `!min_size` are the fundamental ones, all the other
    arguments have meaningful defaults and can probably be tweaked later, if
    required.
 
    :param conninfo: The connection string. See
-                    `~psycopg.Connection.connect()` for details.
+                    `~gaussdb.Connection.connect()` for details.
    :type conninfo: `!str`
 
    :param connection_class: The class of the connections to serve. It should
                             be a `!Connection` subclass.
-   :type connection_class: `!type`, default: `~psycopg.Connection`
+   :type connection_class: `!type`, default: `~gaussdb.Connection`
 
    :param kwargs: Extra arguments to pass to `!connect()`. Note that this is
                   *one dict argument* of the pool constructor, which is
@@ -178,7 +178,7 @@ The `!ConnectionPool` class
         the pool as context manager, you should specify the parameter
         `!open=True` explicitly.
 
-        Starting from psycopg_pool 3.2, a warning is raised if the pool is
+        Starting from gaussdb_pool 3.2, a warning is raised if the pool is
         used with the expectation of being implicitly opened in the
         constructor and `!open` is not specified.
 
@@ -248,15 +248,15 @@ Pool exceptions
 
 .. autoclass:: PoolTimeout()
 
-   Subclass of `~psycopg.OperationalError`
+   Subclass of `~gaussdb.OperationalError`
 
 .. autoclass:: PoolClosed()
 
-   Subclass of `~psycopg.OperationalError`
+   Subclass of `~gaussdb.OperationalError`
 
 .. autoclass:: TooManyRequests()
 
-   Subclass of `~psycopg.OperationalError`
+   Subclass of `~gaussdb.OperationalError`
 
 
 The `!AsyncConnectionPool` class
@@ -264,7 +264,7 @@ The `!AsyncConnectionPool` class
 
 `!AsyncConnectionPool` has a very similar interface to the `ConnectionPool`
 class but its blocking methods are implemented as `!async` coroutines. It
-returns instances of `~psycopg.AsyncConnection`, or of its subclass if
+returns instances of `~gaussdb.AsyncConnection`, or of its subclass if
 specified so in the `!connection_class` parameter.
 
 Only the functions and parameters with different signature from
@@ -274,7 +274,7 @@ Only the functions and parameters with different signature from
 
    :param connection_class: The class of the connections to serve. It should
                             be an `!AsyncConnection` subclass.
-   :type connection_class: `!type`, default: `~psycopg.AsyncConnection`
+   :type connection_class: `!type`, default: `~gaussdb.AsyncConnection`
 
    :param check: A callback to check that a connection is working correctly
                  when obtained by the pool.
@@ -317,7 +317,7 @@ Only the functions and parameters with different signature from
             async with AsyncConnectionPool(..., open=False) as pool:
                 ...
 
-        Starting from psycopg_pool 3.2, opening an async pool in the
+        Starting from gaussdb_pool 3.2, opening an async pool in the
         constructor raises a warning.
 
    .. automethod:: connection

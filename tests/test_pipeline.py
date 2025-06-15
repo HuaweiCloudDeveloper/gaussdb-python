@@ -10,22 +10,22 @@ from itertools import groupby
 
 import pytest
 
-import psycopg
-from psycopg import errors as e
-from psycopg import pq
+import gaussdb
+from gaussdb import errors as e
+from gaussdb import pq
 
 from .acompat import is_async
 
 pytestmark = [
     pytest.mark.pipeline,
-    pytest.mark.skipif("not psycopg.Pipeline.is_supported()"),
+    pytest.mark.skipif("not gaussdb.Pipeline.is_supported()"),
 ]
 pipeline_aborted = pytest.mark.flakey("the server might get in pipeline aborted")
 
 
 def test_repr(conn):
     with conn.pipeline() as p:
-        name = "psycopg.AsyncPipeline" if is_async(conn) else "psycopg.Pipeline"
+        name = "gaussdb.AsyncPipeline" if is_async(conn) else "gaussdb.Pipeline"
         assert name in repr(p)
         assert "[IDLE, pipeline=ON]" in repr(p)
 
@@ -40,7 +40,7 @@ def test_connection_closed(conn):
             pass
 
 
-def test_pipeline_status(conn: psycopg.Connection[Any]) -> None:
+def test_pipeline_status(conn: gaussdb.Connection[Any]) -> None:
     assert conn._pipeline is None
     with conn.pipeline() as p:
         assert conn._pipeline is p
@@ -49,7 +49,7 @@ def test_pipeline_status(conn: psycopg.Connection[Any]) -> None:
     assert not conn._pipeline
 
 
-def test_pipeline_reenter(conn: psycopg.Connection[Any]) -> None:
+def test_pipeline_reenter(conn: gaussdb.Connection[Any]) -> None:
     with conn.pipeline() as p1:
         with conn.pipeline() as p2:
             assert p2 is p1
@@ -60,7 +60,7 @@ def test_pipeline_reenter(conn: psycopg.Connection[Any]) -> None:
     assert p1.status == pq.PipelineStatus.OFF  # type: ignore[comparison-overlap]
 
 
-def test_pipeline_broken_conn_exit(conn: psycopg.Connection[Any]) -> None:
+def test_pipeline_broken_conn_exit(conn: gaussdb.Connection[Any]) -> None:
     with pytest.raises(e.OperationalError):
         with conn.pipeline():
             conn.execute("select 1")
@@ -71,7 +71,7 @@ def test_pipeline_broken_conn_exit(conn: psycopg.Connection[Any]) -> None:
 
 
 def test_pipeline_exit_error_noclobber(conn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
     with pytest.raises(ZeroDivisionError):
         with conn.pipeline():
             conn.close()
@@ -81,7 +81,7 @@ def test_pipeline_exit_error_noclobber(conn, caplog):
 
 
 def test_pipeline_exit_error_noclobber_nested(conn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
     with pytest.raises(ZeroDivisionError):
         with conn.pipeline():
             with conn.pipeline():
@@ -110,13 +110,13 @@ def test_pipeline_nested_sync_trace(conn, trace):
 
 def test_cursor_stream(conn):
     with conn.pipeline(), conn.cursor() as cur:
-        with pytest.raises(psycopg.ProgrammingError):
+        with pytest.raises(gaussdb.ProgrammingError):
             next(cur.stream("select 1"))
 
 
 def test_server_cursor(conn):
     with conn.cursor(name="pipeline") as cur, conn.pipeline():
-        with pytest.raises(psycopg.NotSupportedError):
+        with pytest.raises(gaussdb.NotSupportedError):
             cur.execute("select 1")
 
 
@@ -439,11 +439,11 @@ def test_prepare_error(conn):
     """
     conn.set_autocommit(True)
     stmt = "INSERT INTO nosuchtable(data) VALUES (%s)"
-    with pytest.raises(psycopg.errors.UndefinedTable):
+    with pytest.raises(gaussdb.errors.UndefinedTable):
         with conn.pipeline():
             conn.execute(stmt, ["foo"], prepare=True)
     assert not conn._prepared._names
-    with pytest.raises(psycopg.errors.UndefinedTable):
+    with pytest.raises(gaussdb.errors.UndefinedTable):
         conn.execute(stmt, ["bar"])
 
 
@@ -460,7 +460,7 @@ def test_transaction(conn):
 
         with conn.transaction():
             cur = conn.execute("select 'rb'")
-            raise psycopg.Rollback()
+            raise gaussdb.Rollback()
 
         (r,) = cur.fetchone()
         assert r == "rb"
@@ -535,7 +535,7 @@ def test_rollback_transaction(conn):
 
 
 def test_message_0x33(conn):
-    # https://github.com/psycopg/psycopg/issues/314
+    # https://github.com/gaussdb/gaussdb/issues/314
     notices = []
     conn.add_notice_handler(lambda diag: notices.append(diag.message_primary))
 

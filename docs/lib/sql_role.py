@@ -3,10 +3,10 @@
 sql role
 ~~~~~~~~
 
-An interpreted text role to style SQL syntax in Psycopg documentation.
+An interpreted text role to style SQL syntax in GaussDB documentation.
 
 :copyright: Copyright 2010 by Daniele Varrazzo.
-:copyright: Copyright 2020 The Psycopg Team.
+:copyright: Copyright 2020 The GaussDB Team.
 """
 
 from docutils import nodes, utils

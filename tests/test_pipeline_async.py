@@ -7,22 +7,22 @@ from itertools import groupby
 
 import pytest
 
-import psycopg
-from psycopg import errors as e
-from psycopg import pq
+import gaussdb
+from gaussdb import errors as e
+from gaussdb import pq
 
 from .acompat import anext, is_async
 
 pytestmark = [
     pytest.mark.pipeline,
-    pytest.mark.skipif("not psycopg.Pipeline.is_supported()"),
+    pytest.mark.skipif("not gaussdb.Pipeline.is_supported()"),
 ]
 pipeline_aborted = pytest.mark.flakey("the server might get in pipeline aborted")
 
 
 async def test_repr(aconn):
     async with aconn.pipeline() as p:
-        name = "psycopg.AsyncPipeline" if is_async(aconn) else "psycopg.Pipeline"
+        name = "gaussdb.AsyncPipeline" if is_async(aconn) else "gaussdb.Pipeline"
         assert name in repr(p)
         assert "[IDLE, pipeline=ON]" in repr(p)
 
@@ -37,7 +37,7 @@ async def test_connection_closed(aconn):
             pass
 
 
-async def test_pipeline_status(aconn: psycopg.AsyncConnection[Any]) -> None:
+async def test_pipeline_status(aconn: gaussdb.AsyncConnection[Any]) -> None:
     assert aconn._pipeline is None
     async with aconn.pipeline() as p:
         assert aconn._pipeline is p
@@ -46,7 +46,7 @@ async def test_pipeline_status(aconn: psycopg.AsyncConnection[Any]) -> None:
     assert not aconn._pipeline
 
 
-async def test_pipeline_reenter(aconn: psycopg.AsyncConnection[Any]) -> None:
+async def test_pipeline_reenter(aconn: gaussdb.AsyncConnection[Any]) -> None:
     async with aconn.pipeline() as p1:
         async with aconn.pipeline() as p2:
             assert p2 is p1
@@ -57,7 +57,7 @@ async def test_pipeline_reenter(aconn: psycopg.AsyncConnection[Any]) -> None:
     assert p1.status == pq.PipelineStatus.OFF  # type: ignore[comparison-overlap]
 
 
-async def test_pipeline_broken_conn_exit(aconn: psycopg.AsyncConnection[Any]) -> None:
+async def test_pipeline_broken_conn_exit(aconn: gaussdb.AsyncConnection[Any]) -> None:
     with pytest.raises(e.OperationalError):
         async with aconn.pipeline():
             await aconn.execute("select 1")
@@ -68,7 +68,7 @@ async def test_pipeline_broken_conn_exit(aconn: psycopg.AsyncConnection[Any]) ->
 
 
 async def test_pipeline_exit_error_noclobber(aconn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
     with pytest.raises(ZeroDivisionError):
         async with aconn.pipeline():
             await aconn.close()
@@ -78,7 +78,7 @@ async def test_pipeline_exit_error_noclobber(aconn, caplog):
 
 
 async def test_pipeline_exit_error_noclobber_nested(aconn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
     with pytest.raises(ZeroDivisionError):
         async with aconn.pipeline():
             async with aconn.pipeline():
@@ -107,13 +107,13 @@ async def test_pipeline_nested_sync_trace(aconn, trace):
 
 async def test_cursor_stream(aconn):
     async with aconn.pipeline(), aconn.cursor() as cur:
-        with pytest.raises(psycopg.ProgrammingError):
+        with pytest.raises(gaussdb.ProgrammingError):
             await anext(cur.stream("select 1"))
 
 
 async def test_server_cursor(aconn):
     async with aconn.cursor(name="pipeline") as cur, aconn.pipeline():
-        with pytest.raises(psycopg.NotSupportedError):
+        with pytest.raises(gaussdb.NotSupportedError):
             await cur.execute("select 1")
 
 
@@ -438,11 +438,11 @@ async def test_prepare_error(aconn):
     """
     await aconn.set_autocommit(True)
     stmt = "INSERT INTO nosuchtable(data) VALUES (%s)"
-    with pytest.raises(psycopg.errors.UndefinedTable):
+    with pytest.raises(gaussdb.errors.UndefinedTable):
         async with aconn.pipeline():
             await aconn.execute(stmt, ["foo"], prepare=True)
     assert not aconn._prepared._names
-    with pytest.raises(psycopg.errors.UndefinedTable):
+    with pytest.raises(gaussdb.errors.UndefinedTable):
         await aconn.execute(stmt, ["bar"])
 
 
@@ -459,7 +459,7 @@ async def test_transaction(aconn):
 
         async with aconn.transaction():
             cur = await aconn.execute("select 'rb'")
-            raise psycopg.Rollback()
+            raise gaussdb.Rollback()
 
         (r,) = await cur.fetchone()
         assert r == "rb"
@@ -536,7 +536,7 @@ async def test_rollback_transaction(aconn):
 
 
 async def test_message_0x33(aconn):
-    # https://github.com/psycopg/psycopg/issues/314
+    # https://github.com/gaussdb/gaussdb/issues/314
     notices = []
     aconn.add_notice_handler(lambda diag: notices.append(diag.message_primary))
 

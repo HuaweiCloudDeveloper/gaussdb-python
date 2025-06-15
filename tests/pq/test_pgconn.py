@@ -14,12 +14,12 @@ from collections.abc import Iterator
 
 import pytest
 
-import psycopg
-import psycopg.generators
-from psycopg import pq
+import gaussdb
+import gaussdb.generators
+from gaussdb import pq
 
 if TYPE_CHECKING:
-    from psycopg.pq.abc import PGcancelConn, PGconn
+    from gaussdb.pq.abc import PGcancelConn, PGconn
 
 
 def wait(
@@ -51,7 +51,7 @@ def test_connectdb(dsn):
 
 
 def test_connectdb_error():
-    conn = pq.PGconn.connect(b"dbname=psycopg_test_not_for_real")
+    conn = pq.PGconn.connect(b"dbname=gaussdb_test_not_for_real")
     assert conn.status == pq.ConnStatus.BAD
 
 
@@ -66,14 +66,14 @@ def test_connect_async(dsn):
     conn.nonblocking = 1
     wait(conn)
     conn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         conn.connect_poll()
 
 
 @pytest.mark.crdb("skip", reason="connects to any db name")
 def test_connect_async_bad(dsn):
     parsed_dsn = {e.keyword: e.val for e in pq.Conninfo.parse(dsn.encode()) if e.val}
-    parsed_dsn[b"dbname"] = b"psycopg_test_not_for_real"
+    parsed_dsn[b"dbname"] = b"gaussdb_test_not_for_real"
     dsn = b" ".join(b"%s='%s'" % item for item in parsed_dsn.items())
     conn = pq.PGconn.connect_start(dsn)
     wait(conn, return_on=pq.PollingStatus.FAILED)
@@ -126,7 +126,7 @@ def test_reset(pgconn):
     assert pgconn.status == pq.ConnStatus.OK
 
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.reset()
 
     assert pgconn.status == pq.ConnStatus.BAD
@@ -141,10 +141,10 @@ def test_reset_async(pgconn):
     wait(pgconn, "reset_poll")
 
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.reset_start()
 
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.reset_poll()
 
 
@@ -160,7 +160,7 @@ def test_password(pgconn):
     # not in info
     assert isinstance(pgconn.password, bytes)
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.password
 
 
@@ -168,7 +168,7 @@ def test_host(pgconn):
     # might be not in info
     assert isinstance(pgconn.host, bytes)
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.host
 
 
@@ -177,13 +177,13 @@ def test_hostaddr(pgconn):
     # not in info
     assert isinstance(pgconn.hostaddr, bytes), pgconn.hostaddr
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.hostaddr
 
 
 @pytest.mark.libpq("< 12")
 def test_hostaddr_missing(pgconn):
-    with pytest.raises(psycopg.NotSupportedError):
+    with pytest.raises(gaussdb.NotSupportedError):
         pgconn.hostaddr
 
 
@@ -193,19 +193,19 @@ def test_transaction_status(pgconn):
     assert pgconn.transaction_status == pq.TransactionStatus.INTRANS
     pgconn.send_query(b"select 1")
     assert pgconn.transaction_status == pq.TransactionStatus.ACTIVE
-    psycopg.waiting.wait(psycopg.generators.execute(pgconn), pgconn.socket)
+    gaussdb.waiting.wait(gaussdb.generators.execute(pgconn), pgconn.socket)
     assert pgconn.transaction_status == pq.TransactionStatus.INTRANS
     pgconn.finish()
     assert pgconn.transaction_status == pq.TransactionStatus.UNKNOWN
 
 
 def test_parameter_status(dsn, monkeypatch):
-    monkeypatch.setenv("PGAPPNAME", "psycopg tests")
+    monkeypatch.setenv("PGAPPNAME", "gaussdb tests")
     pgconn = pq.PGconn.connect(dsn.encode())
-    assert pgconn.parameter_status(b"application_name") == b"psycopg tests"
+    assert pgconn.parameter_status(b"application_name") == b"gaussdb tests"
     assert pgconn.parameter_status(b"wat") is None
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.parameter_status(b"application_name")
 
 
@@ -224,14 +224,14 @@ def test_encoding(pgconn):
     assert pgconn.parameter_status(b"client_encoding") == b"UTF8"
 
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.parameter_status(b"client_encoding")
 
 
 def test_protocol_version(pgconn):
     assert pgconn.protocol_version == 3
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.protocol_version
 
 
@@ -239,7 +239,7 @@ def test_protocol_version(pgconn):
 def test_server_version(pgconn):
     assert pgconn.server_version >= "505.2.0"
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.server_version
 
 
@@ -251,7 +251,7 @@ def test_socket(pgconn):
     # so let's see if at least an ok value comes out of it.
     try:
         assert pgconn.socket == socket
-    except psycopg.OperationalError:
+    except gaussdb.OperationalError:
         pass
 
 
@@ -278,7 +278,7 @@ def test_get_error_message(pgconn):
 def test_backend_pid(pgconn):
     assert isinstance(pgconn.backend_pid, int)
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.backend_pid
 
 
@@ -309,7 +309,7 @@ def test_used_password(pgconn, dsn, monkeypatch):
 
 
 def test_set_single_row_mode(pgconn):
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.set_single_row_mode()
 
     pgconn.send_query(b"select 1")
@@ -318,7 +318,7 @@ def test_set_single_row_mode(pgconn):
 
 @pytest.mark.libpq(">= 17")
 def test_set_chunked_rows_mode(pgconn):
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.set_chunked_rows_mode(42)
 
     pgconn.send_query(b"select 1")
@@ -413,13 +413,13 @@ def test_cancel_conn_finished(pgconn):
     cancel_conn = pgconn.cancel_conn()
     cancel_conn.reset()
     cancel_conn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         cancel_conn.start()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         cancel_conn.blocking()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         cancel_conn.poll()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         cancel_conn.reset()
     assert cancel_conn.get_error_message() == "connection pointer is NULL"
 
@@ -430,14 +430,14 @@ def test_cancel(pgconn):
     cancel.cancel()
     pgconn.finish()
     cancel.cancel()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.get_cancel()
 
 
 def test_cancel_free(pgconn):
     cancel = pgconn.get_cancel()
     cancel.free()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         cancel.cancel()
     cancel.free()
 
@@ -471,7 +471,7 @@ def test_notice(pgconn):
 
 @pytest.mark.crdb_skip("do")
 def test_notice_error(pgconn, caplog):
-    caplog.set_level(logging.WARNING, logger="psycopg")
+    caplog.set_level(logging.WARNING, logger="gaussdb")
 
     def callback(res):
         raise Exception("hello error")
@@ -495,7 +495,7 @@ def test_trace_pre14(pgconn, tmp_path):
     tracef = tmp_path / "trace"
     with tracef.open("w") as f:
         pgconn.trace(f.fileno())
-        with pytest.raises(psycopg.NotSupportedError):
+        with pytest.raises(gaussdb.NotSupportedError):
             pgconn.set_trace_flags(0)
         pgconn.exec_(b"select 1")
         pgconn.untrace()
@@ -527,21 +527,21 @@ def test_trace(pgconn, tmp_path):
 
 @pytest.mark.skipif("sys.platform == 'linux'")
 def test_trace_nonlinux(pgconn):
-    with pytest.raises(psycopg.NotSupportedError):
+    with pytest.raises(gaussdb.NotSupportedError):
         pgconn.trace(1)
 
 
 @pytest.mark.libpq(">= 17")
 def test_change_password_error(pgconn):
     with pytest.raises(
-        psycopg.OperationalError, match='role(/user)? "ashesh" does not exist'
+        gaussdb.OperationalError, match='role(/user)? "ashesh" does not exist'
     ):
-        pgconn.change_password(b"ashesh", b"psycopg")
+        pgconn.change_password(b"ashesh", b"gaussdb")
 
 
 @pytest.fixture
 def role(pgconn: PGconn) -> Iterator[tuple[bytes, bytes]]:
-    user, passwd = "ashesh", "psycopg2"
+    user, passwd = "ashesh", "_GaussDB"
     r = pgconn.exec_(f"CREATE USER {user} LOGIN PASSWORD '{passwd}'".encode())
     if r.status != pq.ExecStatus.COMMAND_OK:
         pytest.skip(f"cannot create a PostgreSQL role: {r.get_error_message()}")
@@ -562,28 +562,28 @@ def test_change_password(pgconn, dsn, role):
     conn = pq.PGconn.connect(b" ".join(b"%s='%s'" % item for item in conninfo.items()))
     assert conn.status == pq.ConnStatus.OK, conn.error_message
 
-    pgconn.change_password(user, b"psycopg")
-    conninfo[b"password"] = b"psycopg"
+    pgconn.change_password(user, b"gaussdb")
+    conninfo[b"password"] = b"gaussdb"
     conn = pq.PGconn.connect(b" ".join(b"%s='%s'" % item for item in conninfo.items()))
     assert conn.status == pq.ConnStatus.OK, conn.error_message
 
 
 @pytest.mark.libpq(">= 10")
 def test_encrypt_password(pgconn):
-    enc = pgconn.encrypt_password(b"psycopg2", b"ashesh", b"md5")
+    enc = pgconn.encrypt_password(b"_GaussDB", b"ashesh", b"md5")
     assert enc == b"md594839d658c28a357126f105b9cb14cfc"
 
 
 @pytest.mark.libpq(">= 10")
 def test_encrypt_password_scram(pgconn):
-    enc = pgconn.encrypt_password(b"psycopg2", b"ashesh", b"scram-sha-256")
+    enc = pgconn.encrypt_password(b"_GaussDB", b"ashesh", b"scram-sha-256")
     assert enc.startswith(b"SCRAM-SHA-256$")
 
 
 @pytest.mark.libpq(">= 10")
 def test_encrypt_password_badalgo(pgconn):
-    with pytest.raises(psycopg.OperationalError):
-        assert pgconn.encrypt_password(b"psycopg2", b"ashesh", b"wat")
+    with pytest.raises(gaussdb.OperationalError):
+        assert pgconn.encrypt_password(b"_GaussDB", b"ashesh", b"wat")
 
 
 @pytest.mark.libpq(">= 10")
@@ -591,30 +591,30 @@ def test_encrypt_password_badalgo(pgconn):
 def test_encrypt_password_query(pgconn):
     res = pgconn.exec_(b"set password_encryption to 'md5'")
     assert res.status == pq.ExecStatus.COMMAND_OK, pgconn.get_error_message()
-    enc = pgconn.encrypt_password(b"psycopg2", b"ashesh")
+    enc = pgconn.encrypt_password(b"_GaussDB", b"ashesh")
     assert enc == b"md594839d658c28a357126f105b9cb14cfc"
 
     res = pgconn.exec_(b"set password_encryption to 'scram-sha-256'")
     assert res.status == pq.ExecStatus.COMMAND_OK
-    enc = pgconn.encrypt_password(b"psycopg2", b"ashesh")
+    enc = pgconn.encrypt_password(b"_GaussDB", b"ashesh")
     assert enc.startswith(b"SCRAM-SHA-256$")
 
 
 @pytest.mark.libpq(">= 10")
 def test_encrypt_password_closed(pgconn):
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
-        assert pgconn.encrypt_password(b"psycopg2", b"ashesh")
+    with pytest.raises(gaussdb.OperationalError):
+        assert pgconn.encrypt_password(b"_GaussDB", b"ashesh")
 
 
 @pytest.mark.libpq("< 10")
 def test_encrypt_password_not_supported(pgconn):
     # it might even be supported, but not worth the lifetime
-    with pytest.raises(psycopg.NotSupportedError):
-        pgconn.encrypt_password(b"psycopg2", b"ashesh", b"md5")
+    with pytest.raises(gaussdb.NotSupportedError):
+        pgconn.encrypt_password(b"_GaussDB", b"ashesh", b"md5")
 
-    with pytest.raises(psycopg.NotSupportedError):
-        pgconn.encrypt_password(b"psycopg2", b"ashesh", b"scram-sha-256")
+    with pytest.raises(gaussdb.NotSupportedError):
+        pgconn.encrypt_password(b"_GaussDB", b"ashesh", b"scram-sha-256")
 
 
 def test_str(pgconn, dsn):

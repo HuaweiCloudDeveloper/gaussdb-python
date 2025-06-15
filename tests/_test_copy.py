@@ -1,8 +1,8 @@
 import struct
 
-from psycopg import pq
-from psycopg.copy import AsyncWriter
-from psycopg.copy import FileWriter as FileWriter  # noqa: F401
+from gaussdb import pq
+from gaussdb.copy import AsyncWriter
+from gaussdb.copy import FileWriter as FileWriter  # noqa: F401
 
 sample_records = [(40010, 40020, "hello"), (40040, None, "world")]
 sample_values = "values (40010::int, 40020::int, 'hello'::text), (40040, NULL, 'world')"

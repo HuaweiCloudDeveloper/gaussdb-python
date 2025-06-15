@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. index::
     pair: Query; Parameters
@@ -100,7 +100,7 @@ query.
 - The variables placeholder *must always be a* ``%s``, even if a different
   placeholder (such as a ``%d`` for integers or ``%f`` for floats) may look
   more appropriate for the type. You may find other placeholders used in
-  Psycopg queries (``%b`` and ``%t``) but they are not related to the
+  GaussDB queries (``%b`` and ``%t``) but they are not related to the
   type of the argument: see :ref:`binary-data` if you want to read more::
 
     cur.execute("INSERT INTO numbers VALUES (%d)", (10,))   # WRONG
@@ -109,7 +109,7 @@ query.
 - Only query values should be bound via this method: it shouldn't be used to
   merge table or field names to the query. If you need to generate SQL queries
   dynamically (for instance choosing a table name at runtime) you can use the
-  functionalities provided in the `psycopg.sql` module::
+  functionalities provided in the `gaussdb.sql` module::
 
     cur.execute("INSERT INTO %s VALUES (%s)", ('numbers', 10))  # WRONG
     cur.execute(                                                # correct
@@ -150,7 +150,7 @@ as a memo and hang it onto your desk.
 .. _SQL injection: https://en.wikipedia.org/wiki/SQL_injection
 .. __: https://xkcd.com/327/
 
-Psycopg can :ref:`automatically convert Python objects to SQL
+GaussDB can :ref:`automatically convert Python objects to SQL
 values<types-adaptation>`: using this feature your code will be more robust
 and reliable. We must stress this point:
 
@@ -188,7 +188,7 @@ argument of the `Cursor.execute()` method::
 .. seealso::
 
     Now that you know how to pass parameters to queries, you can take a look
-    at :ref:`how Psycopg converts data types <types-adaptation>`.
+    at :ref:`how GaussDB converts data types <types-adaptation>`.
 
 
 .. index::
@@ -200,11 +200,11 @@ Binary parameters and results
 -----------------------------
 
 PostgreSQL has two different ways to transmit data between client and server:
-`~psycopg.pq.Format.TEXT`, always available, and `~psycopg.pq.Format.BINARY`,
+`~gaussdb.pq.Format.TEXT`, always available, and `~gaussdb.pq.Format.BINARY`,
 available most of the times but not always. Usually the binary format is more
 efficient to use.
 
-Psycopg can support both formats for each data type. Whenever a value
+GaussDB can support both formats for each data type. Whenever a value
 is passed to a query using the normal ``%s`` placeholder, the best format
 available is chosen (often, but not always, the binary format is picked as the
 best choice).
@@ -212,12 +212,12 @@ best choice).
 If you have a reason to select explicitly the binary format or the text format
 for a value you can use respectively a ``%b`` placeholder or a ``%t``
 placeholder instead of the normal ``%s``. `~Cursor.execute()` will fail if a
-`~psycopg.adapt.Dumper` for the right data type and format is not available.
+`~gaussdb.adapt.Dumper` for the right data type and format is not available.
 
 The same two formats, text or binary, are used by PostgreSQL to return data
 from a query to the client. Unlike with parameters, where you can choose the
 format value-by-value, all the columns returned by a query will have the same
-format. Every type returned by the query should have a `~psycopg.adapt.Loader`
+format. Every type returned by the query should have a `~gaussdb.adapt.Loader`
 configured, otherwise the data will be returned as unparsed `!str` (for text
 results) or buffer (for binary results).
 

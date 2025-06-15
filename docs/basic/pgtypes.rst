@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. index::
     single: Adaptation
@@ -11,7 +11,7 @@ Adapting other PostgreSQL types
 ===============================
 
 PostgreSQL offers other data types which don't map to native Python types.
-Psycopg offers wrappers and conversion functions to allow their use.
+GaussDB offers wrappers and conversion functions to allow their use.
 
 
 .. index::
@@ -24,7 +24,7 @@ Psycopg offers wrappers and conversion functions to allow their use.
 Composite types casting
 -----------------------
 
-Psycopg can adapt PostgreSQL composite types (either created with the |CREATE
+GaussDB can adapt PostgreSQL composite types (either created with the |CREATE
 TYPE|_ command or implicitly defined after a table row type) to and from
 Python tuples, `~collections.namedtuple`, or any other suitable object
 configured.
@@ -33,21 +33,21 @@ configured.
 .. _CREATE TYPE: https://www.postgresql.org/docs/current/static/sql-createtype.html
 
 Before using a composite type it is necessary to get information about it
-using the `~psycopg.types.composite.CompositeInfo` class and to register it
-using `~psycopg.types.composite.register_composite()`.
+using the `~gaussdb.types.composite.CompositeInfo` class and to register it
+using `~gaussdb.types.composite.register_composite()`.
 
-.. autoclass:: psycopg.types.composite.CompositeInfo
+.. autoclass:: gaussdb.types.composite.CompositeInfo
 
-   `!CompositeInfo` is a `~psycopg.types.TypeInfo` subclass: check its
+   `!CompositeInfo` is a `~gaussdb.types.TypeInfo` subclass: check its
    documentation for the generic usage, especially the
-   `~psycopg.types.TypeInfo.fetch()` method.
+   `~gaussdb.types.TypeInfo.fetch()` method.
 
    .. attribute:: python_type
 
        After `register_composite()` is called, it will contain the python type
        mapping to the registered composite.
 
-.. autofunction:: psycopg.types.composite.register_composite
+.. autofunction:: gaussdb.types.composite.register_composite
 
    After registering, fetching data of the registered composite will invoke
    `!factory` to create corresponding Python objects.
@@ -61,7 +61,7 @@ using `~psycopg.types.composite.register_composite()`.
 
 Example::
 
-    >>> from psycopg.types.composite import CompositeInfo, register_composite
+    >>> from gaussdb.types.composite import CompositeInfo, register_composite
 
     >>> conn.execute("CREATE TYPE card AS (value int, suit text)")
 
@@ -108,11 +108,11 @@ definition of custom ones.
 
 .. __: https://www.postgresql.org/docs/current/rangetypes.html
 
-All the PostgreSQL range types are loaded as the `~psycopg.types.range.Range`
+All the PostgreSQL range types are loaded as the `~gaussdb.types.range.Range`
 Python type, which is a `~typing.Generic` type and can hold bounds of
 different types.
 
-.. autoclass:: psycopg.types.range.Range
+.. autoclass:: gaussdb.types.range.Range
 
     This Python type is only used to pass and retrieve range values to and
     from PostgreSQL and doesn't attempt to replicate the PostgreSQL range
@@ -144,21 +144,21 @@ The built-in range objects are adapted automatically: if a `!Range` objects
 contains `~datetime.date` bounds, it is dumped using the :sql:`daterange` OID,
 and of course :sql:`daterange` values are loaded back as `!Range[date]`.
 
-If you create your own range type you can use `~psycopg.types.range.RangeInfo`
-and `~psycopg.types.range.register_range()` to associate the range type with
+If you create your own range type you can use `~gaussdb.types.range.RangeInfo`
+and `~gaussdb.types.range.register_range()` to associate the range type with
 its subtype and make it work like the builtin ones.
 
-.. autoclass:: psycopg.types.range.RangeInfo
+.. autoclass:: gaussdb.types.range.RangeInfo
 
-   `!RangeInfo` is a `~psycopg.types.TypeInfo` subclass: check its
+   `!RangeInfo` is a `~gaussdb.types.TypeInfo` subclass: check its
    documentation for generic details, especially the
-   `~psycopg.types.TypeInfo.fetch()` method.
+   `~gaussdb.types.TypeInfo.fetch()` method.
 
-.. autofunction:: psycopg.types.range.register_range
+.. autofunction:: gaussdb.types.range.register_range
 
 Example::
 
-    >>> from psycopg.types.range import Range, RangeInfo, register_range
+    >>> from gaussdb.types.range import Range, RangeInfo, register_range
 
     >>> conn.execute("CREATE TYPE strrange AS RANGE (SUBTYPE = text)")
     >>> info = RangeInfo.fetch(conn, "strrange")
@@ -186,10 +186,10 @@ automatically available for every range, built-in and user-defined.
 .. __: https://www.postgresql.org/docs/current/rangetypes.html
 
 All the PostgreSQL range types are loaded as the
-`~psycopg.types.multirange.Multirange` Python type, which is a mutable
-sequence of `~psycopg.types.range.Range` elements.
+`~gaussdb.types.multirange.Multirange` Python type, which is a mutable
+sequence of `~gaussdb.types.range.Range` elements.
 
-.. autoclass:: psycopg.types.multirange.Multirange
+.. autoclass:: gaussdb.types.multirange.Multirange
 
     This Python type is only used to pass and retrieve multirange values to
     and from PostgreSQL and doesn't attempt to replicate the PostgreSQL
@@ -209,29 +209,29 @@ sequence of `~psycopg.types.range.Range` elements.
     can declare a variable to be `!Multirange[date]` and mypy will complain if
     you try to add it a `Range[Decimal]`.
 
-Like for `~psycopg.types.range.Range`, built-in multirange objects are adapted
+Like for `~gaussdb.types.range.Range`, built-in multirange objects are adapted
 automatically: if a `!Multirange` object contains `!Range` with
 `~datetime.date` bounds, it is dumped using the :sql:`datemultirange` OID, and
 :sql:`datemultirange` values are loaded back as `!Multirange[date]`.
 
 If you have created your own range type you can use
-`~psycopg.types.multirange.MultirangeInfo` and
-`~psycopg.types.multirange.register_multirange()` to associate the resulting
+`~gaussdb.types.multirange.MultirangeInfo` and
+`~gaussdb.types.multirange.register_multirange()` to associate the resulting
 multirange type with its subtype and make it work like the builtin ones.
 
-.. autoclass:: psycopg.types.multirange.MultirangeInfo
+.. autoclass:: gaussdb.types.multirange.MultirangeInfo
 
-   `!MultirangeInfo` is a `~psycopg.types.TypeInfo` subclass: check its
+   `!MultirangeInfo` is a `~gaussdb.types.TypeInfo` subclass: check its
    documentation for generic details, especially the
-   `~psycopg.types.TypeInfo.fetch()` method.
+   `~gaussdb.types.TypeInfo.fetch()` method.
 
-.. autofunction:: psycopg.types.multirange.register_multirange
+.. autofunction:: gaussdb.types.multirange.register_multirange
 
 Example::
 
-    >>> from psycopg.types.multirange import \
+    >>> from gaussdb.types.multirange import \
     ...     Multirange, MultirangeInfo, register_multirange
-    >>> from psycopg.types.range import Range
+    >>> from gaussdb.types.range import Range
 
     >>> conn.execute("CREATE TYPE strrange AS RANGE (SUBTYPE = text)")
     >>> info = MultirangeInfo.fetch(conn, "strmultirange")
@@ -263,7 +263,7 @@ well as regular BTree indexes for equality, uniqueness etc.
 .. |hstore| replace:: :sql:`hstore`
 .. _hstore: https://www.postgresql.org/docs/current/static/hstore.html
 
-Psycopg can convert Python `!dict` objects to and from |hstore| structures.
+GaussDB can convert Python `!dict` objects to and from |hstore| structures.
 Only dictionaries with string keys and values are supported. `!None` is also
 allowed as value but not as a key.
 
@@ -276,18 +276,18 @@ database using:
 
 Because |hstore| is distributed as a contrib module, its oid is not well
 known, so it is necessary to use `!TypeInfo`\.\
-`~psycopg.types.TypeInfo.fetch()` to query the database and get its oid. The
+`~gaussdb.types.TypeInfo.fetch()` to query the database and get its oid. The
 resulting object can be passed to
-`~psycopg.types.hstore.register_hstore()` to configure dumping `!dict` to
+`~gaussdb.types.hstore.register_hstore()` to configure dumping `!dict` to
 |hstore| and parsing |hstore| back to `!dict`, in the context where the
 adapter is registered.
 
-.. autofunction:: psycopg.types.hstore.register_hstore
+.. autofunction:: gaussdb.types.hstore.register_hstore
 
 Example::
 
-    >>> from psycopg.types import TypeInfo
-    >>> from psycopg.types.hstore import register_hstore
+    >>> from gaussdb.types import TypeInfo
+    >>> from gaussdb.types.hstore import register_hstore
 
     >>> info = TypeInfo.fetch(conn, "hstore")
     >>> register_hstore(info, conn)
@@ -314,7 +314,7 @@ you may want to store such instances in the database and have the conversion
 happen automatically.
 
 .. warning::
-    Psycopg doesn't have a dependency on the ``shapely`` package: you should
+    GaussDB doesn't have a dependency on the ``shapely`` package: you should
     install the library as an additional dependency of your project.
 
 .. warning::
@@ -328,13 +328,13 @@ happen automatically.
 
 Since PostgGIS is an extension, the :sql:`geometry` type oid is not well
 known, so it is necessary to use `!TypeInfo`\.\
-`~psycopg.types.TypeInfo.fetch()` to query the database and find it. The
-resulting object can be passed to `~psycopg.types.shapely.register_shapely()`
+`~gaussdb.types.TypeInfo.fetch()` to query the database and find it. The
+resulting object can be passed to `~gaussdb.types.shapely.register_shapely()`
 to configure dumping `shape`_ instances to :sql:`geometry` columns and parsing
 :sql:`geometry` data back to `!shape` instances, in the context where the
 adapters are registered.
 
-.. function:: psycopg.types.shapely.register_shapely
+.. function:: gaussdb.types.shapely.register_shapely
 
     Register Shapely dumper and loaders.
 
@@ -359,8 +359,8 @@ adapters are registered.
 
 Example::
 
-    >>> from psycopg.types import TypeInfo
-    >>> from psycopg.types.shapely import register_shapely
+    >>> from gaussdb.types import TypeInfo
+    >>> from gaussdb.types.shapely import register_shapely
     >>> from shapely.geometry import Point
 
     >>> info = TypeInfo.fetch(conn, "geometry")
@@ -379,7 +379,7 @@ Example::
 Notice that, if the geometry adapters are registered on a specific object (a
 connection or cursor), other connections and cursors will be unaffected::
 
-    >>> conn2 = psycopg.connect(CONN_STR)
+    >>> conn2 = gaussdb.connect(CONN_STR)
     >>> conn2.execute("""
     ... SELECT ST_GeomFromGeoJSON('{
     ...     "type":"Point",

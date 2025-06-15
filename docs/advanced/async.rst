@@ -1,4 +1,4 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 
 .. index:: threads
@@ -8,7 +8,7 @@
 Concurrent operations
 =====================
 
-Psycopg allows to write *concurrent* code, executing more than one operation
+GaussDB allows to write *concurrent* code, executing more than one operation
 at time.
 
 - `Connection` objects *are thread-safe*: more than one thread at time can use
@@ -62,7 +62,7 @@ at time.
     *Connections are not process-safe* and cannot be shared across processes,
     for instance using the facilities of the `multiprocessing` module.
 
-    If you are using Psycopg in a forking framework (for instance in a web
+    If you are using GaussDB in a forking framework (for instance in a web
     server that implements concurrency using multiprocessing), you should make
     sure that the database connections are created after the worker process is
     forked. Failing to do so you will probably find the connection in broken
@@ -76,7 +76,7 @@ at time.
 Asynchronous operations
 -----------------------
 
-Psycopg `Connection` and `Cursor` have counterparts `AsyncConnection` and
+GaussDB `Connection` and `Cursor` have counterparts `AsyncConnection` and
 `AsyncCursor` supporting an `asyncio` interface.
 
 The design of the asynchronous objects is pretty much the same of the sync
@@ -85,7 +85,7 @@ here and there.
 
 .. code:: python
 
-    async with await psycopg.AsyncConnection.connect(
+    async with await gaussdb.AsyncConnection.connect(
             "dbname=test user=postgres") as aconn:
         async with aconn.cursor() as acur:
             await acur.execute(
@@ -112,7 +112,7 @@ serialized.
 
         Before version 3.1, `AsyncConnection.connect()` may still block on DNS
         name resolution. To avoid that you should `set the hostaddr connection
-        parameter`__, or use the `~psycopg._dns.resolve_hostaddr_async()` to
+        parameter`__, or use the `~gaussdb._dns.resolve_hostaddr_async()` to
         do it automatically.
 
         .. __: https://www.postgresql.org/docs/current/libpq-connect.html
@@ -120,7 +120,7 @@ serialized.
 
 .. warning::
 
-    On Windows, Psycopg is not compatible with the default
+    On Windows, GaussDB is not compatible with the default
     `~asyncio.ProactorEventLoop`. Please use a different loop, for instance
     the `~asyncio.SelectorEventLoop`.
 
@@ -146,7 +146,7 @@ context managers, so you can run:
 
 .. code:: python
 
-    with psycopg.connect("dbname=test user=postgres") as conn:
+    with gaussdb.connect("dbname=test user=postgres") as conn:
         with conn.cursor() as cur:
             cur.execute(...)
         # the cursor is closed upon leaving the context
@@ -164,7 +164,7 @@ two steps instead, as in
 
 .. code:: python
 
-    aconn = await psycopg.AsyncConnection.connect()
+    aconn = await gaussdb.AsyncConnection.connect()
     async with aconn:
         async with aconn.cursor() as cur:
             await cur.execute(...)
@@ -173,7 +173,7 @@ which can be condensed into `!async with await`:
 
 .. code:: python
 
-    async with await psycopg.AsyncConnection.connect() as aconn:
+    async with await gaussdb.AsyncConnection.connect() as aconn:
         async with aconn.cursor() as cur:
             await cur.execute(...)
 
@@ -199,7 +199,7 @@ will be put in error state, from which can be recovered with a normal
 An async connection provides similar behavior in that if the async task is
 cancelled, any operation on the connection will similarly be cancelled.  This
 can happen either indirectly via Ctrl-C or similar signal, or directly by
-cancelling the Python Task via the normal way.  Psycopg will ask the
+cancelling the Python Task via the normal way.  GaussDB will ask the
 PostgreSQL postmaster to cancel the operation when it encounters the standard
 Python `CancelledError`__.
 
@@ -209,7 +209,7 @@ CancelledError.  If you need to know the ultimate outcome of the statement,
 then consider calling `Connection.cancel()` as an alternative to cancelling
 the task.
 
-Previous versions of Psycopg recommended setting up signal handlers to
+Previous versions of GaussDB recommended setting up signal handlers to
 manually cancel connections.  This should no longer be necessary.
 
 
@@ -223,12 +223,12 @@ manually cancel connections.  This should no longer be necessary.
 Gevent support
 --------------
 
-Psycopg 3 supports `gevent <https://www.gevent.org/>`__ out of the box. If the
+gaussdb supports `gevent <https://www.gevent.org/>`__ out of the box. If the
 `select` module is found patched by functions such as
-`gevent.monkey.patch_select()`__ or `patch_all()`__, psycopg will behave in a
+`gevent.monkey.patch_select()`__ or `patch_all()`__, gaussdb will behave in a
 collaborative way.
 
-Unlike with `!psycopg2`, using the `!psycogreen` module is not required.
+Unlike with `!_GaussDB`, using the `!psycogreen` module is not required.
 
 .. __: http://www.gevent.org/api/gevent.monkey.html#gevent.monkey.patch_select
 .. __: http://www.gevent.org/api/gevent.monkey.html#gevent.monkey.patch_all
@@ -236,9 +236,9 @@ Unlike with `!psycopg2`, using the `!psycogreen` module is not required.
 .. warning::
 
     gevent support was initially accidental, and was accidentally broken in
-    psycopg 3.1.4.
+    gaussdb 3.1.4.
 
-    gevent is officially supported only starting from psycopg 3.1.14.
+    gevent is officially supported only starting from gaussdb 3.1.14.
 
 
 .. index::
@@ -280,17 +280,17 @@ the client you can use the `Connection.add_notice_handler()` function to
 register a function that will be invoked whenever a message is received. The
 message is passed to the callback as a `~errors.Diagnostic` instance,
 containing all the information passed by the server, such as the message text
-and the severity. The object is the same found on the `~psycopg.Error.diag`
+and the severity. The object is the same found on the `~gaussdb.Error.diag`
 attribute of the errors raised by the server:
 
 .. code:: python
 
-    >>> import psycopg
+    >>> import gaussdb
 
     >>> def log_notice(diag):
     ...     print(f"The server says: {diag.severity} - {diag.message_primary}")
 
-    >>> conn = psycopg.connect(autocommit=True)
+    >>> conn = gaussdb.connect(autocommit=True)
     >>> conn.add_notice_handler(log_notice)
 
     >>> cur = conn.execute("ROLLBACK")
@@ -317,7 +317,7 @@ attribute of the errors raised by the server:
 Asynchronous notifications
 --------------------------
 
-Psycopg allows asynchronous interaction with other database sessions using the
+GaussDB allows asynchronous interaction with other database sessions using the
 facilities offered by PostgreSQL commands |LISTEN|_ and |NOTIFY|_. Please
 refer to the PostgreSQL documentation for examples about how to use this form
 of communication.
@@ -334,7 +334,7 @@ mode if you wish to receive or send notifications in a timely manner.
 Notifications are received as instances of `Notify`. If you are reserving a
 connection only to receive notifications, the simplest way is to consume the
 `Connection.notifies` generator. The generator can be stopped using
-`!close()`. Starting from Psycopg 3.2, the method supports options to receive
+`!close()`. Starting from gaussdb.2, the method supports options to receive
 notifications only for a certain time or up to a certain number.
 
 .. note::
@@ -347,8 +347,8 @@ the ``"stop"`` message is received.
 
 .. code:: python
 
-    import psycopg
-    conn = psycopg.connect("", autocommit=True)
+    import gaussdb
+    conn = gaussdb.connect("", autocommit=True)
     conn.execute("LISTEN mychan")
     gen = conn.notifies()
     for notify in gen:
@@ -433,7 +433,7 @@ something else to do too.
         # Activity detected. Is the connection still ok?
         try:
             conn.execute("SELECT 1")
-        except psycopg.OperationalError:
+        except gaussdb.OperationalError:
             # You were disconnected: do something useful such as panicking
             logger.error("we lost our database!")
             sys.exit(1)
@@ -458,6 +458,6 @@ something similar using `~asyncio.loop.add_reader`:
         # Activity detected. Is the connection still ok?
         try:
             await conn.execute("SELECT 1")
-        except psycopg.OperationalError:
+        except gaussdb.OperationalError:
             # Guess what happened
             ...

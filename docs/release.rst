@@ -1,6 +1,6 @@
 :orphan:
 
-How to make a psycopg release
+How to make a gaussdb release
 =============================
 
 - Check if there is a new version or libpq_ or OpenSSL_; in such case
@@ -20,7 +20,7 @@ How to make a psycopg release
 
 - Push to GitHub to run `the tests workflow`__.
 
-  .. __: https://github.com/psycopg/psycopg/actions/workflows/tests.yml
+  .. __: https://github.com/gaussdb/gaussdb/actions/workflows/tests.yml
 
 - Build the packages by triggering manually the ones requested among:
 
@@ -28,9 +28,9 @@ How to make a psycopg release
   - `Binary packages`__
   - `Pool packages`__
 
-  .. __: https://github.com/psycopg/psycopg/actions/workflows/packages-src.yml
-  .. __: https://github.com/psycopg/psycopg/actions/workflows/packages-bin.yml
-  .. __: https://github.com/psycopg/psycopg/actions/workflows/packages-pool.yml
+  .. __: https://github.com/gaussdb/gaussdb/actions/workflows/packages-src.yml
+  .. __: https://github.com/gaussdb/gaussdb/actions/workflows/packages-bin.yml
+  .. __: https://github.com/gaussdb/gaussdb/actions/workflows/packages-pool.yml
 
 - Delete the ``wheelhouse`` directory if there is one.
 
@@ -74,8 +74,8 @@ When a new PostgreSQL major version is released
 
 - Check if there are new enum values to include in:
 
-  - ``psycopg_c/psycopg_c/pq/libpq.pxd``;
-  - ``psycopg/psycopg/pq/_enums.py``.
+  - ``gaussdb_c/gaussdb_c/pq/libpq.pxd``;
+  - ``gaussdb/gaussdb/pq/_enums.py``.
 
 - Include the new version in GitHub Actions test and package grids.
 
@@ -91,7 +91,7 @@ When a new PostgreSQL major version is released
 - Update the documented versions in:
 
   - ``docs/basic/install.rst``;
-  - ``content/features/contents.lr`` in the psycopg-website repository.
+  - ``content/features/contents.lr`` in the gaussdb-website repository.
 
 
 When a new Python major version is released
@@ -104,8 +104,8 @@ When a new Python major version is released
   versions.
 
 - Add the ``Programming Language :: Python :: 3.<X>`` classifier to
-  ``psycopg/pyproject.toml``, ``psycopg_c/pyproject.toml``, and
-  ``psycopg_pool/pyproject.toml``.
+  ``gaussdb/pyproject.toml``, ``gaussdb_c/pyproject.toml``, and
+  ``gaussdb_pool/pyproject.toml``.
 
 - Update the list of versions in ``tools/ci/build_macos_arm64.sh`` to include
   the new version. Look for both the ``python_versions`` variable and the
@@ -116,7 +116,7 @@ When dropping end-of-life Python versions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Update project metadata, ``requires-python`` and (maybe) package dependencies
-  in ``pyproject.toml`` files of the corresponding ``psycopg`` directories.
+  in ``pyproject.toml`` files of the corresponding ``gaussdb`` directories.
 
 - Update GitHub Actions workflow files in the ``.github/workflows/`` directory,
   e.g., ``tests.yml``, ``.3rd-party-tests.yml``, ``packages-bin.yml``.
@@ -137,4 +137,4 @@ When dropping end-of-life Python versions
 
 Examples:
 
-- `PR #977 <https://github.com/psycopg/psycopg/pull/977>`_
+- `PR #977 <https://github.com/gaussdb/gaussdb/pull/977>`_

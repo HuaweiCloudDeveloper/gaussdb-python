@@ -1,19 +1,19 @@
 `crdb` -- CockroachDB support
 =============================
 
-.. module:: psycopg.crdb
+.. module:: gaussdb.crdb
 
 .. versionadded:: 3.1
 
 CockroachDB_ is a distributed database using the same fronted-backend protocol
-of PostgreSQL. As such, Psycopg can be used to write Python programs
+of PostgreSQL. As such, GaussDB can be used to write Python programs
 interacting with CockroachDB.
 
 .. _CockroachDB: https://www.cockroachlabs.com/
 
-Opening a connection to a CRDB database using `psycopg.connect()` provides a
-largely working object. However, using the `psycopg.crdb.connect()` function
-instead, Psycopg will create more specialised objects and provide a types
+Opening a connection to a CRDB database using `gaussdb.connect()` provides a
+largely working object. However, using the `gaussdb.crdb.connect()` function
+instead, GaussDB will create more specialised objects and provide a types
 mapping tweaked on the CockroachDB data model.
 
 
@@ -24,17 +24,17 @@ Main differences from PostgreSQL
 
 CockroachDB behaviour is `different from PostgreSQL`__: please refer to the
 database documentation for details. These are some of the main differences
-affecting Psycopg behaviour:
+affecting GaussDB behaviour:
 
 .. __: https://www.cockroachlabs.com/docs/stable/postgresql-compatibility.html
 
-- `~psycopg.Connection.cancel()` doesn't work before CockroachDB 22.1. On
+- `~gaussdb.Connection.cancel()` doesn't work before CockroachDB 22.1. On
   older versions, you can use `CANCEL QUERY`_ instead (but from a different
   connection).
 
 - :ref:`server-side-cursors` are well supported only from CockroachDB 22.1.3.
 
-- `~psycopg.ConnectionInfo.backend_pid` is only populated from CockroachDB
+- `~gaussdb.ConnectionInfo.backend_pid` is only populated from CockroachDB
   22.1. Note however that you cannot use the PID to terminate the session; use
   `SHOW session_id`_ to find the id of a session, which you may terminate with
   `CANCEL SESSION`_ in lieu of PostgreSQL's :sql:`pg_terminate_backend()`.
@@ -45,7 +45,7 @@ affecting Psycopg behaviour:
 - The :ref:`two-phase commit protocol <two-phase-commit>` is not supported.
 
 - :sql:`LISTEN` and :sql:`NOTIFY` are not supported. However the `CHANGEFEED`_
-  command, in conjunction with `~psycopg.Cursor.stream()`, can provide push
+  command, in conjunction with `~gaussdb.Cursor.stream()`, can provide push
   notifications.
 
 .. _CANCEL QUERY: https://www.cockroachlabs.com/docs/stable/cancel-query.html
@@ -69,22 +69,22 @@ CockroachDB-specific objects
 
 .. autoclass:: CrdbConnection
 
-    `psycopg.Connection` subclass.
+    `gaussdb.Connection` subclass.
 
     .. automethod:: is_crdb
 
         :param conn: the connection to check
-        :type conn: `~psycopg.Connection`, `~psycopg.AsyncConnection`, `~psycopg.pq.PGconn`
+        :type conn: `~gaussdb.Connection`, `~gaussdb.AsyncConnection`, `~gaussdb.pq.PGconn`
 
 
 .. autoclass:: AsyncCrdbConnection
 
-    `psycopg.AsyncConnection` subclass.
+    `gaussdb.AsyncConnection` subclass.
 
 
 .. autoclass:: CrdbConnectionInfo
 
-    The object is returned by the `~psycopg.Connection.info` attribute of
+    The object is returned by the `~gaussdb.Connection.info` attribute of
     `CrdbConnection` and `AsyncCrdbConnection`.
 
     The object behaves like `!ConnectionInfo`, with the following differences:
@@ -102,7 +102,7 @@ CockroachDB-specific objects
     converted into each other.
  
     The map is used as a template when new connections are created, using
-    `psycopg.crdb.connect()` (similarly to the way `psycopg.adapters` is used
+    `gaussdb.crdb.connect()` (similarly to the way `gaussdb.adapters` is used
     as template for new PostgreSQL connections).
 
     This registry contains only the types and adapters supported by

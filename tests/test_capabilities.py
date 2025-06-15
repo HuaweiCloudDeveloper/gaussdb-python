@@ -2,12 +2,12 @@ import re
 
 import pytest
 
-from psycopg import _cmodule, pq
+from gaussdb import _cmodule, pq
 
 try:
-    from psycopg import Capabilities, NotSupportedError, capabilities
+    from gaussdb import Capabilities, NotSupportedError, capabilities
 except ImportError:
-    # Allow to import the module with Psycopg 3.1
+    # Allow to import the module with gaussdb.1
     pass
 
 caps = [
@@ -67,7 +67,7 @@ def test_impl_build_error(monkeypatch):
     if pq.__impl__ == "binary":
         ver = _cmodule.__version__
         assert ver
-        msg = "(imported from the psycopg[binary] package version {ver})"
+        msg = "(imported from the gaussdb[binary] package version {ver})"
     else:
         msg = "(imported from system libraries)"
         with pytest.raises(NotSupportedError, match=re.escape(msg)):

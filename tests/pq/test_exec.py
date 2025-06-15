@@ -2,8 +2,8 @@
 
 import pytest
 
-import psycopg
-from psycopg import pq
+import gaussdb
+from gaussdb import pq
 
 
 def test_exec_none(pgconn):
@@ -15,7 +15,7 @@ def test_exec(pgconn):
     res = pgconn.exec_(b"select 'hel' || 'lo'")
     assert res.get_value(0, 0) == b"hello"
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.exec_(b"select 'hello'")
 
 
@@ -24,7 +24,7 @@ def test_exec_params(pgconn):
     assert res.status == pq.ExecStatus.TUPLES_OK
     assert res.get_value(0, 0) == b"8"
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.exec_params(b"select $1::int + $2", [b"5", b"3"])
 
 
@@ -87,9 +87,9 @@ def test_prepare(pgconn):
     assert res.get_value(0, 0) == b"8"
 
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.prepare(b"prep", b"select $1::int + $2::int")
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.exec_prepared(b"prep", [b"3", b"5"])
 
 
@@ -141,7 +141,7 @@ def test_close_prepared(pgconn):
 
 @pytest.mark.libpq("< 17")
 def test_close_prepared_no_close(pgconn):
-    with pytest.raises(psycopg.NotSupportedError):
+    with pytest.raises(gaussdb.NotSupportedError):
         pgconn.close_prepared(b"cur")
 
 
@@ -161,7 +161,7 @@ def test_describe_portal(pgconn):
     assert res.fname(0) == b"foo"
 
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         pgconn.describe_portal(b"cur")
 
 
@@ -186,5 +186,5 @@ def test_close_portal(pgconn):
 
 @pytest.mark.libpq("< 17")
 def test_close_portal_no_close(pgconn):
-    with pytest.raises(psycopg.NotSupportedError):
+    with pytest.raises(gaussdb.NotSupportedError):
         pgconn.close_portal(b"cur")

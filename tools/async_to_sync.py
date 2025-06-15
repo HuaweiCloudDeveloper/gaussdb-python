@@ -30,13 +30,13 @@ import ast_comments as ast  # type: ignore
 PYVER = "3.11"
 
 ALL_INPUTS = """
-    psycopg/psycopg/_conninfo_attempts_async.py
-    psycopg/psycopg/_copy_async.py
-    psycopg/psycopg/connection_async.py
-    psycopg/psycopg/cursor_async.py
-    psycopg_pool/psycopg_pool/null_pool_async.py
-    psycopg_pool/psycopg_pool/pool_async.py
-    psycopg_pool/psycopg_pool/sched_async.py
+    gaussdb/gaussdb/_conninfo_attempts_async.py
+    gaussdb/gaussdb/_copy_async.py
+    gaussdb/gaussdb/connection_async.py
+    gaussdb/gaussdb/cursor_async.py
+    gaussdb_pool/gaussdb_pool/null_pool_async.py
+    gaussdb_pool/gaussdb_pool/pool_async.py
+    gaussdb_pool/gaussdb_pool/sched_async.py
     tests/crdb/test_connection_async.py
     tests/crdb/test_copy_async.py
     tests/crdb/test_cursor_async.py
@@ -177,8 +177,8 @@ FROM python:{PYVER}
 
 WORKDIR /src
 
-ADD psycopg psycopg
-RUN pip install ./psycopg[dev]
+ADD gaussdb gaussdb
+RUN pip install ./gaussdb[dev]
 
 ENTRYPOINT ["tools/async_to_sync.py"]
 """
@@ -324,8 +324,8 @@ class RenameAsyncToSync(ast.NodeTransformer):  # type: ignore
         "ensure_table_async": "ensure_table",
         "find_insert_problem_async": "find_insert_problem",
         "pool_async": "pool",
-        "psycopg_pool.pool_async": "psycopg_pool.pool",
-        "psycopg_pool.sched_async": "psycopg_pool.sched",
+        "gaussdb_pool.pool_async": "gaussdb_pool.pool",
+        "gaussdb_pool.sched_async": "gaussdb_pool.sched",
         "sched_async": "sched",
         "test_pool_common_async": "test_pool_common",
         "wait_async": "wait",

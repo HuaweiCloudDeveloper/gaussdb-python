@@ -1,22 +1,22 @@
-`!abc` -- Psycopg abstract classes
+`!abc` -- GaussDB abstract classes
 ==================================
 
-The module exposes Psycopg definitions which can be used for static type
+The module exposes GaussDB definitions which can be used for static type
 checking.
 
-.. module:: psycopg.abc
+.. module:: gaussdb.abc
 
 .. seealso::
 
     :ref:`adapt-life-cycle` for more information about how these objects
-    are used by Psycopg,
+    are used by GaussDB,
 
 
 .. autoclass:: Dumper(cls, context=None)
 
     This class is a formal `~typing.Protocol`. A partial implementation of
     this protocol (implementing everything except the `dump()` metood) is
-    available as `psycopg.adapt.Dumper`.
+    available as `gaussdb.adapt.Dumper`.
 
     :param cls: The type that will be managed by this dumper.
     :type cls: type
@@ -41,7 +41,7 @@ checking.
 
         .. tip::
 
-            This method will be used by `~psycopg.sql.Literal` to convert a
+            This method will be used by `~gaussdb.sql.Literal` to convert a
             value client-side.
 
         This method only makes sense for text dumpers; the result of calling
@@ -54,9 +54,9 @@ checking.
         from the context, but this may fail in some contexts and may require a
         cast (e.g. specifying :samp:`%s::{type}` for its placeholder).
 
-        You can use the `psycopg.adapters`\ ``.``\
-        `~psycopg.adapt.AdaptersMap.types` registry to find the OID of builtin
-        types, and you can use `~psycopg.types.TypeInfo` to extend the
+        You can use the `gaussdb.adapters`\ ``.``\
+        `~gaussdb.adapt.AdaptersMap.types` registry to find the OID of builtin
+        types, and you can use `~gaussdb.types.TypeInfo` to extend the
         registry to custom types.
 
     .. automethod:: get_key
@@ -67,7 +67,7 @@ checking.
 
     This class is a formal `~typing.Protocol`. A partial implementation of this
     protocol (implementing everything except the `load()` method) is available
-    as `psycopg.adapt.Loader`.
+    as `gaussdb.adapt.Loader`.
 
     :param oid: The type that will be managed by this dumper.
     :type oid: int

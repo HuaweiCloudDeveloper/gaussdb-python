@@ -11,13 +11,13 @@ from asyncio.queues import Queue
 
 import pytest
 
-import psycopg
-from psycopg import errors as e
+import gaussdb
+from gaussdb import errors as e
 
 
 @pytest.mark.slow
 async def test_commit_concurrency(aconn):
-    # Check the condition reported in psycopg2#103
+    # Check the condition reported in _GaussDB#103
     # Because of bad status check, we commit even when a commit is already on
     # its way. We can detect this condition by the warnings.
     notices = Queue()  # type: ignore[var-annotated]
@@ -132,7 +132,7 @@ async def test_identify_closure(aconn_cls, dsn):
         t = create_task(closer())
         t0 = time.time()
         try:
-            with pytest.raises(psycopg.OperationalError):
+            with pytest.raises(gaussdb.OperationalError):
                 await aconn.execute("select pg_sleep(1.0)")
             t1 = time.time()
             assert 0.2 < t1 - t0 < 0.4
@@ -154,27 +154,27 @@ def test_ctrl_c_handler(dsn):
     script = f"""\
 import signal
 import asyncio
-import psycopg
+import gaussdb
 
 async def main():
     ctrl_c = False
     loop = asyncio.get_event_loop()
-    async with await psycopg.AsyncConnection.connect({dsn!r}) as conn:
+    async with await gaussdb.AsyncConnection.connect({dsn!r}) as conn:
         loop.add_signal_handler(signal.SIGINT, conn.cancel)
         cur = conn.cursor()
         try:
             await cur.execute("select pg_sleep(2)")
-        except psycopg.errors.QueryCanceled:
+        except gaussdb.errors.QueryCanceled:
             ctrl_c = True
 
         assert ctrl_c, "ctrl-c not received"
         assert (
-            conn.info.transaction_status == psycopg.pq.TransactionStatus.INERROR
+            conn.info.transaction_status == gaussdb.pq.TransactionStatus.INERROR
         ), f"transaction status: {{conn.info.transaction_status!r}}"
 
         await conn.rollback()
         assert (
-            conn.info.transaction_status == psycopg.pq.TransactionStatus.IDLE
+            conn.info.transaction_status == gaussdb.pq.TransactionStatus.IDLE
         ), f"transaction status: {{conn.info.transaction_status!r}}"
 
         await cur.execute("select 1")
@@ -205,16 +205,16 @@ asyncio.run(main())
 )
 @pytest.mark.crdb("skip")
 def test_ctrl_c(conn, dsn):
-    # https://github.com/psycopg/psycopg/issues/543
+    # https://github.com/gaussdb/gaussdb/issues/543
     conn.autocommit = True
 
     APPNAME = "test_ctrl_c"
     script = f"""\
 import asyncio
-import psycopg
+import gaussdb
 
 async def main():
-    async with await psycopg.AsyncConnection.connect(
+    async with await gaussdb.AsyncConnection.connect(
         {dsn!r}, application_name={APPNAME!r}
     ) as conn:
         await conn.execute("select pg_sleep(5)")
@@ -284,7 +284,7 @@ def test_eintr(dsn, itimername, signame):
     script = f"""\
 import signal
 import asyncio
-import psycopg
+import gaussdb
 
 def signal_handler(signum, frame):
     assert signum == {sig!r}
@@ -297,7 +297,7 @@ signal.siginterrupt({sig!r}, False)
 
 
 async def main():
-    async with await psycopg.AsyncConnection.connect({dsn!r}) as conn:
+    async with await gaussdb.AsyncConnection.connect({dsn!r}) as conn:
         # Fire an interrupt signal every 0.25 seconds
         signal.setitimer({itimer!r}, 0.25, 0.25)
 
@@ -332,7 +332,7 @@ async def test_concurrent_close(dsn, aconn):
     async def worker():
         try:
             await aconn.execute("select pg_sleep(3)")
-        except psycopg.OperationalError:
+        except gaussdb.OperationalError:
             pass  # expected
 
     t0 = time.time()
@@ -340,7 +340,7 @@ async def test_concurrent_close(dsn, aconn):
     await asyncio.sleep(0.5)
 
     async def test():
-        async with await psycopg.AsyncConnection.connect(dsn, autocommit=True) as conn1:
+        async with await gaussdb.AsyncConnection.connect(dsn, autocommit=True) as conn1:
             cur = await conn1.execute(
                 "select query from pg_stat_activity where pid = %s", [pid]
             )
@@ -377,7 +377,7 @@ async def test_transaction_concurrency(aconn, what):
                 if what == "error":
                     1 / 0
                 elif what == "rollback":
-                    raise psycopg.Rollback()
+                    raise gaussdb.Rollback()
                 else:
                     assert what == "commit"
 
@@ -386,7 +386,7 @@ async def test_transaction_concurrency(aconn, what):
             assert isinstance(ex.value.__context__, ZeroDivisionError)
         elif what == "rollback":
             assert "transaction rollback" in str(ex.value)
-            assert isinstance(ex.value.__context__, psycopg.Rollback)
+            assert isinstance(ex.value.__context__, gaussdb.Rollback)
         else:
             assert "transaction commit" in str(ex.value)
 

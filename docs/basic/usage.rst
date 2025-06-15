@@ -1,13 +1,13 @@
-.. currentmodule:: psycopg
+.. currentmodule:: gaussdb
 
 .. _module-usage:
 
 Basic module usage
 ==================
 
-The basic Psycopg usage is common to all the database adapters implementing
+The basic GaussDB usage is common to all the database adapters implementing
 the `DB-API`__ protocol. Other database adapters, such as the builtin
-`sqlite3` or `psycopg2`, have roughly the same pattern of interaction.
+`sqlite3` or `_GaussDB`, have roughly the same pattern of interaction.
 
 .. __: https://www.python.org/dev/peps/pep-0249/
 
@@ -17,18 +17,18 @@ the `DB-API`__ protocol. Other database adapters, such as the builtin
 
 .. _usage:
 
-Main objects in Psycopg 3
+Main objects in gaussdb
 -------------------------
 
 Here is an interactive session showing some of the basic commands:
 
 .. code:: python
 
-    # Note: the module name is psycopg, not psycopg3
-    import psycopg
+    # Note: the module name is gaussdb, not gaussdb
+    import gaussdb
 
     # Connect to an existing database
-    with psycopg.connect("dbname=test user=postgres") as conn:
+    with gaussdb.connect("dbname=test user=postgres") as conn:
 
         # Open a cursor to perform database operations
         with conn.cursor() as cur:
@@ -41,7 +41,7 @@ Here is an interactive session showing some of the basic commands:
                     data text)
                 """)
 
-            # Pass data to fill a query placeholders and let Psycopg perform
+            # Pass data to fill a query placeholders and let GaussDB perform
             # the correct conversion (no SQL injections!)
             cur.execute(
                 "INSERT INTO test (num, data) VALUES (%s, %s)",
@@ -92,7 +92,7 @@ relate to each other:
 
 - Using these objects as context managers (i.e. using `!with`) will make sure
   to close them and free their resources at the end of the block (notice that
-  :ref:`this is different from psycopg2 <diff-with>`).
+  :ref:`this is different from _GaussDB <diff-with>`).
 
 
 .. seealso::
@@ -107,7 +107,7 @@ relate to each other:
 Shortcuts
 ---------
 
-The pattern above is familiar to `!psycopg2` users. However, Psycopg 3 also
+The pattern above is familiar to `!_GaussDB` users. However, gaussdb also
 exposes a few simple extensions which make the above pattern leaner:
 
 - the `Connection` objects exposes an `~Connection.execute()` method,
@@ -116,11 +116,11 @@ exposes a few simple extensions which make the above pattern leaner:
 
   .. code::
 
-      # In Psycopg 2
+      # In GaussDB 2
       cur = conn.cursor()
       cur.execute(...)
 
-      # In Psycopg 3
+      # In gaussdb
       cur = conn.execute(...)
 
 - The `Cursor.execute()` method returns `!self`. This means that you can chain
@@ -128,7 +128,7 @@ exposes a few simple extensions which make the above pattern leaner:
 
   .. code::
 
-      # In Psycopg 2
+      # In GaussDB 2
       cur.execute(...)
       record = cur.fetchone()
 
@@ -136,7 +136,7 @@ exposes a few simple extensions which make the above pattern leaner:
       for record in cur:
           ...
 
-      # In Psycopg 3
+      # In gaussdb
       record = cur.execute(...).fetchone()
 
       for record in cur.execute(...):
@@ -147,7 +147,7 @@ using a result in a single expression:
 
 .. code::
 
-    print(psycopg.connect(DSN).execute("SELECT now()").fetchone()[0])
+    print(gaussdb.connect(DSN).execute("SELECT now()").fetchone()[0])
     # 2042-07-12 18:15:10.706497+01:00
 
 
@@ -159,11 +159,11 @@ using a result in a single expression:
 Connection context
 ------------------
 
-Psycopg 3 `Connection` can be used as a context manager:
+gaussdb `Connection` can be used as a context manager:
 
 .. code:: python
 
-    with psycopg.connect() as conn:
+    with gaussdb.connect() as conn:
         ... # use the connection
 
     # the connection is now closed
@@ -175,7 +175,7 @@ equivalent of:
 
 .. code:: python
 
-    conn = psycopg.connect()
+    conn = gaussdb.connect()
     try:
         ... # use the connection
     except BaseException:
@@ -186,7 +186,7 @@ equivalent of:
         conn.close()
 
 .. note::
-    This behaviour is not what `!psycopg2` does: in `!psycopg2` :ref:`there is
+    This behaviour is not what `!_GaussDB` does: in `!_GaussDB` :ref:`there is
     no final close() <pg2:with>` and the connection can be used in several
     `!with` statements to manage different transactions. This behaviour has
     been considered non-standard and surprising so it has been replaced by the
@@ -220,11 +220,11 @@ developer is free to use (and responsible for calling) `~Connection.commit()`,
 but be careful about its quirkiness: see :ref:`async-with` for details.
 
 
-Adapting psycopg to your program
+Adapting gaussdb to your program
 --------------------------------
 
 The above :ref:`pattern of use <usage>` only shows the default behaviour of
-the adapter. Psycopg can be customised in several ways, to allow the smoothest
+the adapter. GaussDB can be customised in several ways, to allow the smoothest
 integration between your Python program and your PostgreSQL database:
 
 - If your program is concurrent and based on `asyncio` instead of on

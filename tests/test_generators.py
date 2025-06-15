@@ -4,9 +4,9 @@ from collections import deque
 
 import pytest
 
-import psycopg
-from psycopg import pq, waiting
-from psycopg.conninfo import conninfo_to_dict, make_conninfo
+import gaussdb
+from gaussdb import pq, waiting
+from gaussdb.conninfo import conninfo_to_dict, make_conninfo
 
 
 def test_connect_operationalerror_pgconn(generators, dsn, monkeypatch):
@@ -28,7 +28,7 @@ def test_connect_operationalerror_pgconn(generators, dsn, monkeypatch):
 
         gen = generators.connect(dsn)
         with pytest.raises(
-            psycopg.OperationalError, match="connection failed:"
+            gaussdb.OperationalError, match="connection failed:"
         ) as excinfo:
             waiting.wait_conn(gen)
 
@@ -39,7 +39,7 @@ def test_connect_operationalerror_pgconn(generators, dsn, monkeypatch):
     assert pgconn.status == pq.ConnStatus.BAD.value
     assert pgconn.transaction_status == pq.TransactionStatus.UNKNOWN.value
     assert pgconn.pipeline_status == pq.PipelineStatus.OFF.value
-    with pytest.raises(psycopg.OperationalError, match="connection is closed"):
+    with pytest.raises(gaussdb.OperationalError, match="connection is closed"):
         pgconn.exec_(b"select 1")
 
 
@@ -173,8 +173,8 @@ def test_pipeline_communicate_abort(pgconn, pipeline_demo, pipeline, generators)
 @pytest.fixture
 def pipeline_uniqviol(pgconn):
     try:
-        psycopg.capabilities.has_pipeline(check=True)
-    except psycopg.NotSupportedError as ex:
+        gaussdb.capabilities.has_pipeline(check=True)
+    except gaussdb.NotSupportedError as ex:
         pytest.skip(str(ex))
     assert pgconn.pipeline_status == 0
     res = pgconn.exec_(b"DROP TABLE IF EXISTS pg_pipeline_uniqviol")

@@ -3,8 +3,8 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from psycopg import DataError, pq, sql
-from psycopg.adapt import PyFormat
+from gaussdb import DataError, pq, sql
+from gaussdb.adapt import PyFormat
 
 crdb_skip_datestyle = pytest.mark.crdb("skip", reason="set datestyle/intervalstyle")
 crdb_skip_negative_interval = pytest.mark.crdb("skip", reason="negative interval")
@@ -131,7 +131,7 @@ class TestDate:
         # adding binary datetime adapters
         from datetime import date
 
-        from psycopg.types.datetime import DateDumper, DateLoader
+        from gaussdb.types.datetime import DateDumper, DateLoader
 
         class InfDateDumper(DateDumper):
             def dump(self, obj):

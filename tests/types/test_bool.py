@@ -1,8 +1,8 @@
 import pytest
 
-from psycopg import pq, sql
-from psycopg.adapt import PyFormat, Transformer
-from psycopg.postgres import types as builtins
+from gaussdb import pq, sql
+from gaussdb.adapt import PyFormat, Transformer
+from gaussdb.postgres import types as builtins
 
 
 @pytest.mark.parametrize("fmt_in", PyFormat)

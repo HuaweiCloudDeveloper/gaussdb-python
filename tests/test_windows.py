@@ -3,7 +3,7 @@ import asyncio
 
 import pytest
 
-from psycopg.errors import InterfaceError
+from gaussdb.errors import InterfaceError
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="windows only test")
@@ -13,7 +13,7 @@ def test_windows_error(aconn_cls, dsn):
     async def go():
         with pytest.raises(
             InterfaceError,
-            match="Psycopg cannot use the 'ProactorEventLoop'",
+            match="GaussDB cannot use the 'ProactorEventLoop'",
         ):
             await aconn_cls.connect(dsn)
 

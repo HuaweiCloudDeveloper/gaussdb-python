@@ -1,7 +1,7 @@
 import pytest
 
-import psycopg
-from psycopg import pq
+import gaussdb
+from gaussdb import pq
 
 from ..fix_crdb import crdb_scs_off
 
@@ -36,12 +36,12 @@ def test_escape_literal_1char(pgconn, scs):
 
 def test_escape_literal_noconn(pgconn):
     esc = pq.Escaping()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         esc.escape_literal(b"hi")
 
     esc = pq.Escaping(pgconn)
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         esc.escape_literal(b"hi")
 
 
@@ -75,12 +75,12 @@ def test_escape_identifier_1char(pgconn, scs):
 
 def test_escape_identifier_noconn(pgconn):
     esc = pq.Escaping()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         esc.escape_identifier(b"hi")
 
     esc = pq.Escaping(pgconn)
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         esc.escape_identifier(b"hi")
 
 
@@ -134,7 +134,7 @@ def test_escape_string_noconn(data, want):
 def test_escape_string_badconn(pgconn):
     esc = pq.Escaping(pgconn)
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         esc.escape_string(b"hi")
 
 
@@ -143,7 +143,7 @@ def test_escape_string_badenc(pgconn):
     assert res.status == pq.ExecStatus.COMMAND_OK
     data = "\u20ac".encode()[:-1]
     esc = pq.Escaping(pgconn)
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         esc.escape_string(data)
 
 
@@ -155,7 +155,7 @@ def test_escape_bytea(pgconn, data):
     assert rv == exp
 
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         esc.escape_bytea(data)
 
 
@@ -184,5 +184,5 @@ def test_unescape_bytea(pgconn, data):
     assert rv == data
 
     pgconn.finish()
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         esc.unescape_bytea(data)

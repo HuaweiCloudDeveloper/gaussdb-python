@@ -1,7 +1,7 @@
 import pytest
 
-import psycopg
-from psycopg import pq
+import gaussdb
+from gaussdb import pq
 
 
 def test_error_message(pgconn):
@@ -75,7 +75,7 @@ def test_result_set_attrs(pgconn):
     assert res.ftype(1) == 1700
     assert res.ftype(2) == 25
 
-    with pytest.raises(psycopg.OperationalError):
+    with pytest.raises(gaussdb.OperationalError):
         res.set_attributes(attrs)
 
 

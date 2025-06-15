@@ -12,14 +12,14 @@ import pytest
 from .utils import check_libpq_version
 
 try:
-    from psycopg import pq
+    from gaussdb import pq
 except ImportError:
     pq = None  # type: ignore
 
 
 def pytest_report_header(config):
     try:
-        from psycopg import pq
+        from gaussdb import pq
     except ImportError:
         return []
 
@@ -51,7 +51,7 @@ def pytest_runtest_setup(item):
 def libpq():
     """Return a ctypes wrapper to access the libpq."""
     try:
-        from psycopg.pq.misc import find_libpq_full_path
+        from gaussdb.pq.misc import find_libpq_full_path
 
         # Not available when testing the binary package
         libname = find_libpq_full_path()
