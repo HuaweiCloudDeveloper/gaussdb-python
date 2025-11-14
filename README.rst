@@ -1,7 +1,45 @@
 gaussdb -- GaussDB database adapter for Python
 ===================================================
 
-**gaussdb** is a modern implementation of a GaussDB adapter for Python, based on a fork of `psycopg` with enhancements and renaming.
+.. image:: https://img.shields.io/pypi/v/gaussdb.svg
+   :target: https://pypi.org/project/gaussdb/
+   :alt: PyPI version
+
+.. image:: https://img.shields.io/pypi/l/gaussdb.svg
+   :target: https://github.com/HuaweiCloudDeveloper/gaussdb-python/blob/master/LICENSE.txt
+   :alt: License: LGPL v3
+
+**gaussdb** provides a modern Python interface for GaussDB, derived from a fork of `psycopg <https://www.psycopg.org/>`_ .  
+It includes functional improvements and project renaming, retaining compatibility with the original codebase licensed under the **GNU Lesser General Public License v3.0**.
+
+Modifications made by HuaweiCloudDeveloper:
+
+- Package name changed from `psycopg` to `gaussdb`
+- Introduced support for both pure-Python and libpq implementations via PSYCOPG_IMPL
+- Added GaussDB-specific behavior adjustments to handle differences from PostgreSQL
+- Added SSL connection examples and dedicated SSL demonstration code
+- Added installation tools for GaussDB client drivers in the tools/ directory
+- Introduced compatibility handling for GaussDB’s Oracle-mode SQL behavior
+- Added pre-commit hooks and stricter lint/tooling configuration
+- Expanded example scripts to cover GaussDB usage scenarios
+- Modularized the project into multiple packages (gaussdb, gaussdb_pool, isort-gaussdb) beyond psycopg’s structure
+
+License
+-------
+
+This project is a **fork** of `psycopg`, originally developed by the Psycopg Team.
+
+- **Original work**: Copyright © 2020 The Psycopg Team  
+- **License**: GNU Lesser General Public License v3.0 (LGPL v3)
+
+**gaussdb** inherits the same license. All modifications are distributed under the **LGPL v3**.
+
+See the full license text in the :download:`LICENSE.txt` file.
+
+.. note::
+
+   **Important**: When redistributing this package (including on PyPI), you **must** include the ``LICENSE.txt`` file.
+
 
 .. _Hacking:
 

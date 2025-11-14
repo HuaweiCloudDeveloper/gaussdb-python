@@ -271,30 +271,31 @@ def test_dump_float_approx(conn, val, expr):
 )
 @pytest.mark.parametrize("fmt_out", pq.Format)
 def test_load_float(conn, val, pgtype, want, fmt_out):
-    cur = conn.cursor(binary=fmt_out)
-    cur.execute(f"select %s::{pgtype}", (val,))
-    assert cur.pgresult.fformat(0) == fmt_out
-    assert cur.pgresult.ftype(0) == conn.adapters.types[pgtype].oid
-    result = cur.fetchone()[0]
+    with conn.cursor(binary=fmt_out) as cur:
+        cur.execute(f"select %s::{pgtype}", (val,))
+        assert cur.pgresult.fformat(0) == fmt_out
+        assert cur.pgresult.ftype(0) == conn.adapters.types[pgtype].oid
+        result = cur.fetchone()[0]
 
-    def check(result, want):
-        assert type(result) is type(want)
-        if isnan(want):
-            assert isnan(result)
-        elif isinf(want):
-            assert isinf(result)
-            assert (result < 0) is (want < 0)
-        else:
-            assert result == want
+        def check(result, want):
+            assert type(result) is type(want)
+            if isnan(want):
+                assert isnan(result)
+            elif isinf(want):
+                assert isinf(result)
+                assert (result < 0) is (want < 0)
+            else:
+                assert result == want
 
-    check(result, want)
+        check(result, want)
 
-    cur.execute(f"select array[%s::{pgtype}]", (val,))
-    assert cur.pgresult.fformat(0) == fmt_out
-    assert cur.pgresult.ftype(0) == conn.adapters.types[pgtype].array_oid
-    result = cur.fetchone()[0]
-    assert isinstance(result, list)
-    check(result[0], want)
+        cur.execute(f"select array[%s::{pgtype}]", (val,))
+        assert cur.pgresult.fformat(0) == fmt_out
+        assert cur.pgresult.ftype(0) == conn.adapters.types[pgtype].array_oid
+        result = cur.fetchone()[0]
+        assert isinstance(result, list)
+        check(result[0], want)
+    conn.close()
 
 
 @pytest.mark.parametrize(

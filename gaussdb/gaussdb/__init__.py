@@ -1,8 +1,26 @@
 """
 gaussdb -- GaussDB database adapter for Python
+
+This file is part of gaussdb.
+
+gaussdb is a fork of psycopg[](https://www.psycopg.org/), originally
+developed by the Psycopg Team and licensed under the GNU Lesser
+General Public License v3.0 (LGPL v3).
+
+The original psycopg source code is copyright © 2001–2023 by the Psycopg Team.
+
+This modified version is distributed under the same LGPL v3 license.
+See the LICENSE file for the full license text.
 """
 
 # Copyright (C) 2020 The Psycopg Team
+# Modifications made by HuaweiCloudDeveloper (2025):
+# - Renamed package from 'psycopg' to 'gaussdb'
+# - Updated all internal imports (psycopg → gaussdb)
+# - Modified __init__.py to expose gaussdb.connect, etc.
+# - Adjusted documentation strings and error messages for GaussDB branding
+# - Added GaussDB-specific connection parameters (e.g., sslmode, gssencmode)
+# - Patched SQL parsing for GaussDB-specific syntax support
 
 import logging
 

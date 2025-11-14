@@ -26,8 +26,8 @@ sys.path.append(str(docs_dir / "lib"))
 # -- Project information -----------------------------------------------------
 
 project = "gaussdb"
-copyright = "2020, Daniele Varrazzo and The Psycopg Team"
-author = "Daniele Varrazzo"
+copyright = "2020, The Psycopg Team, 2025 Huawei Cloud Developer Team"
+author = "Huawei Cloud Developer Team (based on Psycopg Team)"
 release = gaussdb.__version__
 
 
