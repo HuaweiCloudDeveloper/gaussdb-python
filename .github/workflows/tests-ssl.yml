@@ -226,6 +226,29 @@ jobs:
         run: |
           mkdir -p reports
 
+      - name: Print DNS and Python environment
+        run: |
+          source venv/bin/activate
+          python - << 'EOF'
+          import asyncio
+          import dns
+          import dns.version
+          import dns.asyncresolver
+
+          print("Python version:")
+          import sys; print(sys.version)
+
+          print("\nEvent loop policy:")
+          print(asyncio.get_event_loop_policy())
+
+          print("\nDnspython version:")
+          print(dns.version.version)
+
+          print("\nAsync resolver instance:")
+          r = dns.asyncresolver.Resolver()
+          print(r)
+          EOF
+
       - name: Run tests
         env:
           PYTHONPATH: ./gaussdb:./gaussdb_pool

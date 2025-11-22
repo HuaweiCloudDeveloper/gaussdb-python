@@ -1,8 +1,18 @@
 import pytest
 
+from .conftest import get_wal_level
+
 SLOT_NAME = "slot_test"
 SCHEMA = "my_schema"
 TABLE = "test01"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def check_wal_level():
+    """Check if wal_level is set to logical, skip tests if not."""
+    wal_level = get_wal_level()
+    if wal_level != "logical":
+        pytest.skip(f"wal_level={wal_level!r}, expected 'logical'")
 
 
 def _slot_exists(conn, slot_name):
@@ -37,7 +47,7 @@ def _cleanup_slot_and_schema(conn):
 
 
 @pytest.fixture(scope="function")
-def setup_env(conn):
+def setup_env(conn, check_wal_level):
     """Ensure clean environment for each test."""
     _cleanup_slot_and_schema(conn)
     cur = conn.cursor()

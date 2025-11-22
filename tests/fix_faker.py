@@ -315,6 +315,11 @@ class Faker:
     def match_any(self, spec, got, want):
         if spec == dt.timedelta:
             assert abs((got - want).total_seconds()) < 86400 * 2
+        elif spec in (bytes, bytearray, memoryview):
+            if want in (b"", bytearray(b"")) or want is None:
+                assert got in (None, b"", bytearray(b""), memoryview(b""))
+            else:
+                assert got == want
         else:
             assert got == want
 

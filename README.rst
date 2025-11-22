@@ -34,7 +34,7 @@ This project is a **fork** of `psycopg`, originally developed by the Psycopg Tea
 
 **gaussdb** inherits the same license. All modifications are distributed under the **LGPL v3**.
 
-See the full license text in the :download:`LICENSE.txt` file.
+See the full license text in the `LICENSE.txt` file.
 
 .. note::
 
@@ -134,7 +134,7 @@ Now hack away! You can run the tests using on GaussDB::
 
     # Set the Python import path to include your local GaussDB Python project
     # Replace your_path with actual values
-    export PYTHONPATH=/your_path/gaussdb-python
+    export PYTHONPATH="/your_path/gaussdb-python/gaussdb:/your_path/gaussdb-python/gaussdb_pool"
 
     # Select the pure-Python implementation of the GaussDB adapter
     export PSYCOPG_IMPL=python
@@ -183,7 +183,7 @@ Recommended Steps to Run OpenGauss with Python GaussDB Driver Testing (Assuming 
 
     # Set the Python import path to include your local GaussDB Python project
     # Replace your_path with actual values
-    export PYTHONPATH=/your_path/gaussdb-python
+    export PYTHONPATH="/your_path/gaussdb-python/gaussdb:/your_path/gaussdb-python/gaussdb_pool"
 
     # Select the pure-Python implementation of the GaussDB adapter
     export PSYCOPG_IMPL=python
@@ -207,7 +207,7 @@ Steps to Run OpenGauss(SSL) with Python GaussDB Driver Testing (Assuming Docker 
     
     # Set the Python import path to include your local GaussDB Python project
     # Replace your_path with actual values
-    export PYTHONPATH=/your_path/gaussdb-python
+    export PYTHONPATH="/your_path/gaussdb-python/gaussdb:/your_path/gaussdb-python/gaussdb_pool"
 
     # Select the pure-Python implementation of the GaussDB adapter
     export PSYCOPG_IMPL=python

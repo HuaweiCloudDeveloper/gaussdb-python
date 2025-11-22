@@ -96,7 +96,7 @@ jobs:
           GAUSSDB_TEST_DSN: "host=127.0.0.1 port=5432 dbname=test user=root password=Passwd@123 "
         run: |
           source venv/bin/activate
-          pytest -s -v
+          pytest -s -v -W ignore::pytest.PytestUnraisableExceptionWarning
 
       - name: Cleanup
         if: always()

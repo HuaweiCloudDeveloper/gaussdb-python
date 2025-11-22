@@ -8,6 +8,7 @@ from gaussdb.types.composite import CompositeInfo, TupleBinaryDumper, TupleDumpe
 from gaussdb.types.composite import register_composite
 
 from ..utils import eur
+from ..conftest import get_database_type
 from ..fix_crdb import crdb_skip_message, is_crdb
 from ..test_adapt import StrNoneBinaryDumper, StrNoneDumper
 
@@ -162,6 +163,9 @@ def test_load_record_binary(conn, want, rec):
 def testcomp(svcconn):
     if is_crdb(svcconn):
         pytest.skip(crdb_skip_message("composite"))
+    res = get_database_type()
+    if res == "gaussdb":
+        pytest.skip("gaussdb not support.")
     cur = svcconn.cursor()
     cur.execute(
         """

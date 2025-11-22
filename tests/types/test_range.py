@@ -10,6 +10,7 @@ from gaussdb.types import range as range_module
 from gaussdb.types.range import Range, RangeInfo, register_range
 
 from ..utils import eur
+from ..conftest import get_database_type
 from ..fix_crdb import crdb_skip_message, is_crdb
 from ..test_adapt import StrNoneBinaryDumper, StrNoneDumper
 
@@ -268,11 +269,14 @@ def create_test_range(conn):
     if is_crdb(conn):
         pytest.skip(crdb_skip_message("range"))
 
+    res = get_database_type()
+    if res == "gaussdb":
+        pytest.skip("gaussdb not support.")
+
     conn.execute(
         """
         drop schema if exists testschema cascade;
         create schema testschema;
-
         drop type if exists testrange cascade;
         drop type if exists testschema.testrange cascade;
 
